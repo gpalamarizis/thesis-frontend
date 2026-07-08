@@ -1,21 +1,60 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 
+const roleLabel = { admin: 'Διαχειριστής', lawyer: 'Δικηγόρος', secretary: 'Γραμματέας' };
+
+const menuGroups = [
+  {
+    title: null,
+    items: [
+      { path: '/dashboard', label: 'Πίνακας Ελέγχου', icon: '📊' },
+    ],
+  },
+  {
+    title: 'Υποθέσεις',
+    items: [
+      { path: '/cases',     label: 'Λίστα υποθέσεων', icon: '📁' },
+      { path: '/cases/new', label: 'Νέα υπόθεση',     icon: '➕' },
+    ],
+  },
+  {
+    title: 'Πρόσωπα',
+    items: [
+      { path: '/fysika',           label: 'Φυσικά πρόσωπα',       icon: '👤' },
+      { path: '/nomika',           label: 'Νομικά πρόσωπα',       icon: '🏢' },
+      { path: '/lawyers',          label: 'Δικηγόροι γραφείου',   icon: '⚖️' },
+      { path: '/opposing-lawyers', label: 'Δικηγόροι αντιδίκων',  icon: '⚖️' },
+      { path: '/opponents',        label: 'Αντίδικοι',            icon: '🔷' },
+      { path: '/related',          label: 'Σχετικά πρόσωπα',      icon: '🔗' },
+      { path: '/phonebook',        label: 'Τηλεφωνικός κατάλογος', icon: '📞' },
+    ],
+  },
+  {
+    title: 'Δικαστήρια',
+    items: [
+      { path: '/courts',   label: 'Δικαστήρια',          icon: '🏛️' },
+      { path: '/actions',  label: 'Δικαστικές ενέργειες', icon: '📅' },
+    ],
+  },
+  {
+    title: 'Αναφορές',
+    items: [
+      { path: '/reports/pending',  label: 'Εκκρεμείς υποθέσεις', icon: '📋' },
+      { path: '/reports/hearings', label: 'Προσεχείς δικάσιμοι', icon: '📆' },
+      { path: '/reports/tasks',    label: 'Λοιπές ενέργειες',    icon: '📝' },
+    ],
+  },
+  {
+    title: 'Ρυθμίσεις',
+    items: [
+      { path: '/finance', label: 'Οικονομικά',        icon: '💰' },
+      { path: '/lists',   label: 'Επεξεργασία λιστών', icon: '⚙️' },
+      { path: '/team',    label: 'Ομάδα',              icon: '👥' },
+    ],
+  },
+];
+
 function Layout({ user, onLogout, title, children }) {
   const navigate = useNavigate();
-  
-  const menu = [
-    { path: '/dashboard', label: 'Πίνακας Ελέγχου', icon: '📊' },
-    { path: '/cases', label: 'Υποθέσεις', icon: '📁' },
-    { path: '/fysika', label: 'Φυσικά Πρόσωπα', icon: '👤' },
-    { path: '/nomika', label: 'Νομικά Πρόσωπα', icon: '🏢' },
-    { path: '/lawyers', label: 'Δικηγόροι', icon: '⚖️' },
-    { path: '/courts', label: 'Δικαστήρια', icon: '🏛️' },
-    { path: '/actions', label: 'Δικαστικές Ενέργειες', icon: '📅' },
-    { path: '/finance', label: 'Οικονομικά', icon: '💰' },
-    { path: '/team', label: 'Ομάδα', icon: '👥' },
-  ];
-
-  const roleLabel = { admin: 'Διαχειριστής', lawyer: 'Δικηγόρος', secretary: 'Γραμματέας' };
 
   return (
     <div className="app-layout">
@@ -23,26 +62,37 @@ function Layout({ user, onLogout, title, children }) {
         <div className="sidebar-header">
           <h2>Thesis</h2>
           <div className="user">
-            {user.firstName} {user.lastName}<br/>
+            {(user.first_name || user.firstName || '')} {(user.last_name || user.lastName || '')}<br/>
             <small>{roleLabel[user.role] || user.role}</small>
           </div>
         </div>
-        <ul className="sidebar-menu">
-          {menu.map(item => (
-            <li key={item.path}>
-              <NavLink to={item.path}>
-                {item.icon} {item.label}
-              </NavLink>
-            </li>
+
+        <nav>
+          {menuGroups.map((group, gi) => (
+            <div className="sidebar-group" key={gi}>
+              {group.title && <div className="sidebar-group-title">{group.title}</div>}
+              <ul className="sidebar-menu">
+                {group.items.map(item => (
+                  <li key={item.path}>
+                    <NavLink to={item.path} end={item.path === '/dashboard'}>
+                      <span className="menu-icon">{item.icon}</span>
+                      <span className="menu-label">{item.label}</span>
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-          <li style={{ marginTop: 20, borderTop: '1px solid #4a5568', paddingTop: 20 }}>
+
+          <div className="sidebar-footer">
             <a href="#" onClick={(e) => { e.preventDefault(); onLogout(); navigate('/login'); }}>
-              🚪 Αποσύνδεση
+              <span className="menu-icon">🚪</span>
+              <span className="menu-label">Αποσύνδεση</span>
             </a>
-          </li>
-        </ul>
+          </div>
+        </nav>
       </aside>
-      
+
       <div className="main-content">
         <div className="topbar">
           <h1>{title}</h1>

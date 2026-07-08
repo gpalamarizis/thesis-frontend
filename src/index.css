@@ -355,3 +355,85 @@ body {
   justify-content: flex-end;
   margin-top: 20px;
 }
+
+/* ===== v3 additions ===== */
+
+/* Sidebar groups */
+.sidebar-group {
+  margin-bottom: 12px;
+}
+.sidebar-group-title {
+  padding: 12px 20px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.sidebar-menu li a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.menu-icon { flex-shrink: 0; width: 18px; text-align: center; }
+.menu-label { flex: 1; }
+
+.sidebar-footer {
+  margin-top: 20px;
+  padding: 12px 0;
+  border-top: 1px solid #4a5568;
+}
+.sidebar-footer a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  color: #cbd5e0;
+  text-decoration: none;
+  font-size: 14px;
+}
+.sidebar-footer a:hover { color: white; background: #1a202c; }
+
+/* Sidebar scrollable when many items */
+.sidebar {
+  overflow-y: auto;
+  max-height: 100vh;
+  position: sticky;
+  top: 0;
+}
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 3px; }
+
+/* Stat cards as links */
+.stat-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.stat-card-link:hover .stat-card {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.stat-card-accent-green { border-left: 4px solid #48bb78; }
+.stat-card-accent-orange { border-left: 4px solid #ed8936; }
+
+/* Dashboard two-column row */
+.dashboard-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+@media (max-width: 900px) {
+  .dashboard-row { grid-template-columns: 1fr; }
+}
+
+/* Inline link (used in section headers) */
+.link-inline {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+}
+.link-inline:hover { text-decoration: underline; }
