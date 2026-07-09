@@ -17,13 +17,13 @@ function CaseEdit({ user, onLogout }) {
   const [taskActions, setTaskActions] = useState([]);
   const [docs, setDocs] = useState([]);
   const [courtsList, setCourtsList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [okMsg, setOkMsg] = useState('');
 
-  const loadAll = () => {
-    setLoading(true);
+  const loadAll = (isInitial = false) => {
+    if (isInitial) setInitialLoading(true);
     Promise.allSettled([
       cases.get(id),
       actions.court.listByCase(id),
@@ -31,17 +31,24 @@ function CaseEdit({ user, onLogout }) {
       documents.listByCase(id),
       courts.list(),
     ]).then(([cRes, chRes, ctRes, dRes, ctsRes]) => {
-      if (cRes.status === 'fulfilled') setCaseData(cRes.value?.data || cRes.value);
-      else setError(cRes.reason?.message || 'Σφάλμα φόρτωσης');
+      // Only propagate the case error if the case itself failed
+      if (cRes.status === 'fulfilled') {
+        setCaseData(cRes.value?.data || cRes.value);
+        setError('');
+      } else if (isInitial) {
+        setError(cRes.reason?.message || 'Σφάλμα φόρτωσης');
+      }
       const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
-      if (chRes.status === 'fulfilled') setCourtActions(unwrap(chRes.value));
-      if (ctRes.status === 'fulfilled') setTaskActions(unwrap(ctRes.value));
-      if (dRes.status === 'fulfilled')  setDocs(unwrap(dRes.value));
+      if (chRes.status === 'fulfilled')  setCourtActions(unwrap(chRes.value));
+      if (ctRes.status === 'fulfilled')  setTaskActions(unwrap(ctRes.value));
+      if (dRes.status === 'fulfilled')   setDocs(unwrap(dRes.value));
       if (ctsRes.status === 'fulfilled') setCourtsList(unwrap(ctsRes.value));
-    }).finally(() => setLoading(false));
+    }).finally(() => {
+      if (isInitial) setInitialLoading(false);
+    });
   };
 
-  useEffect(() => { loadAll(); }, [id]);
+  useEffect(() => { loadAll(true); /* eslint-disable-next-line */ }, [id]);
 
   const saveCase = async (patch) => {
     setSaving(true);
@@ -51,7 +58,7 @@ function CaseEdit({ user, onLogout }) {
       await cases.update(id, patch);
       setOkMsg('Οι αλλαγές αποθηκεύτηκαν.');
       setTimeout(() => setOkMsg(''), 3000);
-      loadAll();
+      loadAll(false);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -59,7 +66,7 @@ function CaseEdit({ user, onLogout }) {
     }
   };
 
-  if (loading) return <Layout user={user} onLogout={onLogout} title="Υπόθεση"><div className="empty-state">Φόρτωση...</div></Layout>;
+  if (initialLoading) return <Layout user={user} onLogout={onLogout} title="Υπόθεση"><div className="empty-state">Φόρτωση...</div></Layout>;
   if (!caseData) return <Layout user={user} onLogout={onLogout} title="Υπόθεση"><div className="error">{error || 'Δεν βρέθηκε η υπόθεση.'}</div></Layout>;
 
   return (
@@ -70,10 +77,10 @@ function CaseEdit({ user, onLogout }) {
       <div className="section">
         <Tabs tabs={[
           { label: 'Υπόθεση',              content: <CaseTab caseData={caseData} onSave={saveCase} saving={saving} /> },
-          { label: 'Δικαστικές ενέργειες', badge: courtActions.length, content: <CourtActionsTab caseId={id} rows={courtActions} courts={courtsList} onChange={loadAll} /> },
-          { label: 'Λοιπές ενέργειες',     badge: taskActions.length,  content: <TaskActionsTab caseId={id} rows={taskActions} onChange={loadAll} /> },
+          { label: 'Δικαστικές ενέργειες', badge: courtActions.length, content: <CourtActionsTab caseId={id} rows={courtActions} courts={courtsList} onChange={() => loadAll(false)} /> },
+          { label: 'Λοιπές ενέργειες',     badge: taskActions.length,  content: <TaskActionsTab caseId={id} rows={taskActions} onChange={() => loadAll(false)} /> },
           { label: 'Πρόσωπα',              content: <PeopleTab caseData={caseData} onSave={saveCase} saving={saving} /> },
-          { label: 'Αρχεία',               badge: docs.length,         content: <DocsTab caseId={id} rows={docs} onChange={loadAll} /> },
+          { label: 'Αρχεία',               badge: docs.length,         content: <DocsTab caseId={id} rows={docs} onChange={() => loadAll(false)} /> },
           { label: 'Οικονομικά',           content: <FinanceTab caseId={id} /> },
         ]}/>
       </div>
@@ -511,9 +518,9 @@ function DocsTab({ caseId, rows, onChange }) {
   const openPreview = async (doc) => {
     try {
       const res = await documents.downloadUrl(doc.aa || doc.id);
-      const url = res?.url || res?.download_url || res?.data?.url;
+      const url = res?.url || res?.download_url || res?.data?.url || res?.signed_url || res?.signedUrl;
       if (!url) { setError('Δεν βρέθηκε URL αρχείου.'); return; }
-      const name = doc.file_name || doc.fileName || 'αρχείο';
+      const name = doc.file_name || doc.fileName || doc.filename || doc.name || doc.original_name || doc.originalName || 'αρχείο';
       const ext = (name.split('.').pop() || '').toLowerCase();
       setPreview({ url, name, ext });
     } catch (e) {
@@ -524,6 +531,36 @@ function DocsTab({ caseId, rows, onChange }) {
   const doDelete = async (doc) => {
     try { await documents.remove(doc.aa || doc.id); onChange(); }
     catch (e) { setError(e.message); }
+  };
+
+  const docName = (d) => d.file_name || d.fileName || d.filename || d.name || d.original_name || d.originalName || d.original_filename || '—';
+  const docSize = (d) => d.file_size ?? d.fileSize ?? d.size ?? d.bytes ?? null;
+  const docDate = (d) => d.uploaded_at || d.uploadedAt || d.created_at || d.createdAt || d.modified_at || d.modifiedAt || d.date || null;
+  const docUser = (d) => {
+    // Prefer metadata author (Word/Excel/PDF "Last Modified By") if backend provides it, else system user who uploaded
+    const meta = d.metadata_modified_by || d.metadataModifiedBy || d.last_modified_by || d.lastModifiedBy || d.metadata_author || d.metadataAuthor;
+    const sys = d.uploaded_by_name || d.uploadedByName
+             || d.modified_by_name || d.modifiedByName
+             || (d.uploaded_by_first_name || d.uploaded_by_last_name
+                  ? [d.uploaded_by_first_name, d.uploaded_by_last_name].filter(Boolean).join(' ')
+                  : null)
+             || d.user_name || d.userName
+             || d.uploaded_by || d.uploadedBy;
+    if (meta && sys) return `${meta} (upload: ${sys})`;
+    return meta || sys || '—';
+  };
+  const fileIcon = (name) => {
+    const ext = (name.split('.').pop() || '').toLowerCase();
+    if (['doc','docx','odt','rtf'].includes(ext)) return '📄'; // Word
+    if (['xls','xlsx','xlsm','csv','ods'].includes(ext)) return '📊'; // Excel
+    if (ext === 'pdf') return '📕';
+    if (['ppt','pptx','odp'].includes(ext)) return '📽️';
+    if (['jpg','jpeg','png','gif','webp','svg','bmp','tiff'].includes(ext)) return '🖼️';
+    if (['zip','rar','7z','tar','gz'].includes(ext)) return '🗜️';
+    if (['mp4','mov','avi','mkv','webm'].includes(ext)) return '🎥';
+    if (['mp3','wav','ogg','flac','m4a'].includes(ext)) return '🎵';
+    if (['txt','md','log'].includes(ext)) return '📃';
+    return '📎';
   };
 
   return (
@@ -541,20 +578,34 @@ function DocsTab({ caseId, rows, onChange }) {
         <div className="empty-state">Δεν υπάρχουν αρχεία σε αυτή την υπόθεση.</div>
       ) : (
         <table className="table">
-          <thead><tr><th>Όνομα</th><th style={{width:120}}>Μέγεθος</th><th style={{width:150}}>Ανέβηκε</th><th></th></tr></thead>
+          <thead><tr>
+            <th>Όνομα</th>
+            <th style={{width:120}}>Μέγεθος</th>
+            <th style={{width:160}}>Ανέβηκε</th>
+            <th style={{width:160}}>Επεξεργάστηκε από</th>
+            <th></th>
+          </tr></thead>
           <tbody>
-            {rows.map(d => (
-              <tr key={d.aa || d.id}>
-                <td>{d.file_name || d.fileName || '—'}</td>
-                <td>{d.file_size || d.fileSize ? formatBytes(d.file_size || d.fileSize) : '—'}</td>
-                <td>{fmtDateTime(d.uploaded_at || d.uploadedAt)}</td>
-                <td>
-                  <button className="btn btn-sm btn-secondary" onClick={() => openPreview(d)}>Προβολή</button>
-                  {' '}
-                  <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(d)}>×</button>
-                </td>
-              </tr>
-            ))}
+            {rows.map(d => {
+              const name = docName(d);
+              const size = docSize(d);
+              return (
+                <tr key={d.aa || d.id}>
+                  <td>
+                    <span style={{ marginRight: 6 }}>{fileIcon(name)}</span>
+                    {name}
+                  </td>
+                  <td>{size != null ? formatBytes(size) : '—'}</td>
+                  <td>{docDate(d) ? fmtDateTime(docDate(d)) : '—'}</td>
+                  <td>{docUser(d)}</td>
+                  <td>
+                    <button className="btn btn-sm btn-secondary" onClick={() => openPreview(d)}>Προβολή</button>
+                    {' '}
+                    <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(d)}>×</button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
@@ -573,7 +624,7 @@ function DocsTab({ caseId, rows, onChange }) {
       {confirmDel && (
         <ConfirmDialog
           title="Διαγραφή αρχείου"
-          message={`Διαγραφή του "${confirmDel.file_name || confirmDel.fileName}"; Η ενέργεια δεν αναιρείται.`}
+          message={`Διαγραφή του "${docName(confirmDel)}"; Η ενέργεια δεν αναιρείται.`}
           confirmLabel="Διαγραφή"
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
