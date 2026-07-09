@@ -34,7 +34,7 @@ function NomikaEdit({ user, onLogout }) {
       .finally(() => setLoading(false));
   }, [id, isNew]);
 
-  const c = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const onChange = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,32 +60,55 @@ function NomikaEdit({ user, onLogout }) {
 
   if (loading) return <Layout user={user} onLogout={onLogout} title="Νομικό Πρόσωπο"><div className="empty-state">Φόρτωση...</div></Layout>;
 
-  const F = ({ label, k, type = 'text', required }) => (
-    <div className="form-group">
-      <label>{label}{required && ' *'}</label>
-      <input type={type} value={form[k] || ''} onChange={c(k)} required={required} />
-    </div>
-  );
-
   const tabCompany = (
     <div>
       <div className="form-grid-2">
-        <F label="Επωνυμία" k="eponymia" required />
-        <F label="Διακριτικός τίτλος" k="diakritikos_titlos" />
+        <div className="form-group">
+          <label>Επωνυμία *</label>
+          <input type="text" value={form.eponymia} onChange={onChange('eponymia')} required />
+        </div>
+        <div className="form-group">
+          <label>Διακριτικός τίτλος</label>
+          <input type="text" value={form.diakritikos_titlos} onChange={onChange('diakritikos_titlos')} />
+        </div>
       </div>
       <div className="form-grid-3">
-        <F label="Νομική μορφή" k="morfi" />
-        <F label="Α.Φ.Μ." k="afm" />
-        <F label="Δ.Ο.Υ." k="doy" />
+        <div className="form-group">
+          <label>Νομική μορφή</label>
+          <input type="text" value={form.morfi} onChange={onChange('morfi')} />
+        </div>
+        <div className="form-group">
+          <label>Α.Φ.Μ.</label>
+          <input type="text" value={form.afm} onChange={onChange('afm')} />
+        </div>
+        <div className="form-group">
+          <label>Δ.Ο.Υ.</label>
+          <input type="text" value={form.doy} onChange={onChange('doy')} />
+        </div>
       </div>
       <div className="form-grid-3">
-        <F label="Γ.Ε.ΜΗ." k="gemi" />
-        <F label="Email" k="email" type="email" />
-        <F label="Ιστοσελίδα" k="istoselida" />
+        <div className="form-group">
+          <label>Γ.Ε.ΜΗ.</label>
+          <input type="text" value={form.gemi} onChange={onChange('gemi')} />
+        </div>
+        <div className="form-group">
+          <label>Email</label>
+          <input type="email" value={form.email} onChange={onChange('email')} />
+        </div>
+        <div className="form-group">
+          <label>Ιστοσελίδα</label>
+          <input type="text" value={form.istoselida} onChange={onChange('istoselida')} />
+        </div>
       </div>
       <div className="form-grid-2">
-        <F label="Εκπρόσωπος - Επώνυμο" k="ekprosopos_eponymo" />
-        <F label="Εκπρόσωπος - Όνομα" k="ekprosopos_onoma" />
+        <div className="form-group">
+          <label>Εκπρόσωπος - Επώνυμο</label>
+          <input type="text" value={form.ekprosopos_eponymo} onChange={onChange('ekprosopos_eponymo')} />
+        </div>
+        <div className="form-group">
+          <label>Εκπρόσωπος - Όνομα</label>
+          <input type="text" value={form.ekprosopos_onoma} onChange={onChange('ekprosopos_onoma')} />
+        </div>
       </div>
     </div>
   );
@@ -95,14 +118,26 @@ function NomikaEdit({ user, onLogout }) {
       <div className="form-grid-3">
         <div className="form-group" style={{ gridColumn: 'span 2' }}>
           <label>Οδός έδρας</label>
-          <input type="text" value={form.odos_edras || ''} onChange={c('odos_edras')} />
+          <input type="text" value={form.odos_edras} onChange={onChange('odos_edras')} />
         </div>
-        <F label="Αριθμός" k="arithmos_edras" />
+        <div className="form-group">
+          <label>Αριθμός</label>
+          <input type="text" value={form.arithmos_edras} onChange={onChange('arithmos_edras')} />
+        </div>
       </div>
       <div className="form-grid-3">
-        <F label="Τ.Κ." k="tk_edras" />
-        <F label="Πόλη" k="polis_edras" />
-        <F label="Χώρα" k="xora_edras" />
+        <div className="form-group">
+          <label>Τ.Κ.</label>
+          <input type="text" value={form.tk_edras} onChange={onChange('tk_edras')} />
+        </div>
+        <div className="form-group">
+          <label>Πόλη</label>
+          <input type="text" value={form.polis_edras} onChange={onChange('polis_edras')} />
+        </div>
+        <div className="form-group">
+          <label>Χώρα</label>
+          <input type="text" value={form.xora_edras} onChange={onChange('xora_edras')} />
+        </div>
       </div>
     </div>
   );
@@ -110,15 +145,30 @@ function NomikaEdit({ user, onLogout }) {
   const tabPhones = (
     <div>
       <div className="form-grid-2">
-        <F label="Τηλέφωνο 1" k="tilefono_grafeiou_1" type="tel" />
-        <F label="Τηλέφωνο 2" k="tilefono_grafeiou_2" type="tel" />
+        <div className="form-group">
+          <label>Τηλέφωνο 1</label>
+          <input type="tel" value={form.tilefono_grafeiou_1} onChange={onChange('tilefono_grafeiou_1')} />
+        </div>
+        <div className="form-group">
+          <label>Τηλέφωνο 2</label>
+          <input type="tel" value={form.tilefono_grafeiou_2} onChange={onChange('tilefono_grafeiou_2')} />
+        </div>
       </div>
       <div className="form-grid-2">
-        <F label="Fax 1" k="fax_1" type="tel" />
-        <F label="Fax 2" k="fax_2" type="tel" />
+        <div className="form-group">
+          <label>Fax 1</label>
+          <input type="tel" value={form.fax_1} onChange={onChange('fax_1')} />
+        </div>
+        <div className="form-group">
+          <label>Fax 2</label>
+          <input type="tel" value={form.fax_2} onChange={onChange('fax_2')} />
+        </div>
       </div>
       <div className="form-grid-2">
-        <F label="Κινητό" k="tilefono_kinito_1" type="tel" />
+        <div className="form-group">
+          <label>Κινητό</label>
+          <input type="tel" value={form.tilefono_kinito_1} onChange={onChange('tilefono_kinito_1')} />
+        </div>
         <div />
       </div>
     </div>
@@ -127,7 +177,7 @@ function NomikaEdit({ user, onLogout }) {
   const tabNotes = (
     <div className="form-group">
       <label>Σημειώσεις</label>
-      <textarea rows="8" value={form.simeioseis || ''} onChange={c('simeioseis')} />
+      <textarea rows="8" value={form.simeioseis} onChange={onChange('simeioseis')} />
     </div>
   );
 
