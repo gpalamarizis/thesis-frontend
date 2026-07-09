@@ -32,6 +32,7 @@ import PendingTasks from './pages/Reports/PendingTasks';
 
 // Settings
 import Lists from './pages/Lists';
+import Team from './pages/Team';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -114,6 +115,7 @@ function App() {
         <Route path="/reports/tasks"    element={guard(PendingTasks)} />
 
         <Route path="/lists" element={guard(Lists)} />
+        <Route path="/team"  element={guard(Team)} />
 
         <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
       </Routes>

@@ -171,6 +171,14 @@ export const finance = {
   remove: (resource, id)              => api.delete(`/api/finance/${resource}/${id}`),
 };
 
+export const team = {
+  list:   ()             => api.get('/api/users'),
+  get:    (id)           => api.get(`/api/users/${id}`),
+  create: (payload)      => api.post('/api/users', payload),
+  update: (id, payload)  => api.put(`/api/users/${id}`, payload),
+  remove: (id)           => api.delete(`/api/users/${id}`),
+};
+
 export const documents = {
   listByCase: (caseId) => api.get(`/api/documents?caseId=${caseId}`),
   upload:     (caseId, file, description = '') => {

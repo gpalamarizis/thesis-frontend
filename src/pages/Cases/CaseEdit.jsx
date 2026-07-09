@@ -4,9 +4,9 @@ import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import DataTable from '../../components/DataTable';
-import { cases, actions, documents, courts, API_URL } from '../../api';
+import { cases, actions, documents, courts, people, fysika, nomika } from '../../api';
 import { fmtDate, fmtDateTime, toDateInput, trunc } from '../../utils/format';
+import FinanceTab from './FinanceTab';
 
 function CaseEdit({ user, onLogout }) {
   const { id } = useParams();
@@ -69,11 +69,12 @@ function CaseEdit({ user, onLogout }) {
 
       <div className="section">
         <Tabs tabs={[
-          { label: 'Υπόθεση',            content: <CaseTab caseData={caseData} onSave={saveCase} saving={saving} /> },
+          { label: 'Υπόθεση',              content: <CaseTab caseData={caseData} onSave={saveCase} saving={saving} /> },
           { label: 'Δικαστικές ενέργειες', badge: courtActions.length, content: <CourtActionsTab caseId={id} rows={courtActions} courts={courtsList} onChange={loadAll} /> },
-          { label: 'Λοιπές ενέργειες',   badge: taskActions.length, content: <TaskActionsTab caseId={id} rows={taskActions} onChange={loadAll} /> },
-          { label: 'Πρόσωπα',            content: <PeopleTab caseData={caseData} /> },
-          { label: 'Αρχεία',             badge: docs.length, content: <DocsTab caseId={id} rows={docs} onChange={loadAll} /> },
+          { label: 'Λοιπές ενέργειες',     badge: taskActions.length,  content: <TaskActionsTab caseId={id} rows={taskActions} onChange={loadAll} /> },
+          { label: 'Πρόσωπα',              content: <PeopleTab caseData={caseData} onSave={saveCase} saving={saving} /> },
+          { label: 'Αρχεία',               badge: docs.length,         content: <DocsTab caseId={id} rows={docs} onChange={loadAll} /> },
+          { label: 'Οικονομικά',           content: <FinanceTab caseId={id} /> },
         ]}/>
       </div>
 
@@ -375,38 +376,91 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
   );
 }
 
-// ---------- Tab 4: People ----------
-function PeopleTab({ caseData }) {
+// ---------- Tab 4: People — now editable ----------
+function PeopleTab({ caseData, onSave, saving }) {
+  const [dikigorosGrafeiouId, setDikigorosGrafeiouId] = useState(caseData.dikigoros_grafeiou_id || '');
+  const [antidikosId, setAntidikosId] = useState(caseData.antidikoi_id || caseData.antidikos_id || '');
+  const [dikigorosAntidikonId, setDikigorosAntidikonId] = useState(caseData.dikigoros_antidikon_id || caseData.dikigoros_antidikoi_id || '');
+
+  const [lawyers, setLawyers] = useState([]);
+  const [opponents, setOpponents] = useState([]);
+  const [opposingLawyers, setOpposingLawyers] = useState([]);
+  const [loadErr, setLoadErr] = useState('');
+
+  useEffect(() => {
+    Promise.allSettled([
+      people.lawyers.list(),
+      people.opponents.list(),
+      people.opposingLawyers.list(),
+    ]).then(([lRes, oRes, olRes]) => {
+      const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
+      if (lRes.status === 'fulfilled')  setLawyers(unwrap(lRes.value));
+      if (oRes.status === 'fulfilled')  setOpponents(unwrap(oRes.value));
+      if (olRes.status === 'fulfilled') setOpposingLawyers(unwrap(olRes.value));
+      const errs = [lRes, oRes, olRes].filter(r => r.status === 'rejected').map(r => r.reason?.message);
+      if (errs.length) setLoadErr(errs.join('; '));
+    });
+  }, []);
+
+  const opt = (r) => `${r.eponymo || ''} ${r.onoma || ''}`.trim();
+
+  const clientLabel = caseData.pelatis
+    || caseData.client_name
+    || (caseData.fysiko_prosopo_id ? `Φυσικό πρόσωπο #${caseData.fysiko_prosopo_id}`
+        : caseData.nomiko_prosopo_id ? `Νομικό πρόσωπο #${caseData.nomiko_prosopo_id}` : '—');
+
   return (
     <div>
       <div style={{ color: '#718096', marginBottom: 20 }}>Πρόσωπα που εμπλέκονται στην υπόθεση</div>
+      {loadErr && <div className="error">Σφάλμα φόρτωσης προσώπων: {loadErr}</div>}
 
       <div className="form-grid-2">
         <div className="section-inline">
-          <h3>Πελάτης</h3>
-          <div className="person-card">
-            {caseData.pelatis || caseData.client_name || (caseData.fysiko_prosopo_id ? `Φυσικό #${caseData.fysiko_prosopo_id}` : caseData.nomiko_prosopo_id ? `Νομικό #${caseData.nomiko_prosopo_id}` : '—')}
-          </div>
+          <h3>Πελάτης (fixed)</h3>
+          <div className="person-card">{clientLabel}</div>
+          <small style={{ color: '#a0aec0' }}>Ο πελάτης ορίζεται κατά τη δημιουργία και δεν αλλάζει.</small>
         </div>
 
         <div className="section-inline">
           <h3>Δικηγόρος γραφείου</h3>
-          <div className="person-card">{caseData.dikigoros_name || caseData.dikigoros_grafeiou_id ? `#${caseData.dikigoros_grafeiou_id}` : '—'}</div>
+          <select value={dikigorosGrafeiouId} onChange={e => setDikigorosGrafeiouId(e.target.value)}>
+            <option value="">-- κανένας --</option>
+            {lawyers.map(r => <option key={r.aa || r.id} value={r.aa || r.id}>{opt(r)}</option>)}
+          </select>
         </div>
 
         <div className="section-inline">
           <h3>Αντίδικος</h3>
-          <div className="person-card">{caseData.antidikos_name || (caseData.antidikoi_id ? `#${caseData.antidikoi_id}` : '—')}</div>
+          <select value={antidikosId} onChange={e => setAntidikosId(e.target.value)}>
+            <option value="">-- κανένας --</option>
+            {opponents.map(r => <option key={r.aa || r.id} value={r.aa || r.id}>{opt(r)}</option>)}
+          </select>
         </div>
 
         <div className="section-inline">
           <h3>Δικηγόρος αντιδίκου</h3>
-          <div className="person-card">{caseData.dikigoros_antidikoi_name || (caseData.dikigoros_antidikon_id ? `#${caseData.dikigoros_antidikon_id}` : '—')}</div>
+          <select value={dikigorosAntidikonId} onChange={e => setDikigorosAntidikonId(e.target.value)}>
+            <option value="">-- κανένας --</option>
+            {opposingLawyers.map(r => <option key={r.aa || r.id} value={r.aa || r.id}>{opt(r)}</option>)}
+          </select>
         </div>
       </div>
 
-      <div style={{ marginTop: 20, color: '#a0aec0', fontSize: 13 }}>
-        Η επεξεργασία των εμπλεκομένων προσώπων της υπόθεσης προστίθεται στο επόμενο update.
+      <div style={{ textAlign: 'right', marginTop: 16 }}>
+        <button
+          type="button"
+          className="btn"
+          disabled={saving}
+          onClick={() => onSave({
+            dikigoros_grafeiou_id:  dikigorosGrafeiouId  ? Number(dikigorosGrafeiouId)  : null,
+            antidikoi_id:           antidikosId          ? Number(antidikosId)          : null,
+            dikigoros_antidikon_id: dikigorosAntidikonId ? Number(dikigorosAntidikonId) : null,
+          })}
+        >{saving ? 'Αποθήκευση...' : 'Αποθήκευση συνδέσεων'}</button>
+      </div>
+
+      <div style={{ marginTop: 12, color: '#a0aec0', fontSize: 13 }}>
+        Για να προσθέσετε νέο πρόσωπο, χρησιμοποιήστε τη σελίδα «Δικηγόροι γραφείου / Αντίδικοι / Δικηγόροι αντιδίκων».
       </div>
     </div>
   );
