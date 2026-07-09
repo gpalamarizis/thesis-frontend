@@ -181,7 +181,7 @@ export const team = {
 
 export const documents = {
   listByCase: (caseId) => api.get(`/api/documents?caseId=${caseId}&ypothesi_id=${caseId}&case_id=${caseId}`),
-  upload:     (caseId, file, description = '') => {
+  upload:     (caseId, file, description = '', metadata = {}) => {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('caseId', String(caseId));
@@ -189,6 +189,10 @@ export const documents = {
     fd.append('case_id', String(caseId));
     fd.append('ypotheseis_id', String(caseId));
     if (description) fd.append('description', description);
+    // Attach extracted metadata (author, last modified by, etc.) — backend can store if it supports these fields
+    Object.entries(metadata || {}).forEach(([k, v]) => {
+      if (v != null && v !== '') fd.append(k, String(v));
+    });
     return api.post('/api/documents', fd);
   },
   downloadUrl: (id) => api.get(`/api/documents/${id}/url`),

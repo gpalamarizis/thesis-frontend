@@ -6,6 +6,7 @@ import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { cases, actions, documents, courts, people, fysika, nomika } from '../../api';
 import { fmtDate, fmtDateTime, toDateInput, trunc } from '../../utils/format';
+import { extractFileMetadata } from '../../utils/fileMetadata';
 import FinanceTab from './FinanceTab';
 
 function CaseEdit({ user, onLogout }) {
@@ -505,7 +506,9 @@ function DocsTab({ caseId, rows, onChange }) {
     setUploading(true);
     setError('');
     try {
-      await documents.upload(caseId, file);
+      // Extract metadata (author, last modified by, etc.) client-side before upload
+      const metadata = await extractFileMetadata(file);
+      await documents.upload(caseId, file, '', metadata);
       onChange();
     } catch (err) {
       setError(err.message);
@@ -535,32 +538,44 @@ function DocsTab({ caseId, rows, onChange }) {
 
   const docName = (d) => d.file_name || d.fileName || d.filename || d.name || d.original_name || d.originalName || d.original_filename || '—';
   const docSize = (d) => d.file_size ?? d.fileSize ?? d.size ?? d.bytes ?? null;
-  const docDate = (d) => d.uploaded_at || d.uploadedAt || d.created_at || d.createdAt || d.modified_at || d.modifiedAt || d.date || null;
+  const docDate = (d) => d.metadata_modified_at || d.metadataModifiedAt || d.uploaded_at || d.uploadedAt || d.created_at || d.createdAt || d.modified_at || d.modifiedAt || d.date || null;
   const docUser = (d) => {
-    // Prefer metadata author (Word/Excel/PDF "Last Modified By") if backend provides it, else system user who uploaded
-    const meta = d.metadata_modified_by || d.metadataModifiedBy || d.last_modified_by || d.lastModifiedBy || d.metadata_author || d.metadataAuthor;
-    const sys = d.uploaded_by_name || d.uploadedByName
-             || d.modified_by_name || d.modifiedByName
-             || (d.uploaded_by_first_name || d.uploaded_by_last_name
-                  ? [d.uploaded_by_first_name, d.uploaded_by_last_name].filter(Boolean).join(' ')
-                  : null)
-             || d.user_name || d.userName
-             || d.uploaded_by || d.uploadedBy;
-    if (meta && sys) return `${meta} (upload: ${sys})`;
-    return meta || sys || '—';
+    // Prefer file's own metadata ("Last saved by" in Word/Excel, "Author" in PDF).
+    // Fall back to system user name (never user ID number).
+    const meta = d.metadata_last_modified_by || d.metadataLastModifiedBy || d.metadata_author || d.metadataAuthor || d.last_modified_by || d.lastModifiedBy;
+    if (meta) return meta;
+    const sysName = d.uploaded_by_name || d.uploadedByName || d.modified_by_name || d.modifiedByName || d.user_name || d.userName;
+    if (sysName) return sysName;
+    const first = d.uploaded_by_first_name || d.uploadedByFirstName;
+    const last  = d.uploaded_by_last_name  || d.uploadedByLastName;
+    if (first || last) return [first, last].filter(Boolean).join(' ');
+    return '—';
   };
   const fileIcon = (name) => {
     const ext = (name.split('.').pop() || '').toLowerCase();
-    if (['doc','docx','odt','rtf'].includes(ext)) return '📄'; // Word
-    if (['xls','xlsx','xlsm','csv','ods'].includes(ext)) return '📊'; // Excel
+    if (['doc','docx','docm','odt','rtf'].includes(ext)) return '📄';
+    if (['xls','xlsx','xlsm','csv','ods'].includes(ext)) return '📊';
     if (ext === 'pdf') return '📕';
-    if (['ppt','pptx','odp'].includes(ext)) return '📽️';
+    if (['ppt','pptx','pptm','odp'].includes(ext)) return '📽️';
     if (['jpg','jpeg','png','gif','webp','svg','bmp','tiff'].includes(ext)) return '🖼️';
     if (['zip','rar','7z','tar','gz'].includes(ext)) return '🗜️';
     if (['mp4','mov','avi','mkv','webm'].includes(ext)) return '🎥';
     if (['mp3','wav','ogg','flac','m4a'].includes(ext)) return '🎵';
     if (['txt','md','log'].includes(ext)) return '📃';
     return '📎';
+  };
+
+  const openDownload = async (doc) => {
+    setError('');
+    try {
+      const res = await documents.downloadUrl(doc.aa || doc.id);
+      const url = res?.url || res?.download_url || res?.data?.url || res?.signed_url || res?.signedUrl;
+      if (!url) { setError('Δεν βρέθηκε URL αρχείου.'); return; }
+      // Open in new tab — browser will download or preview depending on content-disposition
+      window.open(url, '_blank', 'noopener');
+    } catch (e) {
+      setError(e.message);
+    }
   };
 
   return (
@@ -580,10 +595,10 @@ function DocsTab({ caseId, rows, onChange }) {
         <table className="table">
           <thead><tr>
             <th>Όνομα</th>
-            <th style={{width:120}}>Μέγεθος</th>
-            <th style={{width:160}}>Ανέβηκε</th>
-            <th style={{width:160}}>Επεξεργάστηκε από</th>
-            <th></th>
+            <th style={{width:110}}>Μέγεθος</th>
+            <th style={{width:160}}>Τελ. τροποποίηση</th>
+            <th style={{width:180}}>Επεξεργάστηκε από</th>
+            <th style={{width:1}}></th>
           </tr></thead>
           <tbody>
             {rows.map(d => {
@@ -598,7 +613,9 @@ function DocsTab({ caseId, rows, onChange }) {
                   <td>{size != null ? formatBytes(size) : '—'}</td>
                   <td>{docDate(d) ? fmtDateTime(docDate(d)) : '—'}</td>
                   <td>{docUser(d)}</td>
-                  <td>
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    <button className="btn btn-sm" onClick={() => openDownload(d)}>⬇ Λήψη</button>
+                    {' '}
                     <button className="btn btn-sm btn-secondary" onClick={() => openPreview(d)}>Προβολή</button>
                     {' '}
                     <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(d)}>×</button>
