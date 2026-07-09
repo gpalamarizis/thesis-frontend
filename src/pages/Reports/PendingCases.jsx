@@ -21,7 +21,7 @@ function PendingCases({ user, onLogout }) {
     { key: 'xeirokinito_id', label: 'Πρωτόκολλο', width: 120, render: r => <strong>{r.xeirokinito_id}</strong> },
     { key: 'pelatis',        label: 'Πελάτης' },
     { key: 'perilipsi',      label: 'Περιγραφή',  render: r => trunc(r.perilipsi, 80) },
-    { key: 'date_enarxis',   label: 'Έναρξη',     width: 110, render: r => fmtDate(r.date_enarxis) },
+    { key: 'date_eisagogis',   label: 'Έναρξη',     width: 110, render: r => fmtDate(r.date_eisagogis) },
   ];
 
   const onExport = () => {
@@ -29,7 +29,7 @@ function PendingCases({ user, onLogout }) {
       { key: 'xeirokinito_id', label: 'Πρωτόκολλο' },
       { key: 'pelatis',        label: 'Πελάτης' },
       { key: 'perilipsi',      label: 'Περιγραφή', value: r => trunc(r.perilipsi, 100) },
-      { key: 'date_enarxis',   label: 'Έναρξη',    value: r => fmtDate(r.date_enarxis) },
+      { key: 'date_eisagogis',   label: 'Έναρξη',    value: r => fmtDate(r.date_eisagogis) },
     ];
     exportToPdf('Εκκρεμείς Υποθέσεις', tableHtml(cols, items));
   };

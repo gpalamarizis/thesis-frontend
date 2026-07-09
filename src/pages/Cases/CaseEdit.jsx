@@ -4,7 +4,7 @@ import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { cases, actions, documents, courts, people, fysika, nomika } from '../../api';
+import { cases, actions, documents, courts, people, fysika, nomika, lists } from '../../api';
 import { fmtDate, fmtDateTime, toDateInput, trunc } from '../../utils/format';
 import { extractFileMetadata } from '../../utils/fileMetadata';
 import FinanceTab from './FinanceTab';
@@ -15,7 +15,6 @@ function CaseEdit({ user, onLogout }) {
 
   const [caseData, setCaseData] = useState(null);
   const [courtActions, setCourtActions] = useState([]);
-  const [taskActions, setTaskActions] = useState([]);
   const [docs, setDocs] = useState([]);
   const [courtsList, setCourtsList] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -28,11 +27,9 @@ function CaseEdit({ user, onLogout }) {
     Promise.allSettled([
       cases.get(id),
       actions.court.listByCase(id),
-      actions.task.listByCase(id),
       documents.listByCase(id),
       courts.list(),
-    ]).then(([cRes, chRes, ctRes, dRes, ctsRes]) => {
-      // Only propagate the case error if the case itself failed
+    ]).then(([cRes, chRes, dRes, ctsRes]) => {
       if (cRes.status === 'fulfilled') {
         setCaseData(cRes.value?.data || cRes.value);
         setError('');
@@ -41,7 +38,6 @@ function CaseEdit({ user, onLogout }) {
       }
       const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
       if (chRes.status === 'fulfilled')  setCourtActions(unwrap(chRes.value));
-      if (ctRes.status === 'fulfilled')  setTaskActions(unwrap(ctRes.value));
       if (dRes.status === 'fulfilled')   setDocs(unwrap(dRes.value));
       if (ctsRes.status === 'fulfilled') setCourtsList(unwrap(ctsRes.value));
     }).finally(() => {
@@ -79,7 +75,6 @@ function CaseEdit({ user, onLogout }) {
         <Tabs tabs={[
           { label: 'Υπόθεση',              content: <CaseTab caseData={caseData} onSave={saveCase} saving={saving} /> },
           { label: 'Δικαστικές ενέργειες', badge: courtActions.length, content: <CourtActionsTab caseId={id} rows={courtActions} courts={courtsList} onChange={() => loadAll(false)} /> },
-          { label: 'Λοιπές ενέργειες',     badge: taskActions.length,  content: <TaskActionsTab caseId={id} rows={taskActions} onChange={() => loadAll(false)} /> },
           { label: 'Πρόσωπα',              content: <PeopleTab caseData={caseData} onSave={saveCase} saving={saving} /> },
           { label: 'Αρχεία',               badge: docs.length,         content: <DocsTab caseId={id} rows={docs} onChange={() => loadAll(false)} /> },
           { label: 'Οικονομικά',           content: <FinanceTab caseId={id} /> },
@@ -95,19 +90,19 @@ function CaseEdit({ user, onLogout }) {
 
 // ---------- Tab 1: Case ----------
 function CaseTab({ caseData, onSave, saving }) {
-  // useState initializers only run ONCE. To resync when caseData changes
-  // (e.g. after save + reload), we use useEffect.
   const [perilipsi, setPerilipsi] = useState(caseData.perilipsi || '');
-  const [dateEnarxis, setDateEnarxis] = useState(toDateInput(caseData.date_enarxis || caseData.starting_date));
-  const [dateLixis, setDateLixis] = useState(toDateInput(caseData.date_lixis || caseData.ending_date));
+  const [dateEisagogis, setDateEisagogis] = useState(toDateInput(caseData.date_eisagogis));
+  const [dateTelous, setDateTelous] = useState(toDateInput(caseData.date_telous));
   const [ekkremis, setEkkremis] = useState(caseData.ekkremis !== false);
+  const [onomasiaFakelou, setOnomasiaFakelou] = useState(caseData.onomasia_fakelou || '');
 
   useEffect(() => {
     setPerilipsi(caseData.perilipsi || '');
-    setDateEnarxis(toDateInput(caseData.date_enarxis || caseData.starting_date));
-    setDateLixis(toDateInput(caseData.date_lixis || caseData.ending_date));
+    setDateEisagogis(toDateInput(caseData.date_eisagogis));
+    setDateTelous(toDateInput(caseData.date_telous));
     setEkkremis(caseData.ekkremis !== false);
-  }, [caseData.aa, caseData.id, caseData.perilipsi, caseData.date_enarxis, caseData.starting_date, caseData.date_lixis, caseData.ending_date, caseData.ekkremis]);
+    setOnomasiaFakelou(caseData.onomasia_fakelou || '');
+  }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou]);
 
   return (
     <div>
@@ -126,13 +121,17 @@ function CaseTab({ caseData, onSave, saving }) {
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Ημερομηνία έναρξης</label>
-          <input type="date" value={dateEnarxis} onChange={e => setDateEnarxis(e.target.value)} />
+          <label>Ημερομηνία εισαγωγής</label>
+          <input type="date" value={dateEisagogis} onChange={e => setDateEisagogis(e.target.value)} />
         </div>
         <div className="form-group">
-          <label>Ημερομηνία λήξης</label>
-          <input type="date" value={dateLixis} onChange={e => setDateLixis(e.target.value)} />
+          <label>Ημερομηνία τέλους</label>
+          <input type="date" value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
         </div>
+      </div>
+      <div className="form-group">
+        <label>Ονομασία φακέλου</label>
+        <input type="text" value={onomasiaFakelou} onChange={e => setOnomasiaFakelou(e.target.value)} />
       </div>
       <div className="form-group">
         <label>Περίληψη / Περιγραφή</label>
@@ -144,13 +143,11 @@ function CaseTab({ caseData, onSave, saving }) {
           className="btn"
           disabled={saving}
           onClick={() => onSave({
-            // send multiple field name variations for safety (backend accepts one, ignores others)
-            perilipsi:       perilipsi || null,
-            date_enarxis:    dateEnarxis || null,
-            starting_date:   dateEnarxis || null,
-            date_lixis:      dateLixis || null,
-            ending_date:     dateLixis || null,
-            ekkremis:        ekkremis,
+            perilipsi:        perilipsi || null,
+            date_eisagogis:   dateEisagogis || null,
+            date_telous:      dateTelous || null,
+            onomasia_fakelou: onomasiaFakelou || null,
+            ekkremis:         ekkremis,
           })}
         >{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
       </div>
@@ -174,7 +171,7 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
   return (
     <div>
       <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
-        <div style={{ color: '#4a5568' }}>Δικάσιμοι και δικαστικές ενέργειες</div>
+        <div style={{ color: '#4a5568' }}>Δικαστικές ενέργειες (δικάσιμοι)</div>
         <button type="button" className="btn btn-sm" onClick={openNew}>+ Νέα δικαστική ενέργεια</button>
       </div>
 
@@ -182,15 +179,23 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
         <div className="empty-state">Δεν υπάρχουν δικαστικές ενέργειες.</div>
       ) : (
         <table className="table">
-          <thead><tr><th style={{width:110}}>Ημ/νία</th><th>Δικαστήριο</th><th>Περιγραφή</th><th>Αποτέλεσμα</th><th></th></tr></thead>
+          <thead><tr>
+            <th style={{width:110}}>Ημ/νία</th>
+            <th>Τίτλος</th>
+            <th>Δικαστήριο</th>
+            <th>Διαδικασία</th>
+            <th style={{width:90}}>Πινάκιο</th>
+            <th style={{width:1}}></th>
+          </tr></thead>
           <tbody>
             {rows.map(r => (
               <tr key={r.aa || r.id}>
                 <td>{fmtDate(r.date)}</td>
-                <td>{r.court_name || courts.find(c => (c.aa||c.id) === r.dikastiria_id)?.onomasia || '—'}</td>
-                <td>{trunc(r.perigrafi || r.perigrafi_energias, 60)}</td>
-                <td>{r.apotelesma || '—'}</td>
-                <td>
+                <td>{r.name || '—'}</td>
+                <td>{r.dikastirio_name || courts.find(c => (c.aa||c.id) === r.dikastirio_id)?.name || '—'}</td>
+                <td>{r.diadikasia_name || '—'}</td>
+                <td>{r.pinakio || '—'}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>
                   <button className="btn btn-sm btn-secondary" onClick={() => openEdit(r)}>Επεξ.</button>
                   {' '}
                   <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
@@ -224,25 +229,54 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
 }
 
 function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
+  // Backend fields: ypothesi_id, name, date, dikastirio_id, tmima_id, city_id,
+  //                 antidikos_id, diadikasia_id, pinakio, dikigoros_antidikou_id,
+  //                 dikastis_id, grammateas_id
   const [form, setForm] = useState({
-    date: toDateInput(initial?.date) || '',
-    dikastiria_id: initial?.dikastiria_id || '',
-    perigrafi: initial?.perigrafi || initial?.perigrafi_energias || '',
-    apotelesma: initial?.apotelesma || '',
+    name:                   initial?.name || '',
+    date:                   toDateInput(initial?.date) || '',
+    dikastirio_id:          initial?.dikastirio_id || '',
+    diadikasia_id:          initial?.diadikasia_id || '',
+    antidikos_id:           initial?.antidikos_id || '',
+    dikigoros_antidikou_id: initial?.dikigoros_antidikou_id || '',
+    pinakio:                initial?.pinakio || '',
   });
+  const [procedures, setProcedures] = useState([]);
+  const [opponents, setOpponents] = useState([]);
+  const [opposingLawyers, setOpposingLawyers] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  // Load lookup data
+  useEffect(() => {
+    Promise.allSettled([
+      lists.get('procedures'),
+      people.opponents.list(),
+      people.opposingLawyers.list(),
+    ]).then(([pRes, oRes, olRes]) => {
+      const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
+      if (pRes.status === 'fulfilled')  setProcedures(unwrap(pRes.value));
+      if (oRes.status === 'fulfilled')  setOpponents(unwrap(oRes.value));
+      if (olRes.status === 'fulfilled') setOpposingLawyers(unwrap(olRes.value));
+    });
+  }, []);
+
+  const c = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const save = async () => {
     setSaving(true);
     setError('');
+    if (!form.date) { setError('Η ημερομηνία είναι υποχρεωτική.'); setSaving(false); return; }
     try {
       const payload = {
-        ypotheseis_id: Number(caseId),
-        date: form.date || null,
-        dikastiria_id: form.dikastiria_id ? Number(form.dikastiria_id) : null,
-        perigrafi: form.perigrafi || null,
-        apotelesma: form.apotelesma || null,
+        ypothesi_id:            Number(caseId),
+        name:                   form.name || null,
+        date:                   form.date,
+        dikastirio_id:          form.dikastirio_id ? Number(form.dikastirio_id) : null,
+        diadikasia_id:          form.diadikasia_id ? Number(form.diadikasia_id) : null,
+        antidikos_id:           form.antidikos_id ? Number(form.antidikos_id) : null,
+        dikigoros_antidikou_id: form.dikigoros_antidikou_id ? Number(form.dikigoros_antidikou_id) : null,
+        pinakio:                form.pinakio || null,
       };
       if (initial?.aa || initial?.id) await actions.court.update(initial.aa || initial.id, payload);
       else await actions.court.create(payload);
@@ -268,23 +302,48 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
       <div className="form-grid-2">
         <div className="form-group">
           <label>Ημερομηνία δικασίμου *</label>
-          <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
+          <input type="date" value={form.date} onChange={c('date')} />
         </div>
         <div className="form-group">
+          <label>Τίτλος / Ονομασία</label>
+          <input type="text" value={form.name} onChange={c('name')} />
+        </div>
+      </div>
+      <div className="form-grid-2">
+        <div className="form-group">
           <label>Δικαστήριο</label>
-          <select value={form.dikastiria_id} onChange={e => setForm({ ...form, dikastiria_id: e.target.value })}>
+          <select value={form.dikastirio_id} onChange={c('dikastirio_id')}>
             <option value="">-- επιλογή --</option>
-            {courts.map(c => <option key={c.aa || c.id} value={c.aa || c.id}>{c.onomasia || c.name}</option>)}
+            {courts.map(c => <option key={c.aa || c.id} value={c.aa || c.id}>{c.name || c.onomasia}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Διαδικασία</label>
+          <select value={form.diadikasia_id} onChange={c('diadikasia_id')}>
+            <option value="">-- επιλογή --</option>
+            {procedures.map(p => <option key={p.aa || p.id} value={p.aa || p.id}>{p.name || p.onomasia}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="form-grid-2">
+        <div className="form-group">
+          <label>Αντίδικος</label>
+          <select value={form.antidikos_id} onChange={c('antidikos_id')}>
+            <option value="">-- κανένας --</option>
+            {opponents.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Δικηγόρος αντιδίκου</label>
+          <select value={form.dikigoros_antidikou_id} onChange={c('dikigoros_antidikou_id')}>
+            <option value="">-- κανένας --</option>
+            {opposingLawyers.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>)}
           </select>
         </div>
       </div>
       <div className="form-group">
-        <label>Περιγραφή</label>
-        <textarea rows="3" value={form.perigrafi} onChange={e => setForm({ ...form, perigrafi: e.target.value })} />
-      </div>
-      <div className="form-group">
-        <label>Αποτέλεσμα</label>
-        <textarea rows="3" value={form.apotelesma} onChange={e => setForm({ ...form, apotelesma: e.target.value })} />
+        <label>Πινάκιο</label>
+        <input type="text" value={form.pinakio} onChange={c('pinakio')} />
       </div>
     </Modal>
   );
@@ -396,43 +455,47 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
   );
 }
 
-// ---------- Tab 4: People — now editable ----------
+// ---------- Tab 4: People — matches backend schema exactly ----------
 function PeopleTab({ caseData, onSave, saving }) {
-  const [dikigorosGrafeiouId, setDikigorosGrafeiouId] = useState(caseData.dikigoros_grafeiou_id || '');
-  const [antidikosId, setAntidikosId] = useState(caseData.antidikoi_id || caseData.antidikos_id || '');
-  const [dikigorosAntidikonId, setDikigorosAntidikonId] = useState(caseData.dikigoros_antidikon_id || caseData.dikigoros_antidikoi_id || '');
+  // Backend supports: xeiristes_ids[] (many-to-many δικηγόροι γραφείου), diadikos_id (αντίδικος)
+  const initialXeiristes = Array.isArray(caseData.xeiristes)
+    ? caseData.xeiristes.map(x => x.aa || x.id).filter(Boolean)
+    : [];
 
-  // Resync when caseData changes (after save+reload)
-  useEffect(() => {
-    setDikigorosGrafeiouId(caseData.dikigoros_grafeiou_id || '');
-    setAntidikosId(caseData.antidikoi_id || caseData.antidikos_id || '');
-    setDikigorosAntidikonId(caseData.dikigoros_antidikon_id || caseData.dikigoros_antidikoi_id || '');
-  }, [caseData.aa, caseData.id, caseData.dikigoros_grafeiou_id, caseData.antidikoi_id, caseData.antidikos_id, caseData.dikigoros_antidikon_id, caseData.dikigoros_antidikoi_id]);
+  const [xeiristesIds, setXeiristesIds] = useState(initialXeiristes);
+  const [diadikosId, setDiadikosId] = useState(caseData.diadikos_id || '');
 
   const [lawyers, setLawyers] = useState([]);
   const [opponents, setOpponents] = useState([]);
-  const [opposingLawyers, setOpposingLawyers] = useState([]);
   const [loadErr, setLoadErr] = useState('');
 
   useEffect(() => {
     Promise.allSettled([
       people.lawyers.list(),
       people.opponents.list(),
-      people.opposingLawyers.list(),
-    ]).then(([lRes, oRes, olRes]) => {
+    ]).then(([lRes, oRes]) => {
       const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
       if (lRes.status === 'fulfilled')  setLawyers(unwrap(lRes.value));
       if (oRes.status === 'fulfilled')  setOpponents(unwrap(oRes.value));
-      if (olRes.status === 'fulfilled') setOpposingLawyers(unwrap(olRes.value));
-      const errs = [lRes, oRes, olRes].filter(r => r.status === 'rejected').map(r => r.reason?.message);
+      const errs = [lRes, oRes].filter(r => r.status === 'rejected').map(r => r.reason?.message);
       if (errs.length) setLoadErr(errs.join('; '));
     });
   }, []);
 
-  const opt = (r) => `${r.eponymo || ''} ${r.onoma || ''}`.trim();
+  // Resync when caseData changes (after save+reload)
+  useEffect(() => {
+    setXeiristesIds(Array.isArray(caseData.xeiristes) ? caseData.xeiristes.map(x => x.aa || x.id).filter(Boolean) : []);
+    setDiadikosId(caseData.diadikos_id || '');
+  }, [caseData.aa, caseData.diadikos_id, caseData.xeiristes]);
 
-  const clientLabel = caseData.pelatis
-    || caseData.client_name
+  const toggleXeiristis = (id) => {
+    setXeiristesIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const clientLabel = caseData.fysiko_full_name
+    || caseData.nomiko_eponymia
     || (caseData.fysiko_prosopo_id ? `Φυσικό πρόσωπο #${caseData.fysiko_prosopo_id}`
         : caseData.nomiko_prosopo_id ? `Νομικό πρόσωπο #${caseData.nomiko_prosopo_id}` : '—');
 
@@ -449,27 +512,29 @@ function PeopleTab({ caseData, onSave, saving }) {
         </div>
 
         <div className="section-inline">
-          <h3>Δικηγόρος γραφείου</h3>
-          <select value={dikigorosGrafeiouId} onChange={e => setDikigorosGrafeiouId(e.target.value)}>
-            <option value="">-- κανένας --</option>
-            {lawyers.map(r => <option key={r.aa || r.id} value={r.aa || r.id}>{opt(r)}</option>)}
-          </select>
-        </div>
-
-        <div className="section-inline">
           <h3>Αντίδικος</h3>
-          <select value={antidikosId} onChange={e => setAntidikosId(e.target.value)}>
+          <select value={diadikosId} onChange={e => setDiadikosId(e.target.value)}>
             <option value="">-- κανένας --</option>
-            {opponents.map(r => <option key={r.aa || r.id} value={r.aa || r.id}>{opt(r)}</option>)}
+            {opponents.map(r => <option key={r.aa || r.id} value={r.aa || r.id}>{`${r.eponymo || ''} ${r.onoma || ''}`.trim()}</option>)}
           </select>
         </div>
+      </div>
 
-        <div className="section-inline">
-          <h3>Δικηγόρος αντιδίκου</h3>
-          <select value={dikigorosAntidikonId} onChange={e => setDikigorosAntidikonId(e.target.value)}>
-            <option value="">-- κανένας --</option>
-            {opposingLawyers.map(r => <option key={r.aa || r.id} value={r.aa || r.id}>{opt(r)}</option>)}
-          </select>
+      <div className="section-inline">
+        <h3>Χειριστές δικηγόροι γραφείου ({xeiristesIds.length} επιλεγμένοι)</h3>
+        <div style={{ maxHeight: 240, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 6, padding: 8 }}>
+          {lawyers.length === 0 ? (
+            <div style={{ color: '#a0aec0', padding: 8 }}>Δεν υπάρχουν δικηγόροι γραφείου. Δημιουργήστε από τη σελίδα «Δικηγόροι γραφείου».</div>
+          ) : lawyers.map(l => {
+            const id = l.aa || l.id;
+            const checked = xeiristesIds.includes(id);
+            return (
+              <label key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 6, cursor: 'pointer', borderRadius: 4 }}>
+                <input type="checkbox" checked={checked} onChange={() => toggleXeiristis(id)} />
+                <span>{`${l.eponymo || ''} ${l.onoma || ''}`.trim() || `#${id}`}</span>
+              </label>
+            );
+          })}
         </div>
       </div>
 
@@ -479,15 +544,14 @@ function PeopleTab({ caseData, onSave, saving }) {
           className="btn"
           disabled={saving}
           onClick={() => onSave({
-            dikigoros_grafeiou_id:  dikigorosGrafeiouId  ? Number(dikigorosGrafeiouId)  : null,
-            antidikoi_id:           antidikosId          ? Number(antidikosId)          : null,
-            dikigoros_antidikon_id: dikigorosAntidikonId ? Number(dikigorosAntidikonId) : null,
+            diadikos_id:    diadikosId ? Number(diadikosId) : null,
+            xeiristes_ids:  xeiristesIds.map(Number),
           })}
-        >{saving ? 'Αποθήκευση...' : 'Αποθήκευση συνδέσεων'}</button>
+        >{saving ? 'Αποθήκευση...' : 'Αποθήκευση προσώπων'}</button>
       </div>
 
       <div style={{ marginTop: 12, color: '#a0aec0', fontSize: 13 }}>
-        Για να προσθέσετε νέο πρόσωπο, χρησιμοποιήστε τη σελίδα «Δικηγόροι γραφείου / Αντίδικοι / Δικηγόροι αντιδίκων».
+        Ο δικηγόρος αντιδίκου, ο δικαστής και ο γραμματέας ορίζονται ξεχωριστά σε κάθε δικαστική ενέργεια.
       </div>
     </div>
   );
@@ -536,19 +600,15 @@ function DocsTab({ caseId, rows, onChange }) {
     catch (e) { setError(e.message); }
   };
 
-  const docName = (d) => d.file_name || d.fileName || d.filename || d.name || d.original_name || d.originalName || d.original_filename || '—';
-  const docSize = (d) => d.file_size ?? d.fileSize ?? d.size ?? d.bytes ?? null;
-  const docDate = (d) => d.metadata_modified_at || d.metadataModifiedAt || d.uploaded_at || d.uploadedAt || d.created_at || d.createdAt || d.modified_at || d.modifiedAt || d.date || null;
+  const docName = (d) => d.filename || d.file_name || d.fileName || d.name || d.original_name || d.originalName || '—';
+  const docSize = (d) => d.size_bytes ?? d.file_size ?? d.fileSize ?? d.size ?? d.bytes ?? null;
+  const docDate = (d) => d.uploaded_at || d.uploadedAt || d.created_at || d.createdAt || d.date || null;
   const docUser = (d) => {
-    // Prefer file's own metadata ("Last saved by" in Word/Excel, "Author" in PDF).
-    // Fall back to system user name (never user ID number).
-    const meta = d.metadata_last_modified_by || d.metadataLastModifiedBy || d.metadata_author || d.metadataAuthor || d.last_modified_by || d.lastModifiedBy;
+    // 1st: file's own metadata (Word "Last saved by", PDF "Author") — if backend stores it
+    const meta = d.metadata_last_modified_by || d.metadataLastModifiedBy || d.metadata_author || d.metadataAuthor;
     if (meta) return meta;
-    const sysName = d.uploaded_by_name || d.uploadedByName || d.modified_by_name || d.modifiedByName || d.user_name || d.userName;
-    if (sysName) return sysName;
-    const first = d.uploaded_by_first_name || d.uploadedByFirstName;
-    const last  = d.uploaded_by_last_name  || d.uploadedByLastName;
-    if (first || last) return [first, last].filter(Boolean).join(' ');
+    // 2nd: backend's JOIN on users: uploader_first + uploader_last
+    if (d.uploader_first || d.uploader_last) return [d.uploader_first, d.uploader_last].filter(Boolean).join(' ');
     return '—';
   };
   const fileIcon = (name) => {
@@ -596,7 +656,7 @@ function DocsTab({ caseId, rows, onChange }) {
           <thead><tr>
             <th>Όνομα</th>
             <th style={{width:110}}>Μέγεθος</th>
-            <th style={{width:160}}>Τελ. τροποποίηση</th>
+            <th style={{width:160}}>Ανέβηκε</th>
             <th style={{width:180}}>Επεξεργάστηκε από</th>
             <th style={{width:1}}></th>
           </tr></thead>

@@ -30,14 +30,14 @@ function CasesList({ user, onLogout }) {
 
   const columns = [
     { key: 'xeirokinito_id', label: 'Αρ. Πρωτοκόλλου', width: 130, render: r => <strong>{r.xeirokinito_id}</strong> },
-    { key: 'pelatis',        label: 'Πελάτης',         render: r => r.pelatis || r.client_name || '—' },
+    { key: 'pelatis',        label: 'Πελάτης',         render: r => r.fysiko_full_name || r.nomiko_eponymia || '—' },
     { key: 'perilipsi',      label: 'Περιγραφή',       render: r => trunc(r.perilipsi, 70) },
     { key: 'ekkremis',       label: 'Κατάσταση',       width: 110, render: r => {
         const b = caseStatusBadge(r.ekkremis);
         return <span className={`badge ${b.cls}`}>{b.label}</span>;
       }
     },
-    { key: 'date_enarxis',   label: 'Έναρξη',          width: 100, render: r => fmtDate(r.date_enarxis || r.starting_date) },
+    { key: 'date_eisagogis', label: 'Εισαγωγή',        width: 100, render: r => fmtDate(r.date_eisagogis) },
   ];
 
   return (

@@ -36,8 +36,7 @@ function CaseNew({ user, onLogout }) {
     setPreviewError('');
     cases.previewProtocol(clientType, clientId)
       .then(d => {
-        const p = d?.protocol || d?.xeirokinito_id || d?.preview || (typeof d === 'string' ? d : '');
-        setProtocolPreview(p || '');
+        setProtocolPreview(d?.xeirokinito_id || d?.protocol || '');
       })
       .catch(e => {
         setPreviewError(e.message);
@@ -60,14 +59,11 @@ function CaseNew({ user, onLogout }) {
       const payload = {
         clientType,
         clientId: Number(clientId),
-        [clientType === 'fysiko' ? 'fysiko_prosopo_id' : 'nomiko_prosopo_id']: Number(clientId),
         perilipsi: perilipsi || null,
-        // send multiple date field name variations
-        date_enarxis:  dateEnarxis || null,
-        starting_date: dateEnarxis || null,
+        date_eisagogis: dateEnarxis || null,
       };
       const res = await cases.create(payload);
-      const newId = res?.data?.aa || res?.data?.id || res?.aa || res?.id;
+      const newId = res?.aa || res?.data?.aa || res?.id;
       if (newId) navigate(`/cases/${newId}`);
       else navigate('/cases');
     } catch (err) {
@@ -118,7 +114,7 @@ function CaseNew({ user, onLogout }) {
         <div className="section">
           <h2 style={{ marginBottom: 20 }}>Στοιχεία Υπόθεσης</h2>
           <div className="form-group">
-            <label>Ημερομηνία έναρξης</label>
+            <label>Ημερομηνία εισαγωγής</label>
             <input type="date" value={dateEnarxis} onChange={e => setDateEnarxis(e.target.value)} />
           </div>
           <div className="form-group">

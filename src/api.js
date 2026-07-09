@@ -121,16 +121,18 @@ export const courts = {
 
 export const actions = {
   court: {
-    listByCase: (caseId) => api.get(`/api/actions/court?caseId=${caseId}`),
+    listByCase: (caseId) => api.get(`/api/actions/court?ypothesi_id=${caseId}`),
     create:     (payload) => api.post('/api/actions/court', payload),
     update:     (id, payload) => api.put(`/api/actions/court/${id}`, payload),
     remove:     (id) => api.delete(`/api/actions/court/${id}`),
   },
   task: {
-    listByCase: (caseId) => api.get(`/api/actions/task?caseId=${caseId}`),
-    create:     (payload) => api.post('/api/actions/task', payload),
-    update:     (id, payload) => api.put(`/api/actions/task/${id}`, payload),
-    remove:     (id) => api.delete(`/api/actions/task/${id}`),
+    // NOTE: /api/actions/task does not exist in backend v3. This helper returns empty
+    // to avoid 404s and lets the UI continue gracefully until the backend adds it.
+    listByCase: async () => ({ data: [] }),
+    create:     () => Promise.reject(new Error('Το backend δεν υποστηρίζει λοιπές ενέργειες ακόμη')),
+    update:     () => Promise.reject(new Error('Το backend δεν υποστηρίζει λοιπές ενέργειες ακόμη')),
+    remove:     () => Promise.reject(new Error('Το backend δεν υποστηρίζει λοιπές ενέργειες ακόμη')),
   },
 };
 
@@ -180,22 +182,18 @@ export const team = {
 };
 
 export const documents = {
-  listByCase: (caseId) => api.get(`/api/documents?caseId=${caseId}&ypothesi_id=${caseId}&case_id=${caseId}`),
+  listByCase: (caseId) => api.get(`/api/documents?ypothesi_id=${caseId}`),
   upload:     (caseId, file, description = '', metadata = {}) => {
     const fd = new FormData();
     fd.append('file', file);
-    fd.append('caseId', String(caseId));
     fd.append('ypothesi_id', String(caseId));
-    fd.append('case_id', String(caseId));
-    fd.append('ypotheseis_id', String(caseId));
     if (description) fd.append('description', description);
-    // Attach extracted metadata (author, last modified by, etc.) — backend can store if it supports these fields
     Object.entries(metadata || {}).forEach(([k, v]) => {
       if (v != null && v !== '') fd.append(k, String(v));
     });
     return api.post('/api/documents', fd);
   },
-  downloadUrl: (id) => api.get(`/api/documents/${id}/url`),
+  downloadUrl: (id) => api.get(`/api/documents/${id}/download-url`),
   remove:      (id) => api.delete(`/api/documents/${id}`),
 };
 
