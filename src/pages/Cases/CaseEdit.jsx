@@ -87,10 +87,19 @@ function CaseEdit({ user, onLogout }) {
 
 // ---------- Tab 1: Case ----------
 function CaseTab({ caseData, onSave, saving }) {
+  // useState initializers only run ONCE. To resync when caseData changes
+  // (e.g. after save + reload), we use useEffect.
   const [perilipsi, setPerilipsi] = useState(caseData.perilipsi || '');
   const [dateEnarxis, setDateEnarxis] = useState(toDateInput(caseData.date_enarxis || caseData.starting_date));
   const [dateLixis, setDateLixis] = useState(toDateInput(caseData.date_lixis || caseData.ending_date));
   const [ekkremis, setEkkremis] = useState(caseData.ekkremis !== false);
+
+  useEffect(() => {
+    setPerilipsi(caseData.perilipsi || '');
+    setDateEnarxis(toDateInput(caseData.date_enarxis || caseData.starting_date));
+    setDateLixis(toDateInput(caseData.date_lixis || caseData.ending_date));
+    setEkkremis(caseData.ekkremis !== false);
+  }, [caseData.aa, caseData.id, caseData.perilipsi, caseData.date_enarxis, caseData.starting_date, caseData.date_lixis, caseData.ending_date, caseData.ekkremis]);
 
   return (
     <div>
@@ -127,10 +136,13 @@ function CaseTab({ caseData, onSave, saving }) {
           className="btn"
           disabled={saving}
           onClick={() => onSave({
-            perilipsi: perilipsi || null,
-            date_enarxis: dateEnarxis || null,
-            date_lixis: dateLixis || null,
-            ekkremis,
+            // send multiple field name variations for safety (backend accepts one, ignores others)
+            perilipsi:       perilipsi || null,
+            date_enarxis:    dateEnarxis || null,
+            starting_date:   dateEnarxis || null,
+            date_lixis:      dateLixis || null,
+            ending_date:     dateLixis || null,
+            ekkremis:        ekkremis,
           })}
         >{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
       </div>
@@ -381,6 +393,13 @@ function PeopleTab({ caseData, onSave, saving }) {
   const [dikigorosGrafeiouId, setDikigorosGrafeiouId] = useState(caseData.dikigoros_grafeiou_id || '');
   const [antidikosId, setAntidikosId] = useState(caseData.antidikoi_id || caseData.antidikos_id || '');
   const [dikigorosAntidikonId, setDikigorosAntidikonId] = useState(caseData.dikigoros_antidikon_id || caseData.dikigoros_antidikoi_id || '');
+
+  // Resync when caseData changes (after save+reload)
+  useEffect(() => {
+    setDikigorosGrafeiouId(caseData.dikigoros_grafeiou_id || '');
+    setAntidikosId(caseData.antidikoi_id || caseData.antidikos_id || '');
+    setDikigorosAntidikonId(caseData.dikigoros_antidikon_id || caseData.dikigoros_antidikoi_id || '');
+  }, [caseData.aa, caseData.id, caseData.dikigoros_grafeiou_id, caseData.antidikoi_id, caseData.antidikos_id, caseData.dikigoros_antidikon_id, caseData.dikigoros_antidikoi_id]);
 
   const [lawyers, setLawyers] = useState([]);
   const [opponents, setOpponents] = useState([]);

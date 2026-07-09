@@ -62,7 +62,9 @@ function CaseNew({ user, onLogout }) {
         clientId: Number(clientId),
         [clientType === 'fysiko' ? 'fysiko_prosopo_id' : 'nomiko_prosopo_id']: Number(clientId),
         perilipsi: perilipsi || null,
-        date_enarxis: dateEnarxis || null,
+        // send multiple date field name variations
+        date_enarxis:  dateEnarxis || null,
+        starting_date: dateEnarxis || null,
       };
       const res = await cases.create(payload);
       const newId = res?.data?.aa || res?.data?.id || res?.aa || res?.id;
