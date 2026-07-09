@@ -180,11 +180,14 @@ export const team = {
 };
 
 export const documents = {
-  listByCase: (caseId) => api.get(`/api/documents?caseId=${caseId}`),
+  listByCase: (caseId) => api.get(`/api/documents?caseId=${caseId}&ypothesi_id=${caseId}&case_id=${caseId}`),
   upload:     (caseId, file, description = '') => {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('caseId', String(caseId));
+    fd.append('ypothesi_id', String(caseId));
+    fd.append('case_id', String(caseId));
+    fd.append('ypotheseis_id', String(caseId));
     if (description) fd.append('description', description);
     return api.post('/api/documents', fd);
   },
