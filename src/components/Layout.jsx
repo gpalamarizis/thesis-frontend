@@ -22,7 +22,7 @@ const menuGroups = [
       { path: '/fysika',           label: 'Φυσικά πρόσωπα',       icon: '👤' },
       { path: '/nomika',           label: 'Νομικά πρόσωπα',       icon: '🏢' },
       { path: '/lawyers',          label: 'Δικηγόροι γραφείου',   icon: '⚖️' },
-      { path: '/opposing-lawyers', label: 'Δικηγόροι αντιδίκων',  icon: '⚖️' },
+      { path: '/opposing-lawyers', label: 'Δικηγόροι αντιδίκων',  icon: '⚔️' },
       { path: '/opponents',        label: 'Αντίδικοι',            icon: '🔷' },
       { path: '/related',          label: 'Σχετικά πρόσωπα',      icon: '🔗' },
       { path: '/phonebook',        label: 'Τηλεφωνικός κατάλογος', icon: '📞' },
@@ -31,8 +31,7 @@ const menuGroups = [
   {
     title: 'Δικαστήρια',
     items: [
-      { path: '/courts',   label: 'Δικαστήρια',          icon: '🏛️' },
-      { path: '/actions',  label: 'Δικαστικές ενέργειες', icon: '📅' },
+      { path: '/courts', label: 'Δικαστήρια', icon: '🏛️' },
     ],
   },
   {
@@ -46,9 +45,7 @@ const menuGroups = [
   {
     title: 'Ρυθμίσεις',
     items: [
-      { path: '/finance', label: 'Οικονομικά',        icon: '💰' },
-      { path: '/lists',   label: 'Επεξεργασία λιστών', icon: '⚙️' },
-      { path: '/team',    label: 'Ομάδα',              icon: '👥' },
+      { path: '/lists', label: 'Επεξεργασία λιστών', icon: '⚙️' },
     ],
   },
 ];
