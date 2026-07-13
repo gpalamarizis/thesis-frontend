@@ -11,15 +11,23 @@ import { fmtDate, fmtCurrency, toDateInput } from '../../utils/format';
  *   pagia-exoda:      ypothesi_id, pagio_exodo_definition_id, date, amount, perigrafi
  *   amoives:          ypothesi_id, dikigoros_id, date, amount, perigrafi
  *   exoda-synergati:  ypothesi_id, synergatis_id, date, amount, perigrafi
+ *
+ * "virtual: true" fields are shown in UI but NOT sent to backend (used for calc only).
  */
 function FinanceTab({ caseId }) {
   const [counts, setCounts] = useState({ ores: 0, 'pagia-exoda': 0, amoives: 0, 'exoda-synergati': 0 });
   const [lawyers, setLawyers] = useState([]);
+  const [externals, setExternals] = useState([]);
   const [pagiaDefs, setPagiaDefs] = useState([]);
 
   useEffect(() => {
     people.lawyers.list()
-      .then(d => setLawyers(Array.isArray(d) ? d : (d?.data || [])))
+      .then(d => {
+        const all = Array.isArray(d) ? d : (d?.data || []);
+        setLawyers(all);
+        // Εξωτερικοί συνεργάτες = δικηγόροι με exoterikos=true
+        setExternals(all.filter(l => l.exoterikos === true));
+      })
       .catch(() => {});
     lists.get('pagia_exoda')
       .then(d => setPagiaDefs(Array.isArray(d) ? d : (d?.data || [])))
@@ -28,33 +36,38 @@ function FinanceTab({ caseId }) {
 
   const bumpCount = (k, n) => setCounts(c => ({ ...c, [k]: n }));
 
+  const lawyerOptions = lawyers.map(l => ({ value: l.aa, label: `${l.eponymo || ''} ${l.onoma || ''}`.trim() }));
+  const externalOptions = externals.map(l => ({ value: l.aa, label: `${l.eponymo || ''} ${l.onoma || ''}`.trim() }));
+  const pagiaOptions = pagiaDefs.map(p => ({ value: p.aa, label: p.name }));
+
   const oresFields = [
-    { key: 'date',         label: 'Ημερομηνία',   type: 'date',   required: true },
-    { key: 'dikigoros_id', label: 'Δικηγόρος',    type: 'select', options: lawyers.map(l => ({ value: l.aa, label: `${l.eponymo || ''} ${l.onoma || ''}`.trim() })) },
-    { key: 'ores',         label: 'Ώρες',         type: 'number', step: '0.25' },
-    { key: 'amount',       label: 'Ποσό (€)',     type: 'number', step: '0.01' },
-    { key: 'perigrafi',    label: 'Περιγραφή',    type: 'textarea' },
+    { key: 'date',         label: 'Ημερομηνία',    type: 'date',   required: true },
+    { key: 'dikigoros_id', label: 'Δικηγόρος',     type: 'select', options: lawyerOptions },
+    { key: 'ores',         label: 'Ώρες',          type: 'number', step: '0.25', triggersCalc: true },
+    { key: 'timi_oras',    label: 'Χρέωση/ώρα (€)', type: 'number', step: '0.01', virtual: true, triggersCalc: true },
+    { key: 'amount',       label: 'Ποσό (€)',      type: 'number', step: '0.01', computed: true },
+    { key: 'perigrafi',    label: 'Περιγραφή',     type: 'textarea' },
   ];
 
   const pagiaFields = [
-    { key: 'date',                      label: 'Ημερομηνία',    type: 'date',   required: true },
-    { key: 'pagio_exodo_definition_id', label: 'Είδος εξόδου',   type: 'select', options: pagiaDefs.map(p => ({ value: p.aa, label: p.name })) },
-    { key: 'amount',                    label: 'Ποσό (€)',       type: 'number', required: true, step: '0.01' },
-    { key: 'perigrafi',                 label: 'Περιγραφή',      type: 'textarea' },
+    { key: 'date',                      label: 'Ημερομηνία',   type: 'date',   required: true },
+    { key: 'pagio_exodo_definition_id', label: 'Είδος εξόδου',  type: 'select', options: pagiaOptions },
+    { key: 'amount',                    label: 'Ποσό (€)',      type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',                 label: 'Περιγραφή',     type: 'textarea' },
   ];
 
   const amoivesFields = [
     { key: 'date',         label: 'Ημερομηνία', type: 'date',   required: true },
-    { key: 'dikigoros_id', label: 'Δικηγόρος',  type: 'select', options: lawyers.map(l => ({ value: l.aa, label: `${l.eponymo || ''} ${l.onoma || ''}`.trim() })) },
+    { key: 'dikigoros_id', label: 'Δικηγόρος',  type: 'select', options: lawyerOptions },
     { key: 'amount',       label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
     { key: 'perigrafi',    label: 'Περιγραφή',  type: 'textarea' },
   ];
 
   const synergatiFields = [
-    { key: 'date',          label: 'Ημερομηνία',    type: 'date',   required: true },
-    { key: 'synergatis_id', label: 'Συνεργάτης ID', type: 'number' },
-    { key: 'amount',        label: 'Ποσό (€)',       type: 'number', required: true, step: '0.01' },
-    { key: 'perigrafi',     label: 'Περιγραφή',     type: 'textarea' },
+    { key: 'date',          label: 'Ημερομηνία', type: 'date',   required: true },
+    { key: 'synergatis_id', label: 'Συνεργάτης', type: 'select', options: externalOptions, emptyHint: 'Πρόσθεσε εξωτερικούς δικηγόρους στους «Δικηγόρους γραφείου» με το πεδίο «Εξωτερικός συνεργάτης» ενεργό' },
+    { key: 'amount',        label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',     label: 'Περιγραφή',  type: 'textarea' },
   ];
 
   return (
@@ -106,13 +119,16 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
   const renderCell = (r, f) => {
     const v = r[f.key];
     if (f.type === 'date')   return fmtDate(v);
-    if (f.key === 'amount')  return fmtCurrency(v);
+    if (f.key === 'amount' || f.key === 'timi_oras') return fmtCurrency(v);
     if (f.type === 'select' && Array.isArray(f.options)) {
       const opt = f.options.find(o => String(o.value) === String(v));
       return opt ? opt.label : (v ?? '—');
     }
     return v ?? '—';
   };
+
+  // In the list, hide virtual fields (like timi_oras) and textarea (too long)
+  const listColumns = fields.filter(f => f.type !== 'textarea' && !f.virtual);
 
   return (
     <div>
@@ -130,14 +146,14 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
         <table className="table">
           <thead>
             <tr>
-              {fields.filter(f => f.type !== 'textarea').map(f => <th key={f.key}>{f.label}</th>)}
+              {listColumns.map(f => <th key={f.key}>{f.label}</th>)}
               <th style={{ width: 1 }}></th>
             </tr>
           </thead>
           <tbody>
             {rows.map(r => (
               <tr key={r.aa || r.id}>
-                {fields.filter(f => f.type !== 'textarea').map(f => (
+                {listColumns.map(f => (
                   <td key={f.key}>{renderCell(r, f)}</td>
                 ))}
                 <td>
@@ -181,11 +197,38 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
       ? (f.type === 'date' ? toDateInput(initial[f.key]) : String(initial[f.key]))
       : '';
   });
+  // Auto-calc timi_oras on load if editing (amount / ores)
+  if (initial?.ores && initial?.amount && !initForm.timi_oras) {
+    const rate = Number(initial.amount) / Number(initial.ores);
+    if (isFinite(rate) && rate > 0) initForm.timi_oras = rate.toFixed(2);
+  }
+
   const [form, setForm] = useState(initForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [amountAutoCalc, setAmountAutoCalc] = useState(true);
 
-  const c = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const setField = (k, v) => {
+    setForm(f => {
+      const next = { ...f, [k]: v };
+
+      // Auto-calc amount when ores or timi_oras changes (if user hasn't manually overridden amount)
+      const triggers = fields.filter(x => x.triggersCalc).map(x => x.key);
+      if (triggers.includes(k) && amountAutoCalc && fields.some(x => x.computed && x.key === 'amount')) {
+        const ores = Number(k === 'ores' ? v : next.ores);
+        const timi = Number(k === 'timi_oras' ? v : next.timi_oras);
+        if (isFinite(ores) && isFinite(timi) && ores > 0 && timi > 0) {
+          next.amount = (ores * timi).toFixed(2);
+        }
+      }
+      return next;
+    });
+  };
+
+  const handleAmountChange = (v) => {
+    setAmountAutoCalc(false); // once user edits amount manually, stop auto-calc
+    setForm(f => ({ ...f, amount: v }));
+  };
 
   const save = async () => {
     setError('');
@@ -196,6 +239,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
     try {
       const payload = { ypothesi_id: Number(caseId) };
       fields.forEach(f => {
+        if (f.virtual) return; // skip virtual fields (like timi_oras — used only for calc)
         let v = form[f.key];
         if (v === '') v = null;
         else if ((f.type === 'number' || f.key.endsWith('_id')) && v != null) v = Number(v);
@@ -221,21 +265,40 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
       </>}
     >
       {error && <div className="error">{error}</div>}
-      {fields.map(f => (
-        <div className="form-group" key={f.key}>
-          <label>{f.label}{f.required && ' *'}</label>
-          {f.type === 'textarea' ? (
-            <textarea rows="3" value={form[f.key] || ''} onChange={c(f.key)} />
-          ) : f.type === 'select' ? (
-            <select value={form[f.key] || ''} onChange={c(f.key)}>
-              <option value="">-- επιλογή --</option>
-              {(f.options || []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-          ) : (
-            <input type={f.type || 'text'} step={f.step} value={form[f.key] || ''} onChange={c(f.key)} required={f.required} />
-          )}
-        </div>
-      ))}
+      {fields.map(f => {
+        const showEmptyHint = f.type === 'select' && (!f.options || f.options.length === 0) && f.emptyHint;
+        return (
+          <div className="form-group" key={f.key}>
+            <label>
+              {f.label}{f.required && ' *'}
+              {f.computed && f.key === 'amount' && (
+                <span style={{ marginLeft: 8, fontSize: 12, color: '#718096', fontWeight: 'normal' }}>
+                  {amountAutoCalc ? '(αυτόματο)' : '(χειροκίνητο)'}
+                </span>
+              )}
+            </label>
+            {f.type === 'textarea' ? (
+              <textarea rows="3" value={form[f.key] || ''} onChange={e => setField(f.key, e.target.value)} />
+            ) : f.type === 'select' ? (
+              <>
+                <select value={form[f.key] || ''} onChange={e => setField(f.key, e.target.value)}>
+                  <option value="">-- επιλογή --</option>
+                  {(f.options || []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+                {showEmptyHint && <small style={{ color: '#a0aec0', display: 'block', marginTop: 4 }}>{f.emptyHint}</small>}
+              </>
+            ) : (
+              <input
+                type={f.type || 'text'}
+                step={f.step}
+                value={form[f.key] || ''}
+                onChange={e => f.key === 'amount' ? handleAmountChange(e.target.value) : setField(f.key, e.target.value)}
+                required={f.required}
+              />
+            )}
+          </div>
+        );
+      })}
     </Modal>
   );
 }
