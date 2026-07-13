@@ -4,6 +4,7 @@ import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
 import { cases, actions, documents, courts, people, fysika, nomika, lists } from '../../api';
 import { fmtDate, fmtDateTime, toDateInput, trunc } from '../../utils/format';
 import { extractFileMetadata } from '../../utils/fileMetadata';
@@ -95,6 +96,15 @@ function CaseTab({ caseData, onSave, saving }) {
   const [dateTelous, setDateTelous] = useState(toDateInput(caseData.date_telous));
   const [ekkremis, setEkkremis] = useState(caseData.ekkremis !== false);
   const [onomasiaFakelou, setOnomasiaFakelou] = useState(caseData.onomasia_fakelou || '');
+  const [thesiArxeiothetisisId, setThesiArxeiothetisisId] = useState(caseData.thesi_arxeiothetisis_id || '');
+  const [oldKod, setOldKod] = useState(caseData.old_kod || '');
+  const [archiveOptions, setArchiveOptions] = useState([]);
+
+  useEffect(() => {
+    lists.get('theseis_arxeiothetisis')
+      .then(d => setArchiveOptions(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     setPerilipsi(caseData.perilipsi || '');
@@ -102,7 +112,9 @@ function CaseTab({ caseData, onSave, saving }) {
     setDateTelous(toDateInput(caseData.date_telous));
     setEkkremis(caseData.ekkremis !== false);
     setOnomasiaFakelou(caseData.onomasia_fakelou || '');
-  }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou]);
+    setThesiArxeiothetisisId(caseData.thesi_arxeiothetisis_id || '');
+    setOldKod(caseData.old_kod || '');
+  }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou, caseData.thesi_arxeiothetisis_id, caseData.old_kod]);
 
   return (
     <div>
@@ -129,9 +141,25 @@ function CaseTab({ caseData, onSave, saving }) {
           <input type="date" value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
         </div>
       </div>
-      <div className="form-group">
-        <label>Ονομασία φακέλου</label>
-        <input type="text" value={onomasiaFakelou} onChange={e => setOnomasiaFakelou(e.target.value)} />
+      <div className="form-grid-2">
+        <div className="form-group">
+          <label>Ονομασία φακέλου</label>
+          <input type="text" value={onomasiaFakelou} onChange={e => setOnomasiaFakelou(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label>Αρχειοθετημένη σε</label>
+          <select value={thesiArxeiothetisisId} onChange={e => setThesiArxeiothetisisId(e.target.value)}>
+            <option value="">-- επιλογή --</option>
+            {archiveOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name || '—'}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="form-grid-2">
+        <div className="form-group">
+          <label>Παλιός Κωδικός</label>
+          <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
+        </div>
+        <div />
       </div>
       <div className="form-group">
         <label>Περίληψη / Περιγραφή</label>
@@ -143,11 +171,13 @@ function CaseTab({ caseData, onSave, saving }) {
           className="btn"
           disabled={saving}
           onClick={() => onSave({
-            perilipsi:        perilipsi || null,
-            date_eisagogis:   dateEisagogis || null,
-            date_telous:      dateTelous || null,
-            onomasia_fakelou: onomasiaFakelou || null,
-            ekkremis:         ekkremis,
+            perilipsi:               perilipsi || null,
+            date_eisagogis:          dateEisagogis || null,
+            date_telous:             dateTelous || null,
+            onomasia_fakelou:        onomasiaFakelou || null,
+            thesi_arxeiothetisis_id: thesiArxeiothetisisId ? Number(thesiArxeiothetisisId) : null,
+            old_kod:                 oldKod || null,
+            ekkremis:                ekkremis,
           })}
         >{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
       </div>
@@ -229,9 +259,6 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
 }
 
 function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
-  // Backend fields: ypothesi_id, name, date, dikastirio_id, tmima_id, city_id,
-  //                 antidikos_id, diadikasia_id, pinakio, dikigoros_antidikou_id,
-  //                 dikastis_id, grammateas_id
   const [form, setForm] = useState({
     name:                   initial?.name || '',
     date:                   toDateInput(initial?.date) || '',
@@ -246,22 +273,34 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
   const [opposingLawyers, setOpposingLawyers] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [quickCreate, setQuickCreate] = useState(null); // 'opponent' | 'opposing-lawyer'
 
-  // Load lookup data
+  const reloadPeople = () => {
+    people.opponents.list()
+      .then(d => setOpponents(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+    people.opposingLawyers.list()
+      .then(d => setOpposingLawyers(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+  };
+
   useEffect(() => {
-    Promise.allSettled([
-      lists.get('diadikasies'),
-      people.opponents.list(),
-      people.opposingLawyers.list(),
-    ]).then(([pRes, oRes, olRes]) => {
-      const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
-      if (pRes.status === 'fulfilled')  setProcedures(unwrap(pRes.value));
-      if (oRes.status === 'fulfilled')  setOpponents(unwrap(oRes.value));
-      if (olRes.status === 'fulfilled') setOpposingLawyers(unwrap(olRes.value));
-    });
+    lists.get('diadikasies')
+      .then(d => setProcedures(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+    reloadPeople();
   }, []);
 
   const c = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleQuickCreated = (kind, rec) => {
+    setQuickCreate(null);
+    reloadPeople();
+    const newId = rec?.aa || rec?.id;
+    if (!newId) return;
+    if (kind === 'opponent') setForm(f => ({ ...f, antidikos_id: newId }));
+    else if (kind === 'opposing-lawyer') setForm(f => ({ ...f, dikigoros_antidikou_id: newId }));
+  };
 
   const save = async () => {
     setSaving(true);
@@ -314,7 +353,7 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
           <label>Δικαστήριο</label>
           <select value={form.dikastirio_id} onChange={c('dikastirio_id')}>
             <option value="">-- επιλογή --</option>
-            {courts.map(c => <option key={c.aa || c.id} value={c.aa || c.id}>{c.name || c.onomasia}</option>)}
+            {courts.map(co => <option key={co.aa || co.id} value={co.aa || co.id}>{co.name || co.onomasia}</option>)}
           </select>
         </div>
         <div className="form-group">
@@ -327,14 +366,20 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Αντίδικος</label>
+          <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span>Αντίδικος</span>
+            <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opponent'); }} style={{ fontSize: 12, fontWeight: 'normal' }}>+ Νέος</a>
+          </label>
           <select value={form.antidikos_id} onChange={c('antidikos_id')}>
             <option value="">-- κανένας --</option>
             {opponents.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label>Δικηγόρος αντιδίκου</label>
+          <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span>Δικηγόρος αντιδίκου</span>
+            <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opposing-lawyer'); }} style={{ fontSize: 12, fontWeight: 'normal' }}>+ Νέος</a>
+          </label>
           <select value={form.dikigoros_antidikou_id} onChange={c('dikigoros_antidikou_id')}>
             <option value="">-- κανένας --</option>
             {opposingLawyers.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>)}
@@ -345,6 +390,14 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
         <label>Πινάκιο</label>
         <input type="text" value={form.pinakio} onChange={c('pinakio')} />
       </div>
+
+      {quickCreate && (
+        <QuickCreatePersonModal
+          kind={quickCreate}
+          onClose={() => setQuickCreate(null)}
+          onCreated={(rec) => handleQuickCreated(quickCreate, rec)}
+        />
+      )}
     </Modal>
   );
 }
@@ -457,7 +510,6 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
 
 // ---------- Tab 4: People — matches backend schema exactly ----------
 function PeopleTab({ caseData, onSave, saving }) {
-  // Backend supports: xeiristes_ids[] (many-to-many δικηγόροι γραφείου), diadikos_id (αντίδικος)
   const initialXeiristes = Array.isArray(caseData.xeiristes)
     ? caseData.xeiristes.map(x => x.aa || x.id).filter(Boolean)
     : [];
@@ -468,8 +520,9 @@ function PeopleTab({ caseData, onSave, saving }) {
   const [lawyers, setLawyers] = useState([]);
   const [opponents, setOpponents] = useState([]);
   const [loadErr, setLoadErr] = useState('');
+  const [quickCreate, setQuickCreate] = useState(null); // 'lawyer' | 'opponent'
 
-  useEffect(() => {
+  const reloadPeople = () => {
     Promise.allSettled([
       people.lawyers.list(),
       people.opponents.list(),
@@ -480,9 +533,10 @@ function PeopleTab({ caseData, onSave, saving }) {
       const errs = [lRes, oRes].filter(r => r.status === 'rejected').map(r => r.reason?.message);
       if (errs.length) setLoadErr(errs.join('; '));
     });
-  }, []);
+  };
 
-  // Resync when caseData changes (after save+reload)
+  useEffect(() => { reloadPeople(); }, []);
+
   useEffect(() => {
     setXeiristesIds(Array.isArray(caseData.xeiristes) ? caseData.xeiristes.map(x => x.aa || x.id).filter(Boolean) : []);
     setDiadikosId(caseData.diadikos_id || '');
@@ -492,6 +546,18 @@ function PeopleTab({ caseData, onSave, saving }) {
     setXeiristesIds(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
+  };
+
+  const handleQuickCreated = (kind, rec) => {
+    setQuickCreate(null);
+    reloadPeople();
+    const newId = rec?.aa || rec?.id;
+    if (!newId) return;
+    if (kind === 'lawyer') {
+      setXeiristesIds(prev => [...prev, newId]);
+    } else if (kind === 'opponent') {
+      setDiadikosId(newId);
+    }
   };
 
   const clientLabel = caseData.fysiko_full_name
@@ -512,7 +578,10 @@ function PeopleTab({ caseData, onSave, saving }) {
         </div>
 
         <div className="section-inline">
-          <h3>Αντίδικος</h3>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <h3>Αντίδικος</h3>
+            <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opponent'); }} style={{ fontSize: 12 }}>+ Νέος</a>
+          </div>
           <select value={diadikosId} onChange={e => setDiadikosId(e.target.value)}>
             <option value="">-- κανένας --</option>
             {opponents.map(r => <option key={r.aa || r.id} value={r.aa || r.id}>{`${r.eponymo || ''} ${r.onoma || ''}`.trim()}</option>)}
@@ -521,10 +590,13 @@ function PeopleTab({ caseData, onSave, saving }) {
       </div>
 
       <div className="section-inline">
-        <h3>Χειριστές δικηγόροι γραφείου ({xeiristesIds.length} επιλεγμένοι)</h3>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+          <h3>Χειριστές δικηγόροι γραφείου ({xeiristesIds.length} επιλεγμένοι)</h3>
+          <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('lawyer'); }} style={{ fontSize: 12 }}>+ Νέος δικηγόρος γραφείου</a>
+        </div>
         <div style={{ maxHeight: 240, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 6, padding: 8 }}>
           {lawyers.length === 0 ? (
-            <div style={{ color: '#a0aec0', padding: 8 }}>Δεν υπάρχουν δικηγόροι γραφείου. Δημιουργήστε από τη σελίδα «Δικηγόροι γραφείου».</div>
+            <div style={{ color: '#a0aec0', padding: 8 }}>Δεν υπάρχουν δικηγόροι γραφείου. Πάτησε «+ Νέος δικηγόρος γραφείου» για να προσθέσεις τον πρώτο.</div>
           ) : lawyers.map(l => {
             const id = l.aa || l.id;
             const checked = xeiristesIds.includes(id);
@@ -553,6 +625,14 @@ function PeopleTab({ caseData, onSave, saving }) {
       <div style={{ marginTop: 12, color: '#a0aec0', fontSize: 13 }}>
         Ο δικηγόρος αντιδίκου, ο δικαστής και ο γραμματέας ορίζονται ξεχωριστά σε κάθε δικαστική ενέργεια.
       </div>
+
+      {quickCreate && (
+        <QuickCreatePersonModal
+          kind={quickCreate}
+          onClose={() => setQuickCreate(null)}
+          onCreated={(rec) => handleQuickCreated(quickCreate, rec)}
+        />
+      )}
     </div>
   );
 }
