@@ -29,7 +29,7 @@ function UpcomingHearings({ user, onLogout }) {
     { key: 'date',           label: 'Ημερομηνία', width: 110, render: r => fmtDate(r.date) },
     { key: 'xeirokinito_id', label: 'Πρωτόκολλο', width: 120, render: r => <strong>{r.xeirokinito_id}</strong> },
     { key: 'pelatis',        label: 'Πελάτης' },
-    { key: 'court_name',     label: 'Δικαστήριο', render: r => r.court_name || r.onomasia_dikastiriou || '—' },
+    { key: 'dikastirio_name',     label: 'Δικαστήριο', render: r => r.dikastirio_name || '—' },
     { key: 'perigrafi',      label: 'Περιγραφή', render: r => trunc(r.perigrafi || r.perigrafi_energias, 60) },
   ];
 
@@ -38,7 +38,7 @@ function UpcomingHearings({ user, onLogout }) {
       { key: 'date',           label: 'Ημερομηνία', value: r => fmtDate(r.date) },
       { key: 'xeirokinito_id', label: 'Πρωτόκολλο' },
       { key: 'pelatis',        label: 'Πελάτης' },
-      { key: 'court_name',     label: 'Δικαστήριο', value: r => r.court_name || r.onomasia_dikastiriou || '' },
+      { key: 'dikastirio_name',     label: 'Δικαστήριο', value: r => r.dikastirio_name || '' },
       { key: 'perigrafi',      label: 'Περιγραφή', value: r => trunc(r.perigrafi || r.perigrafi_energias, 100) },
     ];
     exportToPdf(`Δικάσιμοι ${fmtDate(from)} - ${fmtDate(to)}`, tableHtml(cols, items));

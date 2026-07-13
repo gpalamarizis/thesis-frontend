@@ -250,7 +250,7 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
   // Load lookup data
   useEffect(() => {
     Promise.allSettled([
-      lists.get('procedures'),
+      lists.get('diadikasies'),
       people.opponents.list(),
       people.opposingLawyers.list(),
     ]).then(([pRes, oRes, olRes]) => {

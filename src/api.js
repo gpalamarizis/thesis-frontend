@@ -167,7 +167,7 @@ export const reports = {
 };
 
 export const finance = {
-  list:   (resource, caseId)          => api.get(`/api/finance/${resource}?caseId=${caseId}`),
+  list:   (resource, caseId)          => api.get(`/api/finance/${resource}?ypothesi_id=${caseId}`),
   create: (resource, payload)         => api.post(`/api/finance/${resource}`, payload),
   update: (resource, id, payload)     => api.put(`/api/finance/${resource}/${id}`, payload),
   remove: (resource, id)              => api.delete(`/api/finance/${resource}/${id}`),

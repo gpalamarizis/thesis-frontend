@@ -5,47 +5,45 @@ import Tabs from '../../components/Tabs';
 import { fysika } from '../../api';
 import { toDateInput } from '../../utils/format';
 
+// Backend fields (from routes/fysika.js FIELDS list):
 const emptyForm = {
-  eponymo: '', onoma: '', patros: '',
+  eponymo: '', onoma: '', onoma_patros: '',
   eponymo_syzygou: '', onoma_syzygou: '',
   date_gennisis: '', afm: '', doy: '', adt: '', ekdousa_arxi: '',
-  email: '', istoselida: '',
-  odos_oikias: '', arithmos_oikias: '', tk_oikias: '', polis_oikias: '', xora_oikias: '',
-  odos_grafeiou: '', arithmos_grafeiou: '', tk_grafeiou: '', polis_grafeiou: '', xora_grafeiou: '',
-  tilefono_oikias_1: '', tilefono_oikias_2: '',
+  email: '', web_site: '', energos: true,
+  odos_oikias: '', arithmos_oikias: '', tk_oikias: '', poli_oikias: '', xora_oikias: '',
+  odos_grafeiou: '', arithmos_grafeiou: '', tk_grafeiou: '', poli_grafeiou: '', xora_grafeiou: '',
+  tilefono_oikias_1: '', tilefono_oikias_2: '', tilefono_oikias_3: '',
   tilefono_grafeiou_1: '', tilefono_grafeiou_2: '', tilefono_grafeiou_3: '',
   tilefono_kinito_1: '', tilefono_kinito_2: '', tilefono_kinito_3: '',
   fax_1: '', fax_2: '', fax_3: '',
-  simeioseis: '',
 };
 
-// --- Sub-components (defined OUTSIDE the parent to avoid re-mount on every render) ---
-
-function AddressBlock({ prefix, form, onChange }) {
+function AddressBlock({ suffix, form, onChange }) {
   return (
     <div>
       <div className="form-grid-3">
         <div className="form-group" style={{ gridColumn: 'span 2' }}>
           <label>Οδός</label>
-          <input type="text" value={form[`odos_${prefix}`] || ''} onChange={onChange(`odos_${prefix}`)} />
+          <input type="text" value={form[`odos_${suffix}`] || ''} onChange={onChange(`odos_${suffix}`)} />
         </div>
         <div className="form-group">
           <label>Αριθμός</label>
-          <input type="text" value={form[`arithmos_${prefix}`] || ''} onChange={onChange(`arithmos_${prefix}`)} />
+          <input type="text" value={form[`arithmos_${suffix}`] || ''} onChange={onChange(`arithmos_${suffix}`)} />
         </div>
       </div>
       <div className="form-grid-3">
         <div className="form-group">
           <label>Τ.Κ.</label>
-          <input type="text" value={form[`tk_${prefix}`] || ''} onChange={onChange(`tk_${prefix}`)} />
+          <input type="text" value={form[`tk_${suffix}`] || ''} onChange={onChange(`tk_${suffix}`)} />
         </div>
         <div className="form-group">
           <label>Πόλη</label>
-          <input type="text" value={form[`polis_${prefix}`] || ''} onChange={onChange(`polis_${prefix}`)} />
+          <input type="text" value={form[`poli_${suffix}`] || ''} onChange={onChange(`poli_${suffix}`)} />
         </div>
         <div className="form-group">
           <label>Χώρα</label>
-          <input type="text" value={form[`xora_${prefix}`] || ''} onChange={onChange(`xora_${prefix}`)} />
+          <input type="text" value={form[`xora_${suffix}`] || ''} onChange={onChange(`xora_${suffix}`)} />
         </div>
       </div>
     </div>
@@ -53,10 +51,9 @@ function AddressBlock({ prefix, form, onChange }) {
 }
 
 function PhoneList({ prefix, count, form, onChange }) {
-  const nums = Array.from({ length: count }, (_, i) => i + 1);
   return (
     <div className="form-grid-3">
-      {nums.map(n => (
+      {Array.from({ length: count }, (_, i) => i + 1).map(n => (
         <div className="form-group" key={n}>
           <label>Τηλέφωνο {n}</label>
           <input type="tel" value={form[`${prefix}_${n}`] || ''} onChange={onChange(`${prefix}_${n}`)} />
@@ -65,8 +62,6 @@ function PhoneList({ prefix, count, form, onChange }) {
     </div>
   );
 }
-
-// --- Main component ---
 
 function FysikaEdit({ user, onLogout }) {
   const { id } = useParams();
@@ -82,8 +77,14 @@ function FysikaEdit({ user, onLogout }) {
     if (isNew) return;
     fysika.get(id)
       .then(d => {
+        // Backend returns plain object (not wrapped in {data})
         const rec = d?.data || d;
-        setForm({ ...emptyForm, ...(rec || {}), date_gennisis: toDateInput(rec?.date_gennisis) });
+        setForm({
+          ...emptyForm,
+          ...(rec || {}),
+          date_gennisis: toDateInput(rec?.date_gennisis),
+          energos: rec?.energos !== false,
+        });
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
@@ -94,15 +95,12 @@ function FysikaEdit({ user, onLogout }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!form.eponymo) { setError('Το επώνυμο είναι υποχρεωτικό.'); return; }
     setSaving(true);
     try {
       const payload = { ...form };
       Object.keys(payload).forEach(k => { if (payload[k] === '') payload[k] = null; });
-      if (!form.eponymo || !form.onoma) {
-        setError('Επώνυμο και Όνομα είναι υποχρεωτικά.');
-        setSaving(false);
-        return;
-      }
+      payload.energos = !!form.energos;
       if (isNew) await fysika.create(payload);
       else await fysika.update(id, payload);
       navigate('/fysika');
@@ -114,11 +112,7 @@ function FysikaEdit({ user, onLogout }) {
   };
 
   if (loading) {
-    return (
-      <Layout user={user} onLogout={onLogout} title="Φυσικό Πρόσωπο">
-        <div className="empty-state">Φόρτωση...</div>
-      </Layout>
-    );
+    return <Layout user={user} onLogout={onLogout} title="Φυσικό Πρόσωπο"><div className="empty-state">Φόρτωση...</div></Layout>;
   }
 
   const tabPersonal = (
@@ -129,12 +123,12 @@ function FysikaEdit({ user, onLogout }) {
           <input type="text" value={form.eponymo} onChange={onChange('eponymo')} required />
         </div>
         <div className="form-group">
-          <label>Όνομα *</label>
-          <input type="text" value={form.onoma} onChange={onChange('onoma')} required />
+          <label>Όνομα</label>
+          <input type="text" value={form.onoma} onChange={onChange('onoma')} />
         </div>
         <div className="form-group">
-          <label>Πατρώνυμο</label>
-          <input type="text" value={form.patros} onChange={onChange('patros')} />
+          <label>Όνομα πατρός</label>
+          <input type="text" value={form.onoma_patros} onChange={onChange('onoma_patros')} />
         </div>
       </div>
       <div className="form-grid-2">
@@ -178,37 +172,32 @@ function FysikaEdit({ user, onLogout }) {
         </div>
         <div className="form-group">
           <label>Ιστοσελίδα</label>
-          <input type="text" value={form.istoselida} onChange={onChange('istoselida')} />
+          <input type="text" value={form.web_site} onChange={onChange('web_site')} />
         </div>
+      </div>
+      <div className="form-group">
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <input type="checkbox" checked={!!form.energos} onChange={e => setForm(f => ({ ...f, energos: e.target.checked }))} />
+          <span>Ενεργός</span>
+        </label>
       </div>
     </div>
   );
 
   const tabAddresses = (
-    <Tabs
-      tabs={[
-        { label: 'Οικίας',   content: <AddressBlock prefix="oikias" form={form} onChange={onChange} /> },
-        { label: 'Γραφείου', content: <AddressBlock prefix="grafeiou" form={form} onChange={onChange} /> },
-      ]}
-    />
+    <Tabs tabs={[
+      { label: 'Οικίας',   content: <AddressBlock suffix="oikias"   form={form} onChange={onChange} /> },
+      { label: 'Γραφείου', content: <AddressBlock suffix="grafeiou" form={form} onChange={onChange} /> },
+    ]}/>
   );
 
   const tabPhones = (
-    <Tabs
-      tabs={[
-        { label: 'Οικίας',   content: <PhoneList prefix="tilefono_oikias"   count={2} form={form} onChange={onChange} /> },
-        { label: 'Γραφείου', content: <PhoneList prefix="tilefono_grafeiou" count={3} form={form} onChange={onChange} /> },
-        { label: 'Κινητά',   content: <PhoneList prefix="tilefono_kinito"   count={3} form={form} onChange={onChange} /> },
-        { label: 'Fax',      content: <PhoneList prefix="fax"               count={3} form={form} onChange={onChange} /> },
-      ]}
-    />
-  );
-
-  const tabNotes = (
-    <div className="form-group">
-      <label>Σημειώσεις</label>
-      <textarea rows="8" value={form.simeioseis} onChange={onChange('simeioseis')} />
-    </div>
+    <Tabs tabs={[
+      { label: 'Οικίας',   content: <PhoneList prefix="tilefono_oikias"   count={3} form={form} onChange={onChange} /> },
+      { label: 'Γραφείου', content: <PhoneList prefix="tilefono_grafeiou" count={3} form={form} onChange={onChange} /> },
+      { label: 'Κινητά',   content: <PhoneList prefix="tilefono_kinito"   count={3} form={form} onChange={onChange} /> },
+      { label: 'Fax',      content: <PhoneList prefix="fax"               count={3} form={form} onChange={onChange} /> },
+    ]}/>
   );
 
   return (
@@ -216,14 +205,11 @@ function FysikaEdit({ user, onLogout }) {
       {error && <div className="error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="section">
-          <Tabs
-            tabs={[
-              { label: 'Στοιχεία',    content: tabPersonal },
-              { label: 'Διευθύνσεις', content: tabAddresses },
-              { label: 'Τηλέφωνα',    content: tabPhones },
-              { label: 'Σημειώσεις',  content: tabNotes },
-            ]}
-          />
+          <Tabs tabs={[
+            { label: 'Στοιχεία',    content: tabPersonal },
+            { label: 'Διευθύνσεις', content: tabAddresses },
+            { label: 'Τηλέφωνα',    content: tabPhones },
+          ]}/>
         </div>
         <div className="form-actions">
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/fysika')}>Ακύρωση</button>

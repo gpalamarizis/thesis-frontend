@@ -5,10 +5,95 @@ import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { people } from '../../api';
 
-/**
- * PeopleList - handles /api/people/{kind} where kind = 'lawyers' | 'opposing-lawyers' | 'opponents' | 'related'
- * Uses a compact form modal (no separate edit page). Fields adapt to kind.
- */
+// Backend fields per kind (from routes/people.js):
+const KIND_CONFIG = {
+  lawyers: {
+    // Δικηγόροι γραφείου (dikigoroi_grafeiou)
+    fields: [
+      { key: 'eponymo',       label: 'Επώνυμο *',       type: 'text', required: true },
+      { key: 'onoma',         label: 'Όνομα',           type: 'text' },
+      { key: 'onoma_patros',  label: 'Πατρός',          type: 'text' },
+      { key: 'date_gennisis', label: 'Ημ/νία γέννησης', type: 'date' },
+      { key: 'ar_mitroou',    label: 'Αρ. μητρώου',     type: 'text' },
+      { key: 'syllogos',      label: 'Δικηγορικός σύλλογος', type: 'text' },
+      { key: 'afm',           label: 'ΑΦΜ',             type: 'text' },
+      { key: 'doy',           label: 'ΔΟΥ',             type: 'text' },
+      { key: 'adt',           label: 'ΑΔΤ',             type: 'text' },
+      { key: 'mobile',        label: 'Κινητό',          type: 'tel' },
+      { key: 'email',         label: 'Email',           type: 'email' },
+      { key: 'date_eggrafis', label: 'Ημ/νία εγγραφής', type: 'date' },
+      { key: 'exoterikos',    label: 'Εξωτερικός συνεργάτης', type: 'checkbox' },
+      { key: 'energos',       label: 'Ενεργός',         type: 'checkbox', default: true },
+    ],
+    columns: [
+      { key: 'aa',         label: 'Α/Α',    width: 60 },
+      { key: 'eponymo',    label: 'Επώνυμο' },
+      { key: 'onoma',      label: 'Όνομα' },
+      { key: 'ar_mitroou', label: 'Αρ. μητρώου', width: 110 },
+      { key: 'syllogos',   label: 'Σύλλογος',    width: 150 },
+      { key: 'mobile',     label: 'Κινητό',      width: 120 },
+      { key: 'email',      label: 'Email' },
+    ],
+  },
+  'opposing-lawyers': {
+    // Δικηγόροι αντιδίκων (dikigoroi_antidikon)
+    fields: [
+      { key: 'eponymo',   label: 'Επώνυμο *', type: 'text', required: true },
+      { key: 'onoma',     label: 'Όνομα',     type: 'text' },
+      { key: 'tilefono',  label: 'Τηλέφωνο',  type: 'tel' },
+      { key: 'email',     label: 'Email',     type: 'email' },
+      { key: 'syllogos',  label: 'Δικηγορικός σύλλογος', type: 'text' },
+    ],
+    columns: [
+      { key: 'aa',       label: 'Α/Α',    width: 60 },
+      { key: 'eponymo',  label: 'Επώνυμο' },
+      { key: 'onoma',    label: 'Όνομα' },
+      { key: 'tilefono', label: 'Τηλέφωνο', width: 130 },
+      { key: 'email',    label: 'Email' },
+      { key: 'syllogos', label: 'Σύλλογος' },
+    ],
+  },
+  opponents: {
+    // Αντίδικοι (antidikoi)
+    fields: [
+      { key: 'eponymo',  label: 'Επώνυμο *', type: 'text', required: true },
+      { key: 'onoma',    label: 'Όνομα',     type: 'text' },
+      { key: 'telefono', label: 'Τηλέφωνο',  type: 'tel' },
+      { key: 'email',    label: 'Email',     type: 'email' },
+    ],
+    columns: [
+      { key: 'aa',       label: 'Α/Α',      width: 60 },
+      { key: 'eponymo',  label: 'Επώνυμο' },
+      { key: 'onoma',    label: 'Όνομα' },
+      { key: 'telefono', label: 'Τηλέφωνο', width: 130 },
+      { key: 'email',    label: 'Email' },
+    ],
+  },
+  related: {
+    // Σχετικά πρόσωπα (sxetika_prosopa) — subset of most useful fields
+    fields: [
+      { key: 'eponymo',            label: 'Επώνυμο',            type: 'text' },
+      { key: 'onoma',              label: 'Όνομα',              type: 'text' },
+      { key: 'eponymia',           label: 'Επωνυμία (αν είναι εταιρεία)', type: 'text' },
+      { key: 'diakritikos_titlos', label: 'Διακριτικός τίτλος', type: 'text' },
+      { key: 'afm',                label: 'ΑΦΜ',                type: 'text' },
+      { key: 'doy',                label: 'ΔΟΥ',                type: 'text' },
+      { key: 'email',              label: 'Email',              type: 'email' },
+      { key: 'tilefono_kinito_1',  label: 'Κινητό',             type: 'tel' },
+      { key: 'tilefono_grafeiou_1', label: 'Τηλέφωνο γραφείου', type: 'tel' },
+      { key: 'energos',            label: 'Ενεργός',            type: 'checkbox', default: true },
+    ],
+    columns: [
+      { key: 'aa',                  label: 'Α/Α',    width: 60 },
+      { key: 'eponymo',             label: 'Επώνυμο', render: r => r.eponymo || r.eponymia || '—' },
+      { key: 'onoma',               label: 'Όνομα' },
+      { key: 'afm',                 label: 'ΑΦΜ',    width: 110 },
+      { key: 'tilefono_kinito_1',   label: 'Κινητό', width: 120 },
+      { key: 'email',               label: 'Email' },
+    ],
+  },
+};
+
 function PeopleList({ user, onLogout, kind, title }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +102,7 @@ function PeopleList({ user, onLogout, kind, title }) {
   const [editing, setEditing] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
 
+  const config = KIND_CONFIG[kind];
   const helper = getPeopleHelper(kind);
 
   const load = () => {
@@ -34,15 +120,6 @@ function PeopleList({ user, onLogout, kind, title }) {
     catch (e) { setError(e.message); }
   };
 
-  const columns = [
-    { key: 'aa',      label: 'Α/Α',       width: 60 },
-    { key: 'eponymo', label: 'Επώνυμο' },
-    { key: 'onoma',   label: 'Όνομα' },
-    { key: 'afm',     label: 'ΑΦΜ',       width: 110 },
-    { key: 'tilefono',label: 'Τηλέφωνο',  width: 130, render: r => r.tilefono || r.mobile || r.tilefono_grafeiou_1 || '—' },
-    { key: 'email',   label: 'Email' },
-  ];
-
   return (
     <Layout user={user} onLogout={onLogout} title={title}>
       {error && <div className="error">{error}</div>}
@@ -55,7 +132,7 @@ function PeopleList({ user, onLogout, kind, title }) {
           <div className="empty-state">Φόρτωση...</div>
         ) : (
           <DataTable
-            columns={columns}
+            columns={config.columns}
             rows={items}
             rowKey={r => r.aa || r.id}
             onRowClick={r => { setEditing(r); setShowModal(true); }}
@@ -68,6 +145,7 @@ function PeopleList({ user, onLogout, kind, title }) {
       {showModal && (
         <PersonModal
           kind={kind}
+          config={config}
           initial={editing}
           onClose={() => setShowModal(false)}
           onSaved={() => { setShowModal(false); load(); }}
@@ -77,7 +155,7 @@ function PeopleList({ user, onLogout, kind, title }) {
       {confirmDel && (
         <ConfirmDialog
           title="Διαγραφή"
-          message={`Διαγραφή του "${confirmDel.eponymo || ''} ${confirmDel.onoma || ''}"; Η ενέργεια δεν αναιρείται.`}
+          message={`Διαγραφή του "${confirmDel.eponymo || confirmDel.eponymia || ''} ${confirmDel.onoma || ''}"; Η ενέργεια δεν αναιρείται.`}
           confirmLabel="Διαγραφή"
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
@@ -87,30 +165,36 @@ function PeopleList({ user, onLogout, kind, title }) {
   );
 }
 
-function PersonModal({ kind, initial, onClose, onSaved }) {
+function PersonModal({ kind, config, initial, onClose, onSaved }) {
   const helper = getPeopleHelper(kind);
-  const [form, setForm] = useState({
-    eponymo: initial?.eponymo || '',
-    onoma: initial?.onoma || '',
-    afm: initial?.afm || '',
-    tilefono: initial?.tilefono || initial?.tilefono_grafeiou_1 || '',
-    mobile: initial?.mobile || initial?.tilefono_kinito_1 || '',
-    email: initial?.email || '',
-    address: initial?.address || initial?.dielefsi || '',
-    simeioseis: initial?.simeioseis || '',
+  const initForm = {};
+  config.fields.forEach(f => {
+    if (f.type === 'checkbox') {
+      initForm[f.key] = initial ? initial[f.key] !== false : (f.default ?? false);
+    } else {
+      initForm[f.key] = initial?.[f.key] || '';
+    }
   });
+
+  const [form, setForm] = useState(initForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const c = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const c = (k, isCheck) => (e) => setForm(f => ({ ...f, [k]: isCheck ? e.target.checked : e.target.value }));
 
   const save = async () => {
     setError('');
-    if (!form.eponymo) { setError('Το επώνυμο είναι υποχρεωτικό.'); return; }
+    for (const f of config.fields) {
+      if (f.required && !form[f.key]) { setError(`Το πεδίο "${f.label.replace(' *', '')}" είναι υποχρεωτικό.`); return; }
+    }
     setSaving(true);
     try {
-      const payload = { ...form };
-      Object.keys(payload).forEach(k => { if (payload[k] === '') payload[k] = null; });
+      const payload = {};
+      config.fields.forEach(f => {
+        let v = form[f.key];
+        if (f.type === 'checkbox') payload[f.key] = !!v;
+        else payload[f.key] = v === '' ? null : v;
+      });
       if (initial?.aa || initial?.id) await helper.update(initial.aa || initial.id, payload);
       else await helper.create(payload);
       onSaved();
@@ -132,20 +216,21 @@ function PersonModal({ kind, initial, onClose, onSaved }) {
       </>}
     >
       {error && <div className="error">{error}</div>}
-      <div className="form-grid-2">
-        <div className="form-group"><label>Επώνυμο *</label><input type="text" value={form.eponymo} onChange={c('eponymo')} required /></div>
-        <div className="form-group"><label>Όνομα</label><input type="text" value={form.onoma} onChange={c('onoma')} /></div>
-      </div>
-      <div className="form-grid-2">
-        <div className="form-group"><label>ΑΦΜ</label><input type="text" value={form.afm} onChange={c('afm')} /></div>
-        <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={c('email')} /></div>
-      </div>
-      <div className="form-grid-2">
-        <div className="form-group"><label>Τηλέφωνο γραφείου</label><input type="tel" value={form.tilefono} onChange={c('tilefono')} /></div>
-        <div className="form-group"><label>Κινητό</label><input type="tel" value={form.mobile} onChange={c('mobile')} /></div>
-      </div>
-      <div className="form-group"><label>Διεύθυνση</label><input type="text" value={form.address} onChange={c('address')} /></div>
-      <div className="form-group"><label>Σημειώσεις</label><textarea rows="3" value={form.simeioseis} onChange={c('simeioseis')} /></div>
+      {config.fields.map(f => (
+        <div className="form-group" key={f.key}>
+          {f.type === 'checkbox' ? (
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input type="checkbox" checked={!!form[f.key]} onChange={c(f.key, true)} />
+              <span>{f.label}</span>
+            </label>
+          ) : (
+            <>
+              <label>{f.label}</label>
+              <input type={f.type} value={form[f.key] || ''} onChange={c(f.key, false)} required={f.required} />
+            </>
+          )}
+        </div>
+      ))}
     </Modal>
   );
 }

@@ -5,6 +5,11 @@ import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { courts } from '../api';
 
+// Backend fields (from routes/courts.js): name, vathmos, eidos, edra
+
+const VATHMOS_OPTIONS = ['Ειρηνοδικείο', 'Πρωτοδικείο', 'Εφετείο', 'Άρειος Πάγος', 'Συμβούλιο Επικρατείας', 'Ελεγκτικό Συνέδριο', 'Διοικητικό'];
+const EIDOS_OPTIONS   = ['Πολιτικό', 'Ποινικό', 'Διοικητικό', 'Άλλο'];
+
 function Courts({ user, onLogout }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,12 +34,11 @@ function Courts({ user, onLogout }) {
   };
 
   const columns = [
-    { key: 'aa',       label: 'Α/Α',      width: 60 },
-    { key: 'onomasia', label: 'Ονομασία' },
-    { key: 'polis',    label: 'Πόλη',     width: 150 },
-    { key: 'tmima',    label: 'Τμήμα',    width: 150 },
-    { key: 'dielefsi', label: 'Διεύθυνση' },
-    { key: 'tilefono', label: 'Τηλέφωνο', width: 130 },
+    { key: 'aa',      label: 'Α/Α',      width: 60 },
+    { key: 'name',    label: 'Ονομασία' },
+    { key: 'vathmos', label: 'Βαθμός',   width: 180 },
+    { key: 'eidos',   label: 'Είδος',    width: 140 },
+    { key: 'edra',    label: 'Έδρα',     width: 180 },
   ];
 
   return (
@@ -70,7 +74,7 @@ function Courts({ user, onLogout }) {
       {confirmDel && (
         <ConfirmDialog
           title="Διαγραφή Δικαστηρίου"
-          message={`Διαγραφή του "${confirmDel.onomasia}"; Δεν θα μπορεί να χρησιμοποιηθεί σε νέες υποθέσεις.`}
+          message={`Διαγραφή του "${confirmDel.name}";`}
           confirmLabel="Διαγραφή"
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
@@ -82,12 +86,10 @@ function Courts({ user, onLogout }) {
 
 function CourtModal({ initial, onClose, onSaved }) {
   const [form, setForm] = useState({
-    onomasia: initial?.onomasia || '',
-    polis: initial?.polis || '',
-    tmima: initial?.tmima || '',
-    dielefsi: initial?.dielefsi || '',
-    tilefono: initial?.tilefono || '',
-    email: initial?.email || '',
+    name:    initial?.name || '',
+    vathmos: initial?.vathmos || '',
+    eidos:   initial?.eidos || '',
+    edra:    initial?.edra || '',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -96,7 +98,7 @@ function CourtModal({ initial, onClose, onSaved }) {
 
   const save = async () => {
     setError('');
-    if (!form.onomasia) { setError('Η ονομασία είναι υποχρεωτική.'); return; }
+    if (!form.name) { setError('Η ονομασία είναι υποχρεωτική.'); return; }
     setSaving(true);
     try {
       const payload = { ...form };
@@ -122,15 +124,29 @@ function CourtModal({ initial, onClose, onSaved }) {
       </>}
     >
       {error && <div className="error">{error}</div>}
-      <div className="form-group"><label>Ονομασία *</label><input type="text" value={form.onomasia} onChange={c('onomasia')} required /></div>
-      <div className="form-grid-2">
-        <div className="form-group"><label>Πόλη</label><input type="text" value={form.polis} onChange={c('polis')} /></div>
-        <div className="form-group"><label>Τμήμα</label><input type="text" value={form.tmima} onChange={c('tmima')} /></div>
+      <div className="form-group">
+        <label>Ονομασία *</label>
+        <input type="text" value={form.name} onChange={c('name')} required />
       </div>
-      <div className="form-group"><label>Διεύθυνση</label><input type="text" value={form.dielefsi} onChange={c('dielefsi')} /></div>
       <div className="form-grid-2">
-        <div className="form-group"><label>Τηλέφωνο</label><input type="tel" value={form.tilefono} onChange={c('tilefono')} /></div>
-        <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={c('email')} /></div>
+        <div className="form-group">
+          <label>Βαθμός</label>
+          <select value={form.vathmos} onChange={c('vathmos')}>
+            <option value="">-- επιλογή --</option>
+            {VATHMOS_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Είδος</label>
+          <select value={form.eidos} onChange={c('eidos')}>
+            <option value="">-- επιλογή --</option>
+            {EIDOS_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="form-group">
+        <label>Έδρα (πόλη)</label>
+        <input type="text" value={form.edra} onChange={c('edra')} />
       </div>
     </Modal>
   );

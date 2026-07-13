@@ -4,17 +4,23 @@ import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { lists } from '../api';
 
-// The backend generic /api/lists/:list route serves these lookup tables:
+// Backend lists (from routes/lists.js LISTS map):
 const LIST_TYPES = [
-  { key: 'procedures',        label: 'Διαδικασίες',         fields: ['onomasia'] },
-  { key: 'positions',         label: 'Θέσεις στην υπόθεση', fields: ['onomasia'] },
-  { key: 'onomasies',         label: 'Ονομασίες',           fields: ['onomasia'] },
-  { key: 'filing-positions',  label: 'Θέσεις αρχειοθέτησης', fields: ['onomasia'] },
-  { key: 'judges',            label: 'Δικαστές',            fields: ['eponymo', 'onoma', 'tmima'] },
-  { key: 'secretaries',       label: 'Γραμματείς',          fields: ['eponymo', 'onoma', 'tmima'] },
-  { key: 'departments',       label: 'Τμήματα',             fields: ['onomasia'] },
-  { key: 'countries',         label: 'Χώρες',               fields: ['onomasia', 'kwd'] },
-  { key: 'cities',            label: 'Πόλεις',              fields: ['onomasia', 'xora'] },
+  { key: 'diadikasies',                    label: 'Διαδικασίες',            fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'thesi',                          label: 'Θέσεις στην υπόθεση',    fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'ypotheseis_onomasies',           label: 'Ονομασίες υποθέσεων',    fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'theseis_arxeiothetisis',         label: 'Θέσεις αρχειοθέτησης',   fields: [{key:'name', label:'Ονομασία'}, {key:'perigrafi', label:'Περιγραφή'}] },
+  { key: 'eidos_sxesis',                   label: 'Είδος σχέσης',           fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'pagia_exoda',                    label: 'Πάγια έξοδα (τύποι)',    fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'amoives',                        label: 'Αμοιβές (τύποι)',        fields: [{key:'name', label:'Ονομασία'}, {key:'amount', label:'Ποσό (€)', type:'number', step:'0.01'}] },
+  { key: 'cities',                         label: 'Πόλεις',                 fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'countries',                      label: 'Χώρες',                  fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'address_type',                   label: 'Τύποι διευθύνσεων',      fields: [{key:'address_type', label:'Τύπος'}] },
+  { key: 'phone_types',                    label: 'Τύποι τηλεφώνων',        fields: [{key:'phone_type', label:'Τύπος'}] },
+  { key: 'dikastiria_exelixi_energeias',   label: 'Εξέλιξη ενέργειας δικαστηρίου', fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'dikastiria_tmimata',             label: 'Τμήματα δικαστηρίων',    fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'dikastiria_dikastes',            label: 'Δικαστές',               fields: [{key:'eponymo', label:'Επώνυμο'}, {key:'onoma', label:'Όνομα'}] },
+  { key: 'dikastiria_grammateis',          label: 'Γραμματείς',             fields: [{key:'eponymo', label:'Επώνυμο'}, {key:'onoma', label:'Όνομα'}] },
 ];
 
 function Lists({ user, onLogout }) {
@@ -75,14 +81,14 @@ function Lists({ user, onLogout }) {
             <table className="table">
               <thead>
                 <tr>
-                  {currentType.fields.map(f => <th key={f}>{fieldLabel(f)}</th>)}
+                  {currentType.fields.map(f => <th key={f.key}>{f.label}</th>)}
                   <th style={{ width: 1 }}></th>
                 </tr>
               </thead>
               <tbody>
                 {items.map(r => (
                   <tr key={r.aa || r.id}>
-                    {currentType.fields.map(f => <td key={f}>{r[f] || '—'}</td>)}
+                    {currentType.fields.map(f => <td key={f.key}>{r[f.key] ?? '—'}</td>)}
                     <td>
                       <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
                       {' '}
@@ -121,21 +127,27 @@ function Lists({ user, onLogout }) {
 
 function ListItemModal({ listType, listKey, initial, onClose, onSaved }) {
   const initForm = {};
-  listType.fields.forEach(f => { initForm[f] = initial?.[f] || ''; });
+  listType.fields.forEach(f => { initForm[f.key] = initial?.[f.key] ?? ''; });
   const [form, setForm] = useState(initForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const save = async () => {
     setError('');
-    if (!form[listType.fields[0]]) {
-      setError(`Το πεδίο "${fieldLabel(listType.fields[0])}" είναι υποχρεωτικό.`);
+    const firstField = listType.fields[0];
+    if (!form[firstField.key]) {
+      setError(`Το πεδίο "${firstField.label}" είναι υποχρεωτικό.`);
       return;
     }
     setSaving(true);
     try {
-      const payload = { ...form };
-      Object.keys(payload).forEach(k => { if (payload[k] === '') payload[k] = null; });
+      const payload = {};
+      listType.fields.forEach(f => {
+        let v = form[f.key];
+        if (v === '') v = null;
+        else if (f.type === 'number' && v != null) v = Number(v);
+        payload[f.key] = v;
+      });
       if (initial?.aa || initial?.id) await lists.update(listKey, initial.aa || initial.id, payload);
       else await lists.create(listKey, payload);
       onSaved();
@@ -157,30 +169,19 @@ function ListItemModal({ listType, listKey, initial, onClose, onSaved }) {
     >
       {error && <div className="error">{error}</div>}
       {listType.fields.map((f, i) => (
-        <div className="form-group" key={f}>
-          <label>{fieldLabel(f)}{i === 0 && ' *'}</label>
+        <div className="form-group" key={f.key}>
+          <label>{f.label}{i === 0 && ' *'}</label>
           <input
-            type="text"
-            value={form[f]}
-            onChange={e => setForm({ ...form, [f]: e.target.value })}
+            type={f.type || 'text'}
+            step={f.step}
+            value={form[f.key] ?? ''}
+            onChange={e => setForm({ ...form, [f.key]: e.target.value })}
             required={i === 0}
           />
         </div>
       ))}
     </Modal>
   );
-}
-
-function fieldLabel(f) {
-  const map = {
-    onomasia: 'Ονομασία',
-    eponymo:  'Επώνυμο',
-    onoma:    'Όνομα',
-    tmima:    'Τμήμα',
-    kwd:      'Κωδικός',
-    xora:     'Χώρα',
-  };
-  return map[f] || f;
 }
 
 export default Lists;

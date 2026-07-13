@@ -2,75 +2,79 @@ import { useState, useEffect } from 'react';
 import Tabs from '../../components/Tabs';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { finance } from '../../api';
+import { finance, people, lists } from '../../api';
 import { fmtDate, fmtCurrency, toDateInput } from '../../utils/format';
 
 /**
- * FinanceTab — a 6th tab in CaseEdit with 4 nested tabs for the 4 finance resources:
- *   ores            (hours/χρέωση ωρών)
- *   pagia-exoda     (πάγια έξοδα)
- *   amoives         (αμοιβές)
- *   exoda-synergati (έξοδα συνεργάτη)
- *
- * Each resource:
- *  - list rows
- *  - add/edit modal
- *  - delete with confirm
- *  - sum footer
+ * FinanceTab — Backend schema:
+ *   ores:             ypothesi_id, dikigoros_id, date, ores, perigrafi, amount
+ *   pagia-exoda:      ypothesi_id, pagio_exodo_definition_id, date, amount, perigrafi
+ *   amoives:          ypothesi_id, dikigoros_id, date, amount, perigrafi
+ *   exoda-synergati:  ypothesi_id, synergatis_id, date, amount, perigrafi
  */
 function FinanceTab({ caseId }) {
   const [counts, setCounts] = useState({ ores: 0, 'pagia-exoda': 0, amoives: 0, 'exoda-synergati': 0 });
+  const [lawyers, setLawyers] = useState([]);
+  const [pagiaDefs, setPagiaDefs] = useState([]);
+
+  useEffect(() => {
+    people.lawyers.list()
+      .then(d => setLawyers(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+    lists.get('pagia_exoda')
+      .then(d => setPagiaDefs(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+  }, []);
 
   const bumpCount = (k, n) => setCounts(c => ({ ...c, [k]: n }));
+
+  const oresFields = [
+    { key: 'date',         label: 'Ημερομηνία',   type: 'date',   required: true },
+    { key: 'dikigoros_id', label: 'Δικηγόρος',    type: 'select', options: lawyers.map(l => ({ value: l.aa, label: `${l.eponymo || ''} ${l.onoma || ''}`.trim() })) },
+    { key: 'ores',         label: 'Ώρες',         type: 'number', step: '0.25' },
+    { key: 'amount',       label: 'Ποσό (€)',     type: 'number', step: '0.01' },
+    { key: 'perigrafi',    label: 'Περιγραφή',    type: 'textarea' },
+  ];
+
+  const pagiaFields = [
+    { key: 'date',                      label: 'Ημερομηνία',    type: 'date',   required: true },
+    { key: 'pagio_exodo_definition_id', label: 'Είδος εξόδου',   type: 'select', options: pagiaDefs.map(p => ({ value: p.aa, label: p.name })) },
+    { key: 'amount',                    label: 'Ποσό (€)',       type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',                 label: 'Περιγραφή',      type: 'textarea' },
+  ];
+
+  const amoivesFields = [
+    { key: 'date',         label: 'Ημερομηνία', type: 'date',   required: true },
+    { key: 'dikigoros_id', label: 'Δικηγόρος',  type: 'select', options: lawyers.map(l => ({ value: l.aa, label: `${l.eponymo || ''} ${l.onoma || ''}`.trim() })) },
+    { key: 'amount',       label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',    label: 'Περιγραφή',  type: 'textarea' },
+  ];
+
+  const synergatiFields = [
+    { key: 'date',          label: 'Ημερομηνία',    type: 'date',   required: true },
+    { key: 'synergatis_id', label: 'Συνεργάτης ID', type: 'number' },
+    { key: 'amount',        label: 'Ποσό (€)',       type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',     label: 'Περιγραφή',     type: 'textarea' },
+  ];
 
   return (
     <div>
       <div style={{ color: '#718096', marginBottom: 16 }}>
-        Οικονομικά στοιχεία της υπόθεσης (ώρες εργασίας, πάγια έξοδα, αμοιβές, έξοδα συνεργάτη)
+        Οικονομικά στοιχεία της υπόθεσης
       </div>
       <Tabs tabs={[
-        { label: 'Ώρες εργασίας', badge: counts.ores,               content: <FinanceResource caseId={caseId} resource="ores"            fields={oresFields}       onCountChange={n => bumpCount('ores', n)} /> },
-        { label: 'Πάγια έξοδα',   badge: counts['pagia-exoda'],     content: <FinanceResource caseId={caseId} resource="pagia-exoda"     fields={pagiaFields}      onCountChange={n => bumpCount('pagia-exoda', n)} /> },
-        { label: 'Αμοιβές',       badge: counts.amoives,            content: <FinanceResource caseId={caseId} resource="amoives"         fields={amoivesFields}    onCountChange={n => bumpCount('amoives', n)} /> },
-        { label: 'Έξοδα συνεργάτη', badge: counts['exoda-synergati'], content: <FinanceResource caseId={caseId} resource="exoda-synergati" fields={synergatiFields}  onCountChange={n => bumpCount('exoda-synergati', n)} /> },
+        { label: 'Ώρες εργασίας',   badge: counts.ores,                content: <FinanceResource caseId={caseId} resource="ores"            fields={oresFields}      onCountChange={n => bumpCount('ores', n)} /> },
+        { label: 'Πάγια έξοδα',     badge: counts['pagia-exoda'],      content: <FinanceResource caseId={caseId} resource="pagia-exoda"     fields={pagiaFields}     onCountChange={n => bumpCount('pagia-exoda', n)} /> },
+        { label: 'Αμοιβές',         badge: counts.amoives,             content: <FinanceResource caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
+        { label: 'Έξοδα συνεργάτη', badge: counts['exoda-synergati'],  content: <FinanceResource caseId={caseId} resource="exoda-synergati" fields={synergatiFields} onCountChange={n => bumpCount('exoda-synergati', n)} /> },
       ]} />
     </div>
   );
 }
 
-// Field configs for each resource
-const oresFields = [
-  { key: 'date',         label: 'Ημερομηνία', type: 'date',   required: true },
-  { key: 'ores',         label: 'Ώρες',       type: 'number', required: true, step: '0.25' },
-  { key: 'timi_oras',    label: 'Χρέωση/ώρα (€)', type: 'number', step: '0.01' },
-  { key: 'poso',         label: 'Ποσό (€)',   type: 'number', step: '0.01' },
-  { key: 'perigrafi',    label: 'Περιγραφή',  type: 'textarea' },
-];
-
-const pagiaFields = [
-  { key: 'date',      label: 'Ημερομηνία', type: 'date',   required: true },
-  { key: 'kategoria', label: 'Κατηγορία',  type: 'text' },
-  { key: 'poso',      label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
-  { key: 'perigrafi', label: 'Περιγραφή',  type: 'textarea' },
-];
-
-const amoivesFields = [
-  { key: 'date',              label: 'Ημερομηνία',   type: 'date',   required: true },
-  { key: 'poso',              label: 'Ποσό (€)',     type: 'number', required: true, step: '0.01' },
-  { key: 'tropos_pliromis',   label: 'Τρόπος πληρωμής', type: 'select', options: ['', 'Μετρητά', 'Κατάθεση', 'Επιταγή', 'POS', 'Άλλο'] },
-  { key: 'paraστatiko',       label: 'Παραστατικό',  type: 'text' },
-  { key: 'perigrafi',         label: 'Περιγραφή',    type: 'textarea' },
-];
-
-const synergatiFields = [
-  { key: 'date',       label: 'Ημερομηνία',    type: 'date',   required: true },
-  { key: 'synergatis', label: 'Συνεργάτης',    type: 'text' },
-  { key: 'poso',       label: 'Ποσό (€)',      type: 'number', required: true, step: '0.01' },
-  { key: 'perigrafi',  label: 'Περιγραφή',     type: 'textarea' },
-];
-
 function FinanceResource({ caseId, resource, fields, onCountChange }) {
   const [rows, setRows] = useState([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -83,7 +87,9 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
     finance.list(resource, caseId)
       .then(d => {
         const list = Array.isArray(d) ? d : (d?.data || []);
+        const t = typeof d?.total === 'number' ? d.total : list.reduce((s, r) => s + (Number(r.amount) || 0), 0);
         setRows(list);
+        setTotal(t);
         onCountChange(list.length);
       })
       .catch(e => setError(e.message))
@@ -97,7 +103,16 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
     catch (e) { setError(e.message); }
   };
 
-  const total = rows.reduce((s, r) => s + (Number(r.poso) || 0), 0);
+  const renderCell = (r, f) => {
+    const v = r[f.key];
+    if (f.type === 'date')   return fmtDate(v);
+    if (f.key === 'amount')  return fmtCurrency(v);
+    if (f.type === 'select' && Array.isArray(f.options)) {
+      const opt = f.options.find(o => String(o.value) === String(v));
+      return opt ? opt.label : (v ?? '—');
+    }
+    return v ?? '—';
+  };
 
   return (
     <div>
@@ -123,11 +138,7 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
             {rows.map(r => (
               <tr key={r.aa || r.id}>
                 {fields.filter(f => f.type !== 'textarea').map(f => (
-                  <td key={f.key}>
-                    {f.type === 'date' ? fmtDate(r[f.key]) :
-                     f.key === 'poso' || f.key === 'timi_oras' ? fmtCurrency(r[f.key]) :
-                     (r[f.key] ?? '—')}
-                  </td>
+                  <td key={f.key}>{renderCell(r, f)}</td>
                 ))}
                 <td>
                   <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
@@ -183,15 +194,11 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
     }
     setSaving(true);
     try {
-      const payload = {
-        ypotheseis_id: Number(caseId),
-        // some backends expect case_id — send both, harmless if one is ignored
-        case_id: Number(caseId),
-      };
+      const payload = { ypothesi_id: Number(caseId) };
       fields.forEach(f => {
         let v = form[f.key];
         if (v === '') v = null;
-        else if (f.type === 'number' && v != null) v = Number(v);
+        else if ((f.type === 'number' || f.key.endsWith('_id')) && v != null) v = Number(v);
         payload[f.key] = v;
       });
       if (initial?.aa || initial?.id) await finance.update(resource, initial.aa || initial.id, payload);
@@ -221,7 +228,8 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
             <textarea rows="3" value={form[f.key] || ''} onChange={c(f.key)} />
           ) : f.type === 'select' ? (
             <select value={form[f.key] || ''} onChange={c(f.key)}>
-              {(f.options || []).map(o => <option key={o} value={o}>{o || '-- επιλογή --'}</option>)}
+              <option value="">-- επιλογή --</option>
+              {(f.options || []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           ) : (
             <input type={f.type || 'text'} step={f.step} value={form[f.key] || ''} onChange={c(f.key)} required={f.required} />
