@@ -4,7 +4,7 @@ import Layout from '../../components/Layout';
 import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
 import { cases, fysika, nomika, lists } from '../../api';
 
-function CaseNew({ user, onLogout }) {
+function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
   const [clientType, setClientType] = useState('fysiko');
   const [clientId, setClientId] = useState('');
@@ -91,7 +91,7 @@ function CaseNew({ user, onLogout }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} title="Νέα Υπόθεση">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Νέα Υπόθεση">
       {error && <div className="error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="section">

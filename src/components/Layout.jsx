@@ -51,7 +51,7 @@ const menuGroups = [
   },
 ];
 
-function Layout({ user, onLogout, title, children }) {
+function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
   const navigate = useNavigate();
 
   return (
@@ -94,6 +94,11 @@ function Layout({ user, onLogout, title, children }) {
       <div className="main-content">
         <div className="topbar">
           <h1>{title}</h1>
+          {onOpenCaseSearch && (
+            <button className="btn btn-secondary btn-sm" onClick={onOpenCaseSearch} title="Αναζήτηση υπόθεσης (F3)">
+              🔍 Αναζήτηση υπόθεσης <span style={{ opacity: 0.6, marginLeft: 6, fontSize: 11 }}>F3</span>
+            </button>
+          )}
         </div>
         <div className="content">
           {children}

@@ -63,7 +63,7 @@ function PhoneList({ prefix, count, form, onChange }) {
   );
 }
 
-function FysikaEdit({ user, onLogout }) {
+function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const isNew = !id || id === 'new';
@@ -112,7 +112,7 @@ function FysikaEdit({ user, onLogout }) {
   };
 
   if (loading) {
-    return <Layout user={user} onLogout={onLogout} title="Φυσικό Πρόσωπο"><div className="empty-state">Φόρτωση...</div></Layout>;
+    return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Φυσικό Πρόσωπο"><div className="empty-state">Φόρτωση...</div></Layout>;
   }
 
   const tabPersonal = (
@@ -201,7 +201,7 @@ function FysikaEdit({ user, onLogout }) {
   );
 
   return (
-    <Layout user={user} onLogout={onLogout} title={isNew ? 'Νέο Φυσικό Πρόσωπο' : `${form.eponymo} ${form.onoma || ''}`}>
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={isNew ? 'Νέο Φυσικό Πρόσωπο' : `${form.eponymo} ${form.onoma || ''}`}>
       {error && <div className="error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="section">

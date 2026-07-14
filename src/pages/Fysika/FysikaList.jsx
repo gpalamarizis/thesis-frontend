@@ -6,7 +6,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import { fysika } from '../../api';
 import { fmtDate } from '../../utils/format';
 
-function FysikaList({ user, onLogout }) {
+function FysikaList({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ function FysikaList({ user, onLogout }) {
   ];
 
   return (
-    <Layout user={user} onLogout={onLogout} title="Φυσικά Πρόσωπα">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Φυσικά Πρόσωπα">
       {error && <div className="error">{error}</div>}
 
       <div className="section">

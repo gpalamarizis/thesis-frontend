@@ -127,13 +127,18 @@ export const actions = {
     remove:     (id) => api.delete(`/api/actions/court/${id}`),
   },
   task: {
-    // NOTE: /api/actions/task does not exist in backend v3. This helper returns empty
-    // to avoid 404s and lets the UI continue gracefully until the backend adds it.
-    listByCase: async () => ({ data: [] }),
-    create:     () => Promise.reject(new Error('Το backend δεν υποστηρίζει λοιπές ενέργειες ακόμη')),
-    update:     () => Promise.reject(new Error('Το backend δεν υποστηρίζει λοιπές ενέργειες ακόμη')),
-    remove:     () => Promise.reject(new Error('Το backend δεν υποστηρίζει λοιπές ενέργειες ακόμη')),
+    listByCase: (caseId) => api.get(`/api/actions/task?ypothesi_id=${caseId}`),
+    create:     (payload) => api.post('/api/actions/task', payload),
+    update:     (id, payload) => api.put(`/api/actions/task/${id}`, payload),
+    remove:     (id) => api.delete(`/api/actions/task/${id}`),
   },
+};
+
+export const caseRelatedPersons = {
+  listByCase: (caseId) => api.get(`/api/case-related-persons?ypothesi_id=${caseId}`),
+  create:     (payload) => api.post('/api/case-related-persons', payload),
+  update:     (id, payload) => api.put(`/api/case-related-persons/${id}`, payload),
+  remove:     (id) => api.delete(`/api/case-related-persons/${id}`),
 };
 
 export const lists = {

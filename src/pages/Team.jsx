@@ -12,7 +12,7 @@ const roleLabel = {
   secretary: 'Γραμματέας',
 };
 
-function Team({ user, onLogout }) {
+function Team({ user, onLogout, onOpenCaseSearch }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -49,7 +49,7 @@ function Team({ user, onLogout }) {
   ];
 
   return (
-    <Layout user={user} onLogout={onLogout} title="Ομάδα">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Ομάδα">
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">

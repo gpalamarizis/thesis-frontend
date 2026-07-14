@@ -10,7 +10,7 @@ import { courts } from '../api';
 const VATHMOS_OPTIONS = ['Ειρηνοδικείο', 'Πρωτοδικείο', 'Εφετείο', 'Άρειος Πάγος', 'Συμβούλιο Επικρατείας', 'Ελεγκτικό Συνέδριο', 'Διοικητικό'];
 const EIDOS_OPTIONS   = ['Πολιτικό', 'Ποινικό', 'Διοικητικό', 'Άλλο'];
 
-function Courts({ user, onLogout }) {
+function Courts({ user, onLogout, onOpenCaseSearch }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,7 +42,7 @@ function Courts({ user, onLogout }) {
   ];
 
   return (
-    <Layout user={user} onLogout={onLogout} title="Δικαστήρια">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Δικαστήρια">
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">

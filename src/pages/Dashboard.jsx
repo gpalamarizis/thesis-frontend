@@ -5,7 +5,7 @@ import Modal from '../components/Modal';
 import { reports, cases } from '../api';
 import { fmtDate } from '../utils/format';
 
-function Dashboard({ user, onLogout }) {
+function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   const [stats, setStats] = useState({ total_cases: 0, pending_cases: 0, hearings_next_30d: 0, open_tasks: 0 });
   const [hearings, setHearings] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -63,7 +63,7 @@ function Dashboard({ user, onLogout }) {
   }, [monthCursor]);
 
   return (
-    <Layout user={user} onLogout={onLogout} title="Πίνακας Ελέγχου">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Πίνακας Ελέγχου">
       {error && <div className="error">{error}</div>}
 
       <div className="section" style={{ marginBottom: 20 }}>

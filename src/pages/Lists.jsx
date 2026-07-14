@@ -23,7 +23,7 @@ const LIST_TYPES = [
   { key: 'dikastiria_grammateis',          label: 'Γραμματείς',             fields: [{key:'eponymo', label:'Επώνυμο'}, {key:'onoma', label:'Όνομα'}] },
 ];
 
-function Lists({ user, onLogout }) {
+function Lists({ user, onLogout, onOpenCaseSearch }) {
   const [activeList, setActiveList] = useState(LIST_TYPES[0].key);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +51,7 @@ function Lists({ user, onLogout }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} title="Επεξεργασία Λιστών">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Επεξεργασία Λιστών">
       {error && <div className="error">{error}</div>}
 
       <div className="lists-layout">

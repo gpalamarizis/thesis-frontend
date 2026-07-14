@@ -6,7 +6,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import { cases } from '../../api';
 import { fmtDate, trunc, caseStatusBadge } from '../../utils/format';
 
-function CasesList({ user, onLogout }) {
+function CasesList({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ function CasesList({ user, onLogout }) {
   ];
 
   return (
-    <Layout user={user} onLogout={onLogout} title="Υποθέσεις">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Υποθέσεις">
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">

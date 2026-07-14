@@ -22,7 +22,7 @@ const SOURCE_LABEL = {
   antidikoi: 'Αντίδικος',
 };
 
-function Phonebook({ user, onLogout }) {
+function Phonebook({ user, onLogout, onOpenCaseSearch }) {
   const [items, setItems] = useState([]);
   const [q, setQ] = useState('');
   const [source, setSource] = useState('');
@@ -56,7 +56,7 @@ function Phonebook({ user, onLogout }) {
   ];
 
   return (
-    <Layout user={user} onLogout={onLogout} title="Τηλεφωνικός Κατάλογος">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Τηλεφωνικός Κατάλογος">
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="phonebook-controls">

@@ -8,14 +8,18 @@ import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
 import { cases, actions, documents, courts, people, fysika, nomika, lists } from '../../api';
 import { fmtDate, fmtDateTime, toDateInput, trunc } from '../../utils/format';
 import { extractFileMetadata } from '../../utils/fileMetadata';
+import { createEmptyDocx, createEmptyXlsx, blobToFile } from '../../utils/emptyOfficeDoc';
 import FinanceTab from './FinanceTab';
+import TaskActionsTab from './TaskActionsTab';
+import RelatedPersonsTab from './RelatedPersonsTab';
 
-function CaseEdit({ user, onLogout }) {
+function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [caseData, setCaseData] = useState(null);
   const [courtActions, setCourtActions] = useState([]);
+  const [taskActions, setTaskActions] = useState([]);
   const [docs, setDocs] = useState([]);
   const [courtsList, setCourtsList] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -28,9 +32,10 @@ function CaseEdit({ user, onLogout }) {
     Promise.allSettled([
       cases.get(id),
       actions.court.listByCase(id),
+      actions.task.listByCase(id),
       documents.listByCase(id),
       courts.list(),
-    ]).then(([cRes, chRes, dRes, ctsRes]) => {
+    ]).then(([cRes, chRes, ctRes, dRes, ctsRes]) => {
       if (cRes.status === 'fulfilled') {
         setCaseData(cRes.value?.data || cRes.value);
         setError('');
@@ -39,6 +44,7 @@ function CaseEdit({ user, onLogout }) {
       }
       const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
       if (chRes.status === 'fulfilled')  setCourtActions(unwrap(chRes.value));
+      if (ctRes.status === 'fulfilled')  setTaskActions(unwrap(ctRes.value));
       if (dRes.status === 'fulfilled')   setDocs(unwrap(dRes.value));
       if (ctsRes.status === 'fulfilled') setCourtsList(unwrap(ctsRes.value));
     }).finally(() => {
@@ -64,11 +70,11 @@ function CaseEdit({ user, onLogout }) {
     }
   };
 
-  if (initialLoading) return <Layout user={user} onLogout={onLogout} title="Υπόθεση"><div className="empty-state">Φόρτωση...</div></Layout>;
-  if (!caseData) return <Layout user={user} onLogout={onLogout} title="Υπόθεση"><div className="error">{error || 'Δεν βρέθηκε η υπόθεση.'}</div></Layout>;
+  if (initialLoading) return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Υπόθεση"><div className="empty-state">Φόρτωση...</div></Layout>;
+  if (!caseData) return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Υπόθεση"><div className="error">{error || 'Δεν βρέθηκε η υπόθεση.'}</div></Layout>;
 
   return (
-    <Layout user={user} onLogout={onLogout} title={`Υπόθεση ${caseData.xeirokinito_id || ''}`}>
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={`Υπόθεση ${caseData.xeirokinito_id || ''}`}>
       {error && <div className="error">{error}</div>}
       {okMsg && <div className="success">{okMsg}</div>}
 
@@ -76,7 +82,9 @@ function CaseEdit({ user, onLogout }) {
         <Tabs tabs={[
           { label: 'Υπόθεση',              content: <CaseTab caseData={caseData} onSave={saveCase} saving={saving} /> },
           { label: 'Δικαστικές ενέργειες', badge: courtActions.length, content: <CourtActionsTab caseId={id} rows={courtActions} courts={courtsList} onChange={() => loadAll(false)} /> },
+          { label: 'Λοιπές ενέργειες',     badge: taskActions.length,  content: <TaskActionsTab caseId={id} rows={taskActions} onChange={() => loadAll(false)} /> },
           { label: 'Πρόσωπα',              content: <PeopleTab caseData={caseData} onSave={saveCase} saving={saving} /> },
+          { label: 'Σχετιζόμενα',          content: <RelatedPersonsTab caseId={id} /> },
           { label: 'Αρχεία',               badge: docs.length,         content: <DocsTab caseId={id} rows={docs} onChange={() => loadAll(false)} /> },
           { label: 'Οικονομικά',           content: <FinanceTab caseId={id} /> },
         ]}/>
@@ -402,112 +410,6 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
   );
 }
 
-// ---------- Tab 3: Task Actions ----------
-function TaskActionsTab({ caseId, rows, onChange }) {
-  const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [confirmDel, setConfirmDel] = useState(null);
-
-  const doDelete = async (r) => {
-    try { await actions.task.remove(r.aa || r.id); onChange(); } catch (e) { alert(e.message); }
-  };
-
-  return (
-    <div>
-      <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
-        <div style={{ color: '#4a5568' }}>Λοιπές ενέργειες (προθεσμίες, εργασίες)</div>
-        <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέα ενέργεια</button>
-      </div>
-
-      {rows.length === 0 ? (
-        <div className="empty-state">Δεν υπάρχουν λοιπές ενέργειες.</div>
-      ) : (
-        <table className="table">
-          <thead><tr><th style={{width:110}}>Προθεσμία</th><th>Περιγραφή</th><th style={{width:110}}>Κατάσταση</th><th></th></tr></thead>
-          <tbody>
-            {rows.map(r => (
-              <tr key={r.aa || r.id}>
-                <td>{fmtDate(r.date_dead_line)}</td>
-                <td>{r.perigrafi_energias || r.perigrafi || '—'}</td>
-                <td>
-                  <span className={`badge ${r.ekkremis ? 'badge-pending' : 'badge-closed'}`}>
-                    {r.ekkremis ? 'Εκκρεμής' : 'Ολοκληρώθηκε'}
-                  </span>
-                </td>
-                <td>
-                  <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
-                  {' '}
-                  <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-
-      {showModal && <TaskActionModal caseId={caseId} initial={editing} onClose={() => setShowModal(false)} onSaved={() => { setShowModal(false); onChange(); }} />}
-      {confirmDel && <ConfirmDialog title="Διαγραφή Ενέργειας" message="Είστε σίγουρος;" confirmLabel="Διαγραφή" onConfirm={() => doDelete(confirmDel)} onClose={() => setConfirmDel(null)} />}
-    </div>
-  );
-}
-
-function TaskActionModal({ caseId, initial, onClose, onSaved }) {
-  const [form, setForm] = useState({
-    date_dead_line: toDateInput(initial?.date_dead_line) || '',
-    perigrafi_energias: initial?.perigrafi_energias || initial?.perigrafi || '',
-    ekkremis: initial?.ekkremis !== false,
-  });
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-
-  const save = async () => {
-    setSaving(true);
-    setError('');
-    try {
-      const payload = {
-        ypotheseis_id: Number(caseId),
-        date_dead_line: form.date_dead_line || null,
-        perigrafi_energias: form.perigrafi_energias || null,
-        ekkremis: !!form.ekkremis,
-      };
-      if (initial?.aa || initial?.id) await actions.task.update(initial.aa || initial.id, payload);
-      else await actions.task.create(payload);
-      onSaved();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Modal
-      title={initial ? 'Επεξεργασία ενέργειας' : 'Νέα ενέργεια'}
-      onClose={onClose}
-      actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
-      </>}
-    >
-      {error && <div className="error">{error}</div>}
-      <div className="form-group">
-        <label>Προθεσμία</label>
-        <input type="date" value={form.date_dead_line} onChange={e => setForm({ ...form, date_dead_line: e.target.value })} />
-      </div>
-      <div className="form-group">
-        <label>Περιγραφή ενέργειας</label>
-        <textarea rows="4" value={form.perigrafi_energias} onChange={e => setForm({ ...form, perigrafi_energias: e.target.value })} />
-      </div>
-      <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-          <input type="checkbox" checked={form.ekkremis} onChange={e => setForm({ ...form, ekkremis: e.target.checked })} />
-          <span>Εκκρεμής</span>
-        </label>
-      </div>
-    </Modal>
-  );
-}
-
 // ---------- Tab 4: People — matches backend schema exactly ----------
 function PeopleTab({ caseData, onSave, saving }) {
   const initialXeiristes = Array.isArray(caseData.xeiristes)
@@ -643,6 +545,9 @@ function DocsTab({ caseId, rows, onChange }) {
   const [preview, setPreview] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
   const [error, setError] = useState('');
+  const [selected, setSelected] = useState(null);
+  const [newFilePrompt, setNewFilePrompt] = useState(null); // 'docx' | 'xlsx'
+  const [newFileName, setNewFileName] = useState('');
 
   const onUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -659,6 +564,28 @@ function DocsTab({ caseId, rows, onChange }) {
     } finally {
       setUploading(false);
       e.target.value = '';
+    }
+  };
+
+  const createNewOfficeFile = async () => {
+    if (!newFileName.trim()) { setError('Δώσε όνομα για το νέο αρχείο.'); return; }
+    setError('');
+    setUploading(true);
+    try {
+      const isDocx = newFilePrompt === 'docx';
+      const blob = isDocx ? createEmptyDocx() : createEmptyXlsx();
+      const ext = isDocx ? '.docx' : '.xlsx';
+      const name = newFileName.trim().endsWith(ext) ? newFileName.trim() : newFileName.trim() + ext;
+      const file = blobToFile(blob, name);
+      const metadata = await extractFileMetadata(file);
+      await documents.upload(caseId, file, '', metadata);
+      setNewFilePrompt(null);
+      setNewFileName('');
+      onChange();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -721,50 +648,113 @@ function DocsTab({ caseId, rows, onChange }) {
   return (
     <div>
       {error && <div className="error">{error}</div>}
-      <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
+      <div className="section-header" style={{ padding: 0, marginBottom: 16, gap: 8, flexWrap: 'wrap' }}>
         <div style={{ color: '#4a5568' }}>Αρχεία υπόθεσης</div>
-        <label className={`btn ${uploading ? 'btn-disabled' : ''}`} style={{ margin: 0, cursor: 'pointer' }}>
-          {uploading ? 'Ανέβασμα...' : '📎 Ανέβασμα αρχείου'}
-          <input type="file" style={{ display: 'none' }} onChange={onUpload} disabled={uploading} />
-        </label>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('docx'); setNewFileName(''); }}>📄 Νέο Word</button>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('xlsx'); setNewFileName(''); }}>📊 Νέο Excel</button>
+          <label className={`btn btn-sm ${uploading ? 'btn-disabled' : ''}`} style={{ margin: 0, cursor: 'pointer' }}>
+            {uploading ? 'Ανέβασμα...' : '📎 Ανέβασμα αρχείου'}
+            <input type="file" style={{ display: 'none' }} onChange={onUpload} disabled={uploading} />
+          </label>
+        </div>
       </div>
 
-      {rows.length === 0 ? (
-        <div className="empty-state">Δεν υπάρχουν αρχεία σε αυτή την υπόθεση.</div>
-      ) : (
-        <table className="table">
-          <thead><tr>
-            <th>Όνομα</th>
-            <th style={{width:110}}>Μέγεθος</th>
-            <th style={{width:160}}>Ανέβηκε</th>
-            <th style={{width:180}}>Επεξεργάστηκε από</th>
-            <th style={{width:1}}></th>
-          </tr></thead>
-          <tbody>
-            {rows.map(d => {
-              const name = docName(d);
-              const size = docSize(d);
-              return (
-                <tr key={d.aa || d.id}>
-                  <td>
-                    <span style={{ marginRight: 6 }}>{fileIcon(name)}</span>
-                    {name}
-                  </td>
-                  <td>{size != null ? formatBytes(size) : '—'}</td>
-                  <td>{docDate(d) ? fmtDateTime(docDate(d)) : '—'}</td>
-                  <td>{docUser(d)}</td>
-                  <td style={{ whiteSpace: 'nowrap' }}>
-                    <button className="btn btn-sm" onClick={() => openDownload(d)}>⬇ Λήψη</button>
-                    {' '}
-                    <button className="btn btn-sm btn-secondary" onClick={() => openPreview(d)}>Προβολή</button>
-                    {' '}
-                    <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(d)}>×</button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {rows.length === 0 ? (
+            <div className="empty-state">Δεν υπάρχουν αρχεία σε αυτή την υπόθεση.</div>
+          ) : (
+            <table className="table">
+              <thead><tr>
+                <th>Όνομα</th>
+                <th style={{width:110}}>Μέγεθος</th>
+                <th style={{width:160}}>Ανέβηκε</th>
+                <th style={{width:180}}>Επεξεργάστηκε από</th>
+                <th style={{width:1}}></th>
+              </tr></thead>
+              <tbody>
+                {rows.map(d => {
+                  const name = docName(d);
+                  const size = docSize(d);
+                  const isSelected = selected && (selected.aa || selected.id) === (d.aa || d.id);
+                  return (
+                    <tr key={d.aa || d.id} className={`clickable ${isSelected ? 'row-selected' : ''}`} onClick={() => setSelected(d)}>
+                      <td>
+                        <span style={{ marginRight: 6 }}>{fileIcon(name)}</span>
+                        {name}
+                      </td>
+                      <td>{size != null ? formatBytes(size) : '—'}</td>
+                      <td>{docDate(d) ? fmtDateTime(docDate(d)) : '—'}</td>
+                      <td>{docUser(d)}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>
+                        <button className="btn btn-sm" onClick={(e) => { e.stopPropagation(); openDownload(d); }}>⬇ Λήψη</button>
+                        {' '}
+                        <button className="btn btn-sm btn-secondary" onClick={(e) => { e.stopPropagation(); openPreview(d); }}>Προβολή</button>
+                        {' '}
+                        <button className="btn btn-sm btn-danger" onClick={(e) => { e.stopPropagation(); setConfirmDel(d); }}>×</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {selected && (
+          <div style={{ width: 280, flexShrink: 0, background: '#f7fafc', borderRadius: 8, padding: 16 }}>
+            <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Λεπτομέρειες αρχείου</h3>
+            <div style={{ fontSize: 13, lineHeight: 1.7 }}>
+              <div><strong>{docName(selected)}</strong></div>
+              <div style={{ color: '#718096', marginTop: 8 }}>
+                <div><strong>Μέγεθος:</strong> {docSize(selected) != null ? formatBytes(docSize(selected)) : '—'}</div>
+                <div><strong>Ανέβηκε:</strong> {docDate(selected) ? fmtDateTime(docDate(selected)) : '—'}</div>
+                <div><strong>Ανέβηκε από:</strong> {docUser(selected)}</div>
+                {(selected.metadata_author || selected.metadata_created_at) && (
+                  <>
+                    <hr style={{ margin: '10px 0', border: 'none', borderTop: '1px solid #cbd5e0' }} />
+                    <div style={{ fontWeight: 600, color: '#4a5568', marginBottom: 6 }}>Ιδιότητες εγγράφου</div>
+                    {selected.metadata_author && <div><strong>Συγγραφέας:</strong> {selected.metadata_author}</div>}
+                    {selected.metadata_last_modified_by && selected.metadata_last_modified_by !== selected.metadata_author && (
+                      <div><strong>Τελ. επιμελητής:</strong> {selected.metadata_last_modified_by}</div>
+                    )}
+                    {selected.metadata_created_at && <div><strong>Ημ. δημιουργίας:</strong> {fmtDateTime(selected.metadata_created_at)}</div>}
+                    {selected.metadata_modified_at && <div><strong>Ημ. αποθήκευσης:</strong> {fmtDateTime(selected.metadata_modified_at)}</div>}
+                    {selected.metadata_title && <div><strong>Τίτλος:</strong> {selected.metadata_title}</div>}
+                  </>
+                )}
+              </div>
+              <button className="btn btn-sm btn-secondary" style={{ marginTop: 12, width: '100%' }} onClick={() => setSelected(null)}>Κλείσιμο</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {newFilePrompt && (
+        <Modal
+          title={newFilePrompt === 'docx' ? 'Νέο Word έγγραφο' : 'Νέο Excel αρχείο'}
+          onClose={() => setNewFilePrompt(null)}
+          actions={<>
+            <button type="button" className="btn btn-secondary" onClick={() => setNewFilePrompt(null)}>Ακύρωση</button>
+            <button type="button" className="btn" disabled={uploading || !newFileName.trim()} onClick={createNewOfficeFile}>
+              {uploading ? 'Δημιουργία...' : 'Δημιουργία & Ανέβασμα'}
+            </button>
+          </>}
+        >
+          <div className="form-group">
+            <label>Όνομα αρχείου</label>
+            <input
+              type="text"
+              autoFocus
+              value={newFileName}
+              onChange={e => setNewFileName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && newFileName.trim() && createNewOfficeFile()}
+              placeholder={newFilePrompt === 'docx' ? 'π.χ. Αγωγή' : 'π.χ. Υπολογισμός κόστους'}
+            />
+            <small style={{ color: '#a0aec0' }}>Η κατάληξη {newFilePrompt === 'docx' ? '.docx' : '.xlsx'} θα προστεθεί αυτόματα αν λείπει.</small>
+          </div>
+        </Modal>
       )}
 
       {preview && (

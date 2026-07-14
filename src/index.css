@@ -748,3 +748,15 @@ body {
   color: #718096;
   text-align: center;
 }
+
+/* Selected row in a table (e.g., docs list) */
+.table tr.row-selected {
+  background: #ebf8ff !important;
+  box-shadow: inset 3px 0 0 #667eea;
+}
+.table tr.clickable {
+  cursor: pointer;
+}
+.table tr.clickable:hover {
+  background: #f7fafc;
+}

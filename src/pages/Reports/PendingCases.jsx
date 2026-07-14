@@ -5,7 +5,7 @@ import { reports } from '../../api';
 import { fmtDate, trunc } from '../../utils/format';
 import { exportToPdf, tableHtml } from '../../utils/printPdf';
 
-function PendingCases({ user, onLogout }) {
+function PendingCases({ user, onLogout, onOpenCaseSearch }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,7 +35,7 @@ function PendingCases({ user, onLogout }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} title="Εκκρεμείς Υποθέσεις">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Εκκρεμείς Υποθέσεις">
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">

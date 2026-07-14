@@ -94,7 +94,7 @@ const KIND_CONFIG = {
   },
 };
 
-function PeopleList({ user, onLogout, kind, title }) {
+function PeopleList({ user, onLogout, onOpenCaseSearch, kind, title }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -121,7 +121,7 @@ function PeopleList({ user, onLogout, kind, title }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} title={title}>
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={title}>
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">

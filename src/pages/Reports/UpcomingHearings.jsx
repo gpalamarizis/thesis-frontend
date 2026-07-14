@@ -5,7 +5,7 @@ import { reports } from '../../api';
 import { fmtDate, trunc } from '../../utils/format';
 import { exportToPdf, tableHtml } from '../../utils/printPdf';
 
-function UpcomingHearings({ user, onLogout }) {
+function UpcomingHearings({ user, onLogout, onOpenCaseSearch }) {
   const today = new Date().toISOString().slice(0, 10);
   const inMonth = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
@@ -45,7 +45,7 @@ function UpcomingHearings({ user, onLogout }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} title="Προσεχείς Δικάσιμοι">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Προσεχείς Δικάσιμοι">
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="filter-bar">

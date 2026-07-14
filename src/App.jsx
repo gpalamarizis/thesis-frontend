@@ -1,20 +1,16 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { auth } from './api';
+import CaseSearchModal from './components/CaseSearchModal';
 
-// Auth
 import Login from './pages/Login';
 import Register from './pages/Register';
-
-// Main
 import Dashboard from './pages/Dashboard';
 
-// Cases
 import CasesList from './pages/Cases/CasesList';
 import CaseNew from './pages/Cases/CaseNew';
 import CaseEdit from './pages/Cases/CaseEdit';
 
-// People
 import FysikaList from './pages/Fysika/FysikaList';
 import FysikaEdit from './pages/Fysika/FysikaEdit';
 import NomikaList from './pages/Nomika/NomikaList';
@@ -22,32 +18,27 @@ import NomikaEdit from './pages/Nomika/NomikaEdit';
 import PeopleList from './pages/People/PeopleList';
 import Phonebook from './pages/Phonebook';
 
-// Courts
 import Courts from './pages/Courts';
 
-// Reports
 import PendingCases from './pages/Reports/PendingCases';
 import UpcomingHearings from './pages/Reports/UpcomingHearings';
 import PendingTasks from './pages/Reports/PendingTasks';
 
-// Settings
 import Lists from './pages/Lists';
 import Team from './pages/Team';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showCaseSearch, setShowCaseSearch] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     const cachedUser = localStorage.getItem('user');
-
     if (!token) { setLoading(false); return; }
-
     if (cachedUser) {
       try { setUser(JSON.parse(cachedUser)); } catch { /* ignore */ }
     }
-
     auth.me()
       .then(data => {
         const remote = (data && data.user) ? data.user : data;
@@ -64,6 +55,22 @@ function App() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // Global keyboard shortcut: F3 = full case search
+  useEffect(() => {
+    if (!user) return;
+    const onKey = (e) => {
+      if (e.key === 'F3' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        setShowCaseSearch(true);
+      }
+      if (e.key === 'Escape' && showCaseSearch) {
+        setShowCaseSearch(false);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [user, showCaseSearch]);
 
   const handleLogin = (userData, token) => {
     localStorage.setItem('token', token);
@@ -82,7 +89,7 @@ function App() {
   }
 
   const guard = (Component, props = {}) =>
-    user ? <Component user={user} onLogout={handleLogout} {...props} /> : <Navigate to="/login" replace />;
+    user ? <Component user={user} onLogout={handleLogout} onOpenCaseSearch={() => setShowCaseSearch(true)} {...props} /> : <Navigate to="/login" replace />;
 
   return (
     <BrowserRouter>
@@ -119,6 +126,9 @@ function App() {
 
         <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
       </Routes>
+      {user && showCaseSearch && (
+        <CaseSearchModal onClose={() => setShowCaseSearch(false)} />
+      )}
     </BrowserRouter>
   );
 }

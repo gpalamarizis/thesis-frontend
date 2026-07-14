@@ -15,7 +15,7 @@ const emptyForm = {
   fax_1: '', fax_2: '', fax_3: '',
 };
 
-function NomikaEdit({ user, onLogout }) {
+function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const isNew = !id || id === 'new';
@@ -57,7 +57,7 @@ function NomikaEdit({ user, onLogout }) {
     }
   };
 
-  if (loading) return <Layout user={user} onLogout={onLogout} title="Νομικό Πρόσωπο"><div className="empty-state">Φόρτωση...</div></Layout>;
+  if (loading) return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Νομικό Πρόσωπο"><div className="empty-state">Φόρτωση...</div></Layout>;
 
   const tabCompany = (
     <div>
@@ -162,7 +162,7 @@ function NomikaEdit({ user, onLogout }) {
   );
 
   return (
-    <Layout user={user} onLogout={onLogout} title={isNew ? 'Νέο Νομικό Πρόσωπο' : form.eponymia}>
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={isNew ? 'Νέο Νομικό Πρόσωπο' : form.eponymia}>
       {error && <div className="error">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="section">
