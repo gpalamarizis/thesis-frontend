@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
+import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { fysika } from '../../api';
 import { toDateInput } from '../../utils/format';
 
@@ -203,6 +204,12 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={isNew ? 'Νέο Φυσικό Πρόσωπο' : `${form.eponymo} ${form.onoma || ''}`}>
       {error && <div className="error">{error}</div>}
+      <PersonEditToolbar
+        kind="fysika"
+        currentId={id}
+        listHelper={fysika}
+        labelFn={(r) => `${r.eponymo || ''} ${r.onoma || ''}`.trim() || `#${r.aa}`}
+      />
       <form onSubmit={handleSubmit}>
         <div className="section">
           <Tabs tabs={[

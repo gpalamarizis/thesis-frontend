@@ -72,6 +72,7 @@ export const cases = {
   remove:          (id)              => api.delete(`/api/cases/${id}`),
   previewProtocol: (clientType, clientId) =>
     api.get(`/api/cases/preview-protocol?clientType=${clientType}&clientId=${clientId}`),
+  sameClient:      (id)              => api.get(`/api/cases/${id}/same-client`),
 };
 
 // Fysika & Nomika are mounted at top-level /api/fysika, /api/nomika (not under /api/people)
@@ -139,6 +140,12 @@ export const caseRelatedPersons = {
   create:     (payload) => api.post('/api/case-related-persons', payload),
   update:     (id, payload) => api.put(`/api/case-related-persons/${id}`, payload),
   remove:     (id) => api.delete(`/api/case-related-persons/${id}`),
+};
+
+export const caseRelatedCases = {
+  listByCase: (caseId) => api.get(`/api/case-related-cases?ypothesi_id=${caseId}`),
+  create:     (payload) => api.post('/api/case-related-cases', payload),
+  remove:     (id) => api.delete(`/api/case-related-cases/${id}`),
 };
 
 export const lists = {

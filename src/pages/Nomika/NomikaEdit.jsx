@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
+import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { nomika } from '../../api';
 
 // Backend fields (from routes/nomika.js FIELDS list):
@@ -164,6 +165,12 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={isNew ? 'Νέο Νομικό Πρόσωπο' : form.eponymia}>
       {error && <div className="error">{error}</div>}
+      <PersonEditToolbar
+        kind="nomika"
+        currentId={id}
+        listHelper={nomika}
+        labelFn={(r) => r.eponymia || r.diakritikos_titlos || `#${r.aa}`}
+      />
       <form onSubmit={handleSubmit}>
         <div className="section">
           <Tabs tabs={[

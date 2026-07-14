@@ -12,6 +12,7 @@ import { createEmptyDocx, createEmptyXlsx, blobToFile } from '../../utils/emptyO
 import FinanceTab from './FinanceTab';
 import TaskActionsTab from './TaskActionsTab';
 import RelatedPersonsTab from './RelatedPersonsTab';
+import RelatedCasesPanel from './RelatedCasesPanel';
 
 function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
@@ -125,70 +126,76 @@ function CaseTab({ caseData, onSave, saving }) {
   }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou, caseData.thesi_arxeiothetisis_id, caseData.old_kod]);
 
   return (
-    <div>
-      <div className="form-grid-2">
-        <div className="form-group">
-          <label>Αριθμός Πρωτοκόλλου</label>
-          <input type="text" value={caseData.xeirokinito_id || ''} readOnly />
+    <div className="case-tab-layout">
+      <div className="case-tab-main">
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Αριθμός Πρωτοκόλλου</label>
+            <input type="text" value={caseData.xeirokinito_id || ''} readOnly />
+          </div>
+          <div className="form-group">
+            <label>Κατάσταση</label>
+            <select value={ekkremis ? '1' : '0'} onChange={e => setEkkremis(e.target.value === '1')}>
+              <option value="1">Εκκρεμής</option>
+              <option value="0">Κλεισμένη</option>
+            </select>
+          </div>
+        </div>
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Ημερομηνία εισαγωγής</label>
+            <input type="date" value={dateEisagogis} onChange={e => setDateEisagogis(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label>Ημερομηνία τέλους</label>
+            <input type="date" value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
+          </div>
+        </div>
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Ονομασία φακέλου</label>
+            <input type="text" value={onomasiaFakelou} onChange={e => setOnomasiaFakelou(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label>Αρχειοθετημένη σε</label>
+            <select value={thesiArxeiothetisisId} onChange={e => setThesiArxeiothetisisId(e.target.value)}>
+              <option value="">-- επιλογή --</option>
+              {archiveOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name || '—'}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Παλιός Κωδικός</label>
+            <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
+          </div>
+          <div />
         </div>
         <div className="form-group">
-          <label>Κατάσταση</label>
-          <select value={ekkremis ? '1' : '0'} onChange={e => setEkkremis(e.target.value === '1')}>
-            <option value="1">Εκκρεμής</option>
-            <option value="0">Κλεισμένη</option>
-          </select>
+          <label>Περίληψη / Περιγραφή</label>
+          <textarea rows="8" value={perilipsi} onChange={e => setPerilipsi(e.target.value)} />
+        </div>
+        <div style={{ textAlign: 'right' }}>
+          <button
+            type="button"
+            className="btn"
+            disabled={saving}
+            onClick={() => onSave({
+              perilipsi:               perilipsi || null,
+              date_eisagogis:          dateEisagogis || null,
+              date_telous:             dateTelous || null,
+              onomasia_fakelou:        onomasiaFakelou || null,
+              thesi_arxeiothetisis_id: thesiArxeiothetisisId ? Number(thesiArxeiothetisisId) : null,
+              old_kod:                 oldKod || null,
+              ekkremis:                ekkremis,
+            })}
+          >{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
         </div>
       </div>
-      <div className="form-grid-2">
-        <div className="form-group">
-          <label>Ημερομηνία εισαγωγής</label>
-          <input type="date" value={dateEisagogis} onChange={e => setDateEisagogis(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label>Ημερομηνία τέλους</label>
-          <input type="date" value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
-        </div>
-      </div>
-      <div className="form-grid-2">
-        <div className="form-group">
-          <label>Ονομασία φακέλου</label>
-          <input type="text" value={onomasiaFakelou} onChange={e => setOnomasiaFakelou(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label>Αρχειοθετημένη σε</label>
-          <select value={thesiArxeiothetisisId} onChange={e => setThesiArxeiothetisisId(e.target.value)}>
-            <option value="">-- επιλογή --</option>
-            {archiveOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name || '—'}</option>)}
-          </select>
-        </div>
-      </div>
-      <div className="form-grid-2">
-        <div className="form-group">
-          <label>Παλιός Κωδικός</label>
-          <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
-        </div>
-        <div />
-      </div>
-      <div className="form-group">
-        <label>Περίληψη / Περιγραφή</label>
-        <textarea rows="8" value={perilipsi} onChange={e => setPerilipsi(e.target.value)} />
-      </div>
-      <div style={{ textAlign: 'right' }}>
-        <button
-          type="button"
-          className="btn"
-          disabled={saving}
-          onClick={() => onSave({
-            perilipsi:               perilipsi || null,
-            date_eisagogis:          dateEisagogis || null,
-            date_telous:             dateTelous || null,
-            onomasia_fakelou:        onomasiaFakelou || null,
-            thesi_arxeiothetisis_id: thesiArxeiothetisisId ? Number(thesiArxeiothetisisId) : null,
-            old_kod:                 oldKod || null,
-            ekkremis:                ekkremis,
-          })}
-        >{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
-      </div>
+
+      <aside className="case-tab-sidebar">
+        <RelatedCasesPanel caseId={caseData.aa || caseData.id} />
+      </aside>
     </div>
   );
 }
