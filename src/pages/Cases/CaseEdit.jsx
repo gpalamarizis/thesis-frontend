@@ -13,6 +13,7 @@ import FinanceTab from './FinanceTab';
 import TaskActionsTab from './TaskActionsTab';
 import RelatedPersonsTab from './RelatedPersonsTab';
 import RelatedCasesPanel from './RelatedCasesPanel';
+import CaseInvoicesTab from './CaseInvoicesTab';
 
 function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
@@ -88,6 +89,7 @@ function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
           { label: 'Σχετιζόμενα',          content: <RelatedPersonsTab caseId={id} /> },
           { label: 'Αρχεία',               badge: docs.length,         content: <DocsTab caseId={id} rows={docs} onChange={() => loadAll(false)} /> },
           { label: 'Οικονομικά',           content: <FinanceTab caseId={id} /> },
+          { label: 'Τιμολόγια',            content: <CaseInvoicesTab caseId={id} /> },
         ]}/>
       </div>
 

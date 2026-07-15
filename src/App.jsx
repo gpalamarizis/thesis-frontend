@@ -28,6 +28,10 @@ import TaskActionsCalendar from './pages/Reports/TaskActionsCalendar';
 
 import Lists from './pages/Lists';
 import Team from './pages/Team';
+import OrganizationSettings from './pages/OrganizationSettings';
+import InvoiceSeries from './pages/InvoiceSeries';
+import InvoicesList from './pages/Invoices/InvoicesList';
+import InvoiceEdit from './pages/Invoices/InvoiceEdit';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -127,6 +131,12 @@ function App() {
 
         <Route path="/lists" element={guard(Lists)} />
         <Route path="/team"  element={guard(Team)} />
+
+        <Route path="/settings/organization" element={guard(OrganizationSettings)} />
+        <Route path="/settings/invoice-series" element={guard(InvoiceSeries)} />
+        <Route path="/invoices"     element={guard(InvoicesList)} />
+        <Route path="/invoices/new" element={guard(InvoiceEdit)} />
+        <Route path="/invoices/:id" element={guard(InvoiceEdit)} />
 
         <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />
       </Routes>

@@ -151,6 +151,30 @@ export const caseRelatedCases = {
   remove:     (id) => api.delete(`/api/case-related-cases/${id}`),
 };
 
+export const orgSettings = {
+  get:    () => api.get('/api/organization/settings'),
+  update: (payload) => api.put('/api/organization/settings', payload),
+};
+
+export const invoiceSeries = {
+  list:   () => api.get('/api/invoice-series'),
+  create: (payload) => api.post('/api/invoice-series', payload),
+  update: (id, payload) => api.put(`/api/invoice-series/${id}`, payload),
+  remove: (id) => api.delete(`/api/invoice-series/${id}`),
+};
+
+export const invoices = {
+  list:      (params = '') => api.get('/api/invoices' + (params ? `?${params}` : '')),
+  listByCase:(caseId)      => api.get(`/api/invoices?ypothesi_id=${caseId}`),
+  get:       (id)          => api.get(`/api/invoices/${id}`),
+  create:    (payload)     => api.post('/api/invoices', payload),
+  update:    (id, payload) => api.put(`/api/invoices/${id}`, payload),
+  issue:     (id)          => api.post(`/api/invoices/${id}/issue`, {}),
+  cancel:    (id, reason)  => api.post(`/api/invoices/${id}/cancel`, { reason }),
+  remove:    (id)          => api.delete(`/api/invoices/${id}`),
+  fromCase:  (caseId)      => api.post(`/api/invoices/from-case/${caseId}`, {}),
+};
+
 export const lists = {
   get:    (listName)               => api.get(`/api/lists/${listName}`),
   create: (listName, payload)      => api.post(`/api/lists/${listName}`, payload),

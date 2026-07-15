@@ -45,6 +45,15 @@ const menuGroups = [
     ],
   },
   {
+    title: 'Τιμολόγηση',
+    items: [
+      { path: '/invoices',                 label: 'Τιμολόγια',          icon: '🧾' },
+      { path: '/invoices/new',             label: 'Νέο τιμολόγιο',      icon: '➕' },
+      { path: '/settings/invoice-series',  label: 'Σειρές τιμολογίων',  icon: '🔢' },
+      { path: '/settings/organization',    label: 'Στοιχεία γραφείου',  icon: '🏢' },
+    ],
+  },
+  {
     title: 'Ρυθμίσεις',
     items: [
       { path: '/lists', label: 'Επεξεργασία λιστών', icon: '⚙️' },
