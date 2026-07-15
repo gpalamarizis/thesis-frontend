@@ -135,7 +135,6 @@ function App() {
         <Route path="/settings/organization" element={guard(OrganizationSettings)} />
         <Route path="/settings/invoice-series" element={guard(InvoiceSeries)} />
         <Route path="/invoices"     element={guard(InvoicesList)} />
-        <Route path="/invoices/new" element={guard(InvoiceEdit)} />
         <Route path="/invoices/:id" element={guard(InvoiceEdit)} />
 
         <Route path="*" element={<Navigate to={user ? '/dashboard' : '/login'} replace />} />

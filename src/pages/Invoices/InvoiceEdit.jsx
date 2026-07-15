@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { invoices, invoiceSeries, orgSettings, fysika, nomika, cases } from '../../api';
@@ -38,7 +38,9 @@ function computeTotals(lines, applyWithhold, applyStamp, applyTn) {
 function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isNew = id === 'new';
+  const [searchParams] = useSearchParams();
+  const isNew = !id || id === 'new';
+  const prefilledCaseId = searchParams.get('ypothesi_id') || '';
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -59,10 +61,10 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
     status: 'draft',
     series_id: '',
     date: new Date().toISOString().slice(0, 10),
-    recipient_kind: 'fysiko',    // 'fysiko' | 'nomiko'
+    recipient_kind: 'fysiko',
     fysiko_prosopo_id: '',
     nomiko_prosopo_id: '',
-    ypothesi_id: '',
+    ypothesi_id: prefilledCaseId,
     apply_withhold: true,
     apply_stamp: false,
     apply_tn: false,
@@ -114,7 +116,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
   }, [isNew]);
 
   useEffect(() => {
-    if (isNew) { setLoading(false); return; }
+    if (isNew || !id) { setLoading(false); return; }
     setLoading(true);
     invoices.get(id)
       .then(d => {
@@ -212,8 +214,10 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
       if (isNew) {
         const r = await invoices.create(payload);
         const newId = r?.data?.aa || r?.aa;
+        if (!newId) { setError('Το backend δεν επέστρεψε ID.'); return; }
         navigate(`/invoices/${newId}`, { replace: true });
       } else {
+        if (!form.aa) { setError('Λείπει το ID τιμολογίου.'); return; }
         await invoices.update(form.aa, payload);
         // Reload to get fresh state
         const d = await invoices.get(form.aa);
@@ -277,6 +281,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
   };
 
   const downloadPdf = async () => {
+    if (!form.aa) { setError('Αποθήκευσε πρώτα το draft.'); return; }
     try {
       const d = await invoices.get(form.aa);
       const inv = d?.data || d;
@@ -297,6 +302,13 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
   const title = isNew ? 'Νέο τιμολόγιο' :
     (form.full_number ? `Τιμολόγιο ${form.full_number}` : `Τιμολόγιο (draft #${form.aa})`);
 
+  const statusLabel = isNew || !form.aa
+    ? 'Νέο τιμολόγιο (μη αποθηκευμένο)'
+    : form.status === 'draft'     ? `Draft #${form.aa} (επεξεργάσιμο)`
+    : form.status === 'issued'    ? `Εκδοθέν ${form.issued_at ? '(' + fmtDate(form.issued_at) + ')' : ''}`
+    : form.status === 'cancelled' ? `Ακυρωμένο ${form.cancelled_at ? '(' + fmtDate(form.cancelled_at) + ')' : ''}`
+    : form.status;
+
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={title}>
       {error && <div className="error">{error}</div>}
@@ -305,19 +317,15 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
       <div className="section" style={{ marginBottom: 20, padding: 12, background: form.status === 'issued' ? '#c6f6d5' : form.status === 'cancelled' ? '#fed7d7' : '#feebc8' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
           <div>
-            <strong>Κατάσταση:</strong> {
-              form.status === 'draft'     ? 'Draft (επεξεργάσιμο)' :
-              form.status === 'issued'    ? `Εκδοθέν ${form.issued_at ? '(' + fmtDate(form.issued_at) + ')' : ''}` :
-              form.status === 'cancelled' ? `Ακυρωμένο ${form.cancelled_at ? '(' + fmtDate(form.cancelled_at) + ')' : ''}` : form.status
-            }
+            <strong>Κατάσταση:</strong> {statusLabel}
             {form.mydata_mark && <span style={{ marginLeft: 12 }}>myDATA MARK: <code>{form.mydata_mark}</code></span>}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-sm btn-secondary" onClick={() => navigate('/invoices')}>← Πίσω</button>
-            {!isNew && form.status !== 'draft' && (
+            {form.aa && form.status !== 'draft' && (
               <button className="btn btn-sm" onClick={downloadPdf}>📄 Λήψη PDF</button>
             )}
-            {!isNew && form.status === 'draft' && (
+            {form.aa && form.status === 'draft' && (
               <>
                 <button className="btn btn-sm" onClick={downloadPdf}>📄 Preview PDF</button>
                 <button className="btn btn-sm" onClick={() => setConfirmIssue(true)} disabled={!form.series_id}>✓ Έκδοση</button>
