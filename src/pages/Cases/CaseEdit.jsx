@@ -5,7 +5,7 @@ import Tabs from '../../components/Tabs';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
-import { cases, actions, documents, courts, people, fysika, nomika, lists } from '../../api';
+import { cases, actions, documents, courts, people, fysika, nomika, lists, templates } from '../../api';
 import { fmtDate, fmtDateTime, toDateInput, trunc } from '../../utils/format';
 import { extractFileMetadata } from '../../utils/fileMetadata';
 import { createEmptyDocx, createEmptyXlsx, blobToFile } from '../../utils/emptyOfficeDoc';
@@ -580,6 +580,7 @@ function DocsTab({ caseId, rows, onChange }) {
   const [selected, setSelected] = useState(null);
   const [newFilePrompt, setNewFilePrompt] = useState(null); // 'docx' | 'xlsx'
   const [newFileName, setNewFileName] = useState('');
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
 
   const onUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -683,6 +684,7 @@ function DocsTab({ caseId, rows, onChange }) {
       <div className="section-header" style={{ padding: 0, marginBottom: 16, gap: 8, flexWrap: 'wrap' }}>
         <div style={{ color: '#4a5568' }}>Αρχεία υπόθεσης</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={() => setShowTemplatePicker(true)}>📋 Από υπόδειγμα</button>
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('docx'); setNewFileName(''); }}>📄 Νέο Word</button>
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('xlsx'); setNewFileName(''); }}>📊 Νέο Excel</button>
           <label className={`btn btn-sm ${uploading ? 'btn-disabled' : ''}`} style={{ margin: 0, cursor: 'pointer' }}>
@@ -809,7 +811,109 @@ function DocsTab({ caseId, rows, onChange }) {
           onClose={() => setConfirmDel(null)}
         />
       )}
+      {showTemplatePicker && (
+        <TemplatePickerModal
+          caseId={caseId}
+          onClose={() => setShowTemplatePicker(false)}
+          onCreated={() => { setShowTemplatePicker(false); onChange(); }}
+        />
+      )}
     </div>
+  );
+}
+
+function TemplatePickerModal({ caseId, onClose, onCreated }) {
+  const [templateList, setTemplateList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState('');
+  const [selectedId, setSelectedId] = useState('');
+
+  useEffect(() => {
+    templates.list()
+      .then(d => setTemplateList(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const doCreate = async () => {
+    if (!selectedId) { setError('Επίλεξε ένα υπόδειγμα.'); return; }
+    setCreating(true);
+    setError('');
+    try {
+      await templates.createDoc(selectedId, caseId);
+      onCreated();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const grouped = {};
+  templateList.forEach(t => {
+    const cat = t.category || 'Χωρίς κατηγορία';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(t);
+  });
+
+  return (
+    <Modal
+      title="Δημιουργία εγγράφου από υπόδειγμα"
+      onClose={onClose}
+      size="lg"
+      actions={<>
+        <button className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
+        <button className="btn" disabled={creating || !selectedId} onClick={doCreate}>
+          {creating ? 'Δημιουργία...' : 'Δημιουργία εγγράφου'}
+        </button>
+      </>}
+    >
+      {error && <div className="error">{error}</div>}
+      <div style={{ color: '#718096', fontSize: 13, marginBottom: 12 }}>
+        Επίλεξε ένα υπόδειγμα. Τα placeholders θα γεμίσουν αυτόματα με τα στοιχεία της υπόθεσης και το έγγραφο θα αποθηκευτεί στα Αρχεία της υπόθεσης.
+      </div>
+      {loading ? (
+        <div className="empty-state">Φόρτωση υποδειγμάτων...</div>
+      ) : templateList.length === 0 ? (
+        <div className="empty-state">
+          Δεν υπάρχουν υποδείγματα.
+          <br /><small>Ζήτησε από τον διαχειριστή να ανεβάσει από τη σελίδα «Υποδείγματα».</small>
+        </div>
+      ) : (
+        <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+          {Object.entries(grouped).map(([category, items]) => (
+            <div key={category} style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{category}</div>
+              {items.map(t => (
+                <label
+                  key={t.aa}
+                  style={{
+                    display: 'flex', gap: 8, padding: 8, cursor: 'pointer',
+                    borderRadius: 4,
+                    background: String(selectedId) === String(t.aa) ? '#ebf8ff' : 'transparent',
+                    border: `1px solid ${String(selectedId) === String(t.aa) ? '#667eea' : '#e2e8f0'}`,
+                    marginBottom: 4,
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="template"
+                    value={t.aa}
+                    checked={String(selectedId) === String(t.aa)}
+                    onChange={() => setSelectedId(t.aa)}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <strong>{t.name}</strong>
+                    {t.description && <div style={{ fontSize: 12, color: '#718096' }}>{t.description}</div>}
+                  </div>
+                </label>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+    </Modal>
   );
 }
 

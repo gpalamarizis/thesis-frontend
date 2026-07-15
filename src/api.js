@@ -175,6 +175,25 @@ export const invoices = {
   fromCase:  (caseId)      => api.post(`/api/invoices/from-case/${caseId}`, {}),
 };
 
+export const templates = {
+  list:         () => api.get('/api/document-templates'),
+  placeholders: () => api.get('/api/document-templates/placeholders/help'),
+  upload:       (formData) => {
+    const token = localStorage.getItem('token');
+    return fetch(`${API_URL}/api/document-templates`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }, // NO Content-Type — browser sets multipart boundary
+      body: formData,
+    }).then(async r => {
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`);
+      return r.json();
+    });
+  },
+  downloadUrl:  (id) => `${API_URL}/api/document-templates/${id}/download`,
+  remove:       (id) => api.delete(`/api/document-templates/${id}`),
+  createDoc:    (id, caseId) => api.post(`/api/document-templates/${id}/create-doc/${caseId}`, {}),
+};
+
 export const lists = {
   get:    (listName)               => api.get(`/api/lists/${listName}`),
   create: (listName, payload)      => api.post(`/api/lists/${listName}`, payload),

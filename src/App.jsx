@@ -32,6 +32,7 @@ import OrganizationSettings from './pages/OrganizationSettings';
 import InvoiceSeries from './pages/InvoiceSeries';
 import InvoicesList from './pages/Invoices/InvoicesList';
 import InvoiceEdit from './pages/Invoices/InvoiceEdit';
+import Templates from './pages/Templates';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -134,6 +135,7 @@ function App() {
 
         <Route path="/settings/organization" element={guard(OrganizationSettings)} />
         <Route path="/settings/invoice-series" element={guard(InvoiceSeries)} />
+        <Route path="/settings/templates" element={guard(Templates)} />
         <Route path="/invoices"     element={guard(InvoicesList)} />
         <Route path="/invoices/:id" element={guard(InvoiceEdit)} />
 

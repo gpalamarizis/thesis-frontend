@@ -56,8 +56,9 @@ const menuGroups = [
   {
     title: 'Ρυθμίσεις',
     items: [
-      { path: '/lists', label: 'Επεξεργασία λιστών', icon: '⚙️' },
-      { path: '/team',  label: 'Ομάδα (χρήστες)',   icon: '👥' },
+      { path: '/settings/templates', label: 'Υποδείγματα Word', icon: '📋' },
+      { path: '/lists',              label: 'Επεξεργασία λιστών', icon: '⚙️' },
+      { path: '/team',               label: 'Ομάδα (χρήστες)',    icon: '👥' },
     ],
   },
 ];
