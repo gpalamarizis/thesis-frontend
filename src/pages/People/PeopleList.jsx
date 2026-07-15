@@ -101,9 +101,11 @@ function PeopleList({ user, onLogout, onOpenCaseSearch, kind, title }) {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'active' | 'inactive'
 
   const config = KIND_CONFIG[kind];
   const helper = getPeopleHelper(kind);
+  const hasEnergosField = (config.fields || []).some(f => f.key === 'energos');
 
   const load = () => {
     setLoading(true);
@@ -120,20 +122,42 @@ function PeopleList({ user, onLogout, onOpenCaseSearch, kind, title }) {
     catch (e) { setError(e.message); }
   };
 
+  const filteredItems = hasEnergosField && activeFilter !== 'all'
+    ? items.filter(r => activeFilter === 'active' ? r.energos !== false : r.energos === false)
+    : items;
+
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={title}>
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">
           <h2>{title}</h2>
-          <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέο</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {hasEnergosField && (
+              <div style={{ display: 'flex', gap: 4 }}>
+                <button
+                  className={`btn btn-sm ${activeFilter === 'all' ? '' : 'btn-secondary'}`}
+                  onClick={() => setActiveFilter('all')}
+                >Όλοι ({items.length})</button>
+                <button
+                  className={`btn btn-sm ${activeFilter === 'active' ? '' : 'btn-secondary'}`}
+                  onClick={() => setActiveFilter('active')}
+                >Ενεργοί ({items.filter(r => r.energos !== false).length})</button>
+                <button
+                  className={`btn btn-sm ${activeFilter === 'inactive' ? '' : 'btn-secondary'}`}
+                  onClick={() => setActiveFilter('inactive')}
+                >Μή ενεργοί ({items.filter(r => r.energos === false).length})</button>
+              </div>
+            )}
+            <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέο</button>
+          </div>
         </div>
         {loading ? (
           <div className="empty-state">Φόρτωση...</div>
         ) : (
           <DataTable
             columns={config.columns}
-            rows={items}
+            rows={filteredItems}
             rowKey={r => r.aa || r.id}
             onRowClick={r => { setEditing(r); setShowModal(true); }}
             emptyMessage="Δεν υπάρχουν εγγραφές."

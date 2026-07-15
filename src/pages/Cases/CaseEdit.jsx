@@ -225,21 +225,27 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
       ) : (
         <table className="table">
           <thead><tr>
-            <th style={{width:110}}>Ημ/νία</th>
+            <th style={{width:110}}>Ημ/νία δικασίμου</th>
+            <th style={{width:110}}>Ημ. Απόφασης</th>
             <th>Τίτλος</th>
             <th>Δικαστήριο</th>
             <th>Διαδικασία</th>
-            <th style={{width:90}}>Πινάκιο</th>
+            <th style={{width:90}}>Κατάσταση</th>
             <th style={{width:1}}></th>
           </tr></thead>
           <tbody>
             {rows.map(r => (
               <tr key={r.aa || r.id}>
                 <td>{fmtDate(r.date)}</td>
+                <td>{r.date_apofasis ? fmtDate(r.date_apofasis) : '—'}</td>
                 <td>{r.name || '—'}</td>
                 <td>{r.dikastirio_name || courts.find(c => (c.aa||c.id) === r.dikastirio_id)?.name || '—'}</td>
                 <td>{r.diadikasia_name || '—'}</td>
-                <td>{r.pinakio || '—'}</td>
+                <td>
+                  <span className={`badge ${r.ekkremis !== false ? 'badge-open' : 'badge-closed'}`}>
+                    {r.ekkremis !== false ? 'Εκκρεμής' : 'Έκλεισε'}
+                  </span>
+                </td>
                 <td style={{ whiteSpace: 'nowrap' }}>
                   <button className="btn btn-sm btn-secondary" onClick={() => openEdit(r)}>Επεξ.</button>
                   {' '}
@@ -277,6 +283,8 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
   const [form, setForm] = useState({
     name:                   initial?.name || '',
     date:                   toDateInput(initial?.date) || '',
+    date_apofasis:          toDateInput(initial?.date_apofasis) || '',
+    ekkremis:               initial?.ekkremis !== false,
     dikastirio_id:          initial?.dikastirio_id || '',
     diadikasia_id:          initial?.diadikasia_id || '',
     antidikos_id:           initial?.antidikos_id || '',
@@ -326,6 +334,8 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
         ypothesi_id:            Number(caseId),
         name:                   form.name || null,
         date:                   form.date,
+        date_apofasis:          form.date_apofasis || null,
+        ekkremis:               !!form.ekkremis,
         dikastirio_id:          form.dikastirio_id ? Number(form.dikastirio_id) : null,
         diadikasia_id:          form.diadikasia_id ? Number(form.diadikasia_id) : null,
         antidikos_id:           form.antidikos_id ? Number(form.antidikos_id) : null,
@@ -404,6 +414,19 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
       <div className="form-group">
         <label>Πινάκιο</label>
         <input type="text" value={form.pinakio} onChange={c('pinakio')} />
+      </div>
+
+      <div className="form-grid-2">
+        <div className="form-group">
+          <label>Ημ. Έκδοσης Απόφασης</label>
+          <input type="date" value={form.date_apofasis} onChange={c('date_apofasis')} />
+        </div>
+        <div className="form-group">
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 24 }}>
+            <input type="checkbox" checked={form.ekkremis} onChange={e => setForm(f => ({ ...f, ekkremis: e.target.checked }))} />
+            <span>Εκκρεμής</span>
+          </label>
+        </div>
       </div>
 
       {quickCreate && (

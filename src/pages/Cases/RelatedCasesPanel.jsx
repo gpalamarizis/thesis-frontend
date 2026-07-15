@@ -15,10 +15,12 @@ function RelatedCasesPanel({ caseId }) {
   const navigate = useNavigate();
   const [sameClient, setSameClient] = useState([]);
   const [related, setRelated] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [confirmDel, setConfirmDel] = useState(null);
   const [error, setError] = useState('');
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   const loadAll = () => {
     setLoading(true);
@@ -32,11 +34,42 @@ function RelatedCasesPanel({ caseId }) {
     }).finally(() => setLoading(false));
   };
 
-  useEffect(() => { loadAll(); /* eslint-disable-next-line */ }, [caseId]);
+  const loadSuggestions = () => {
+    setLoadingSuggestions(true);
+    cases.suggestions(caseId)
+      .then(d => setSuggestions(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => setSuggestions([]))
+      .finally(() => setLoadingSuggestions(false));
+  };
+
+  useEffect(() => { loadAll(); loadSuggestions(); /* eslint-disable-next-line */ }, [caseId]);
 
   const doDelete = async (r) => {
     try { await caseRelatedCases.remove(r.aa || r.id); loadAll(); }
     catch (e) { setError(e.message); }
+  };
+
+  const acceptSuggestion = async (s) => {
+    try {
+      // Create the link + send positive feedback
+      await Promise.all([
+        caseRelatedCases.create({ ypothesi_id: Number(caseId), related_ypothesi_id: Number(s.aa), notes: 'AI suggested' }),
+        cases.suggestionFeedback(caseId, s.aa, 1),
+      ]);
+      loadAll();
+      loadSuggestions();
+    } catch (e) {
+      setError(e.message);
+    }
+  };
+
+  const rejectSuggestion = async (s) => {
+    try {
+      await cases.suggestionFeedback(caseId, s.aa, -1);
+      setSuggestions(prev => prev.filter(x => x.aa !== s.aa));
+    } catch (e) {
+      setError(e.message);
+    }
   };
 
   const openCase = (id) => id && navigate(`/cases/${id}`);
@@ -44,6 +77,57 @@ function RelatedCasesPanel({ caseId }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {error && <div className="error">{error}</div>}
+
+      {/* AI Suggestions */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+          <h3 style={{ fontSize: 13, color: '#667eea', textTransform: 'uppercase', letterSpacing: 0.5, margin: 0 }}>
+            ✨ Προτεινόμενες υποθέσεις (AI)
+          </h3>
+          <a href="#" onClick={e => { e.preventDefault(); loadSuggestions(); }} style={{ fontSize: 11, color: '#a0aec0' }}>
+            ↻ Ανανέωση
+          </a>
+        </div>
+        {loadingSuggestions ? (
+          <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>Ανάλυση σε εξέλιξη...</div>
+        ) : suggestions.length === 0 ? (
+          <div style={{ color: '#a0aec0', fontSize: 12, padding: 8, fontStyle: 'italic' }}>
+            Δεν βρέθηκαν παρόμοιες υποθέσεις. Το AI μαθαίνει από τις χειροκίνητες συνδέσεις σου.
+          </div>
+        ) : (
+          <ul className="related-cases-list">
+            {suggestions.map(s => (
+              <li key={s.aa} className="rc-suggestion">
+                <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => openCase(s.aa)}>
+                  <div className="rc-code">
+                    <strong>{s.xeirokinito_id}</strong>
+                    <span className="rc-score" title="AI score">{s.score}</span>
+                  </div>
+                  {s.pelatis && <div className="rc-summary">{s.pelatis}</div>}
+                  {s.perilipsi && <div className="rc-summary">{trunc(s.perilipsi, 60)}</div>}
+                  {s.reasons && s.reasons.length > 0 && (
+                    <div className="rc-reasons">
+                      {s.reasons.map((r, i) => <span key={i} className="rc-reason-tag">{r}</span>)}
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <button
+                    className="btn btn-sm"
+                    title="Σύνδεση ως σχετική"
+                    onClick={(e) => { e.stopPropagation(); acceptSuggestion(s); }}
+                  >✓</button>
+                  <button
+                    className="btn btn-sm btn-secondary"
+                    title="Απόρριψη (το AI θα μάθει)"
+                    onClick={(e) => { e.stopPropagation(); rejectSuggestion(s); }}
+                  >✗</button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {/* Same-client cases */}
       <div>
@@ -79,7 +163,7 @@ function RelatedCasesPanel({ caseId }) {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
           <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, margin: 0 }}>
-            Σχετικές υποθέσεις ({related.length})
+            Χειροκίνητες συνδέσεις ({related.length})
           </h3>
           <a href="#" onClick={e => { e.preventDefault(); setShowAdd(true); }} style={{ fontSize: 12 }}>+ Προσθήκη</a>
         </div>
@@ -87,7 +171,7 @@ function RelatedCasesPanel({ caseId }) {
           <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>Φόρτωση...</div>
         ) : related.length === 0 ? (
           <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>
-            Δεν έχουν συνδεθεί σχετικές υποθέσεις.
+            Δεν έχουν συνδεθεί σχετικές υποθέσεις χειροκίνητα.
           </div>
         ) : (
           <ul className="related-cases-list">
@@ -119,7 +203,7 @@ function RelatedCasesPanel({ caseId }) {
         <AddRelatedCaseModal
           caseId={caseId}
           onClose={() => setShowAdd(false)}
-          onAdded={() => { setShowAdd(false); loadAll(); }}
+          onAdded={() => { setShowAdd(false); loadAll(); loadSuggestions(); }}
           existingIds={related.map(r => r.other_case_id)}
         />
       )}

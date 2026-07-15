@@ -23,6 +23,8 @@ import Courts from './pages/Courts';
 import PendingCases from './pages/Reports/PendingCases';
 import UpcomingHearings from './pages/Reports/UpcomingHearings';
 import PendingTasks from './pages/Reports/PendingTasks';
+import CourtActionsCalendar from './pages/Reports/CourtActionsCalendar';
+import TaskActionsCalendar from './pages/Reports/TaskActionsCalendar';
 
 import Lists from './pages/Lists';
 import Team from './pages/Team';
@@ -117,9 +119,11 @@ function App() {
 
         <Route path="/courts" element={guard(Courts)} />
 
-        <Route path="/reports/pending"  element={guard(PendingCases)} />
-        <Route path="/reports/hearings" element={guard(UpcomingHearings)} />
-        <Route path="/reports/tasks"    element={guard(PendingTasks)} />
+        <Route path="/reports/pending"          element={guard(PendingCases)} />
+        <Route path="/reports/hearings"         element={guard(UpcomingHearings)} />
+        <Route path="/reports/tasks"            element={guard(PendingTasks)} />
+        <Route path="/reports/calendar-court"   element={guard(CourtActionsCalendar)} />
+        <Route path="/reports/calendar-tasks"   element={guard(TaskActionsCalendar)} />
 
         <Route path="/lists" element={guard(Lists)} />
         <Route path="/team"  element={guard(Team)} />

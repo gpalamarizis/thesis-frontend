@@ -871,3 +871,44 @@ body {
   flex: 1;
   min-width: 0;
 }
+
+/* ===== AI Suggestions styling ===== */
+.related-cases-list li.rc-suggestion {
+  background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+  border: 1px solid #cbd5ff;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: default;
+}
+.related-cases-list li.rc-suggestion:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+.rc-score {
+  background: #667eea;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.rc-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.rc-reason-tag {
+  background: #edf2f7;
+  color: #4a5568;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* Task calendar overdue days */
+.cal-cell.cal-overdue { background: #fed7d7 !important; }
+.cal-event-task { background: #ed8936 !important; }
+.cal-event-task:hover { background: #dd6b20 !important; }

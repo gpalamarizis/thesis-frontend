@@ -73,6 +73,9 @@ export const cases = {
   previewProtocol: (clientType, clientId) =>
     api.get(`/api/cases/preview-protocol?clientType=${clientType}&clientId=${clientId}`),
   sameClient:      (id)              => api.get(`/api/cases/${id}/same-client`),
+  suggestions:     (id)              => api.get(`/api/cases/${id}/suggestions`),
+  suggestionFeedback: (id, suggestedId, feedback) =>
+    api.post(`/api/cases/${id}/suggestions/feedback`, { suggested_case_id: suggestedId, feedback }),
 };
 
 // Fysika & Nomika are mounted at top-level /api/fysika, /api/nomika (not under /api/people)
