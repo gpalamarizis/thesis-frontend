@@ -8,7 +8,7 @@ import { nomika } from '../../api';
 // Backend fields (from routes/nomika.js FIELDS list):
 const emptyForm = {
   diakritikos_titlos: '', eponymia: '',
-  afm: '', doy: '',
+  afm: '', doy: '', gemi: '',
   email: '', web_site: '', energos: true,
   odos: '', arithmos: '', tk: '', poli: '', xora: '',
   tilefono_grafeiou_1: '', tilefono_grafeiou_2: '', tilefono_grafeiou_3: '',
@@ -81,6 +81,10 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
           <label>Δ.Ο.Υ.</label>
           <input type="text" value={form.doy} onChange={onChange('doy')} />
         </div>
+      </div>
+      <div className="form-group">
+        <label>Αριθμός ΓΕΜΗ</label>
+        <input type="text" value={form.gemi} onChange={onChange('gemi')} placeholder="π.χ. 123456789012" />
       </div>
       <div className="form-grid-2">
         <div className="form-group">

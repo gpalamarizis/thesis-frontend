@@ -182,7 +182,7 @@ export const templates = {
     const token = localStorage.getItem('token');
     return fetch(`${API_URL}/api/document-templates`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` }, // NO Content-Type — browser sets multipart boundary
+      headers: { Authorization: `Bearer ${token}` },
       body: formData,
     }).then(async r => {
       if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`);
@@ -192,6 +192,13 @@ export const templates = {
   downloadUrl:  (id) => `${API_URL}/api/document-templates/${id}/download`,
   remove:       (id) => api.delete(`/api/document-templates/${id}`),
   createDoc:    (id, caseId) => api.post(`/api/document-templates/${id}/create-doc/${caseId}`, {}),
+};
+
+export const courtSubActions = {
+  listByCourtAction: (courtActionId) => api.get(`/api/court-sub-actions?court_action_id=${courtActionId}`),
+  create:            (payload) => api.post('/api/court-sub-actions', payload),
+  update:            (id, payload) => api.put(`/api/court-sub-actions/${id}`, payload),
+  remove:            (id) => api.delete(`/api/court-sub-actions/${id}`),
 };
 
 export const lists = {

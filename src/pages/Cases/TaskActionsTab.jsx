@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import CalendarExportButton from '../../components/CalendarExportButton';
 import { actions, team } from '../../api';
 import { fmtDate, toDateInput, trunc } from '../../utils/format';
+import { eventFromTaskAction } from '../../utils/calendar';
 
 /**
  * TaskActionsTab — Λοιπές ενέργειες (energeies table)
@@ -48,6 +50,8 @@ function TaskActionsTab({ caseId, rows, onChange }) {
                   </span>
                 </td>
                 <td style={{ whiteSpace: 'nowrap' }}>
+                  <CalendarExportButton event={eventFromTaskAction(r)} filename={`prothesmia-${r.aa || r.id}.ics`} />
+                  {' '}
                   <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
                   {' '}
                   <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>

@@ -912,3 +912,21 @@ body {
 .cal-cell.cal-overdue { background: #fed7d7 !important; }
 .cal-event-task { background: #ed8936 !important; }
 .cal-event-task:hover { background: #dd6b20 !important; }
+
+/* ===== Calendar export dropdown ===== */
+.cal-export-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: white;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  color: #2d3748;
+}
+.cal-export-item:hover {
+  background: #edf2f7;
+}
+.cal-export-item:first-child { border-radius: 4px 4px 0 0; }
+.cal-export-item:last-child  { border-radius: 0 0 4px 4px; }
