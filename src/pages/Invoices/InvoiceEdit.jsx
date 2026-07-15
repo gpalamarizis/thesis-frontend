@@ -323,11 +323,11 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-sm btn-secondary" onClick={() => navigate('/invoices')}>← Πίσω</button>
             {form.aa && form.status !== 'draft' && (
-              <button className="btn btn-sm" onClick={downloadPdf}>📄 Λήψη PDF</button>
+              <button className="btn btn-sm" onClick={downloadPdf}>🖨️ Εκτύπωση / PDF</button>
             )}
             {form.aa && form.status === 'draft' && (
               <>
-                <button className="btn btn-sm" onClick={downloadPdf}>📄 Preview PDF</button>
+                <button className="btn btn-sm" onClick={downloadPdf}>🖨️ Preview / PDF</button>
                 <button className="btn btn-sm" onClick={() => setConfirmIssue(true)} disabled={!form.series_id}>✓ Έκδοση</button>
               </>
             )}
