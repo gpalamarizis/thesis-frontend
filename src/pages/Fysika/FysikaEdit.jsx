@@ -217,6 +217,7 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
             { label: 'Στοιχεία',    content: tabPersonal },
             { label: 'Διευθύνσεις', content: tabAddresses },
             { label: 'Τηλέφωνα',    content: tabPhones },
+            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="fysiko" /> },
           ]}/>
         </div>
         <div className="form-actions">

@@ -182,6 +182,7 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
             { label: 'Εταιρεία',    content: tabCompany },
             { label: 'Έδρα',        content: tabAddress },
             { label: 'Επικοινωνία', content: tabPhones },
+            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="nomiko" /> },
           ]}/>
         </div>
         <div className="form-actions">
