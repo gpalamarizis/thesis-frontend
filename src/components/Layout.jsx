@@ -61,6 +61,17 @@ const menuGroups = [
       { path: '/team',               label: 'Ομάδα (χρήστες)',    icon: '👥' },
     ],
   },
+  {
+    title: 'Βοήθεια',
+    items: [
+      { href: 'https://www.dsa.gr',              label: 'ΔΣΑ',                icon: '⚖️', external: true },
+      { href: 'https://portal.olomeleia.gr',     label: 'Ολομέλεια',          icon: '🏛️', external: true },
+      { href: 'https://www.gsis.gr',             label: 'ΓΓΠΣ / TAXISnet',    icon: '💼', external: true },
+      { href: 'https://www.businessregistry.gr', label: 'ΓΕΜΗ',               icon: '📊', external: true },
+      { href: 'https://solon.gov.gr',            label: 'Νομοθεσία (ΣΟΛΩΝ)',  icon: '📚', external: true },
+      { href: 'https://www.ktimatologio.gr',     label: 'Κτηματολόγιο',       icon: '🗺️', external: true },
+    ],
+  },
 ];
 
 function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
@@ -83,11 +94,19 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
               {group.title && <div className="sidebar-group-title">{group.title}</div>}
               <ul className="sidebar-menu">
                 {group.items.map(item => (
-                  <li key={item.path}>
-                    <NavLink to={item.path} end={item.path === '/dashboard'}>
-                      <span className="menu-icon">{item.icon}</span>
-                      <span className="menu-label">{item.label}</span>
-                    </NavLink>
+                  <li key={item.path || item.href}>
+                    {item.external ? (
+                      <a href={item.href} target="_blank" rel="noopener noreferrer">
+                        <span className="menu-icon">{item.icon}</span>
+                        <span className="menu-label">{item.label}</span>
+                        <span style={{ marginLeft: 'auto', opacity: 0.5, fontSize: 10 }}>↗</span>
+                      </a>
+                    ) : (
+                      <NavLink to={item.path} end={item.path === '/dashboard'}>
+                        <span className="menu-icon">{item.icon}</span>
+                        <span className="menu-label">{item.label}</span>
+                      </NavLink>
+                    )}
                   </li>
                 ))}
               </ul>
