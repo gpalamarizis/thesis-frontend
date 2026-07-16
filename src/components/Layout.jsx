@@ -65,7 +65,7 @@ const menuGroups = [
     title: 'Βοήθεια',
     items: [
       { href: 'https://www.dsa.gr',              label: 'ΔΣΑ',                icon: '⚖️', external: true },
-      { href: 'https://portal.olomeleia.gr',     label: 'Ολομέλεια',          icon: '🏛️', external: true },
+      { href: 'https://www.olomeleia.gr',     	 label: 'Ολομέλεια',          icon: '🏛️', external: true },
       { href: 'https://www.gsis.gr',             label: 'ΓΓΠΣ / TAXISnet',    icon: '💼', external: true },
       { href: 'https://www.businessregistry.gr', label: 'ΓΕΜΗ',               icon: '📊', external: true },
       { href: 'https://solon.gov.gr',            label: 'Νομοθεσία (ΣΟΛΩΝ)',  icon: '📚', external: true },
