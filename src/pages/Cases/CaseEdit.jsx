@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
@@ -110,9 +110,6 @@ function CaseTab({ caseData, onSave, saving }) {
   const [onomasiaFakelou, setOnomasiaFakelou] = useState(caseData.onomasia_fakelou || '');
   const [thesiArxeiothetisisId, setThesiArxeiothetisisId] = useState(caseData.thesi_arxeiothetisis_id || '');
   const [oldKod, setOldKod] = useState(caseData.old_kod || '');
-  const [gak, setGak] = useState(caseData.gak || '');
-  const [eak, setEak] = useState(caseData.eak || '');
-  const [arithmosEisagogikou, setArithmosEisagogikou] = useState(caseData.arithmos_eisagogikou || '');
   const [archiveOptions, setArchiveOptions] = useState([]);
 
   // Merged from PeopleTab
@@ -154,9 +151,6 @@ function CaseTab({ caseData, onSave, saving }) {
     setOnomasiaFakelou(caseData.onomasia_fakelou || '');
     setThesiArxeiothetisisId(caseData.thesi_arxeiothetisis_id || '');
     setOldKod(caseData.old_kod || '');
-    setGak(caseData.gak || '');
-    setEak(caseData.eak || '');
-    setArithmosEisagogikou(caseData.arithmos_eisagogikou || '');
     setXeiristesIds(Array.isArray(caseData.xeiristes) ? caseData.xeiristes.map(x => x.aa || x.id).filter(Boolean) : []);
     setDiadikosId(caseData.diadikos_id || '');
   }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou, caseData.thesi_arxeiothetisis_id, caseData.old_kod, caseData.diadikos_id, caseData.xeiristes]);
@@ -186,9 +180,6 @@ function CaseTab({ caseData, onSave, saving }) {
     onomasia_fakelou:        onomasiaFakelou || null,
     thesi_arxeiothetisis_id: thesiArxeiothetisisId ? Number(thesiArxeiothetisisId) : null,
     old_kod:                 oldKod || null,
-    gak:                     gak || null,
-    eak:                     eak || null,
-    arithmos_eisagogikou:    arithmosEisagogikou || null,
     ekkremis:                ekkremis,
     diadikos_id:             diadikosId ? Number(diadikosId) : null,
     xeiristes_ids:           xeiristesIds.map(Number),
@@ -239,20 +230,6 @@ function CaseTab({ caseData, onSave, saving }) {
             <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
           </div>
           <div />
-        </div>
-        <div className="form-grid-3">
-          <div className="form-group">
-            <label>ΓΑΚ (Γενικός Αριθμός Κατάθεσης)</label>
-            <input type="text" value={gak} onChange={e => setGak(e.target.value)} placeholder="π.χ. 12345/2026" />
-          </div>
-          <div className="form-group">
-            <label>ΕΑΚ (Ειδικός Αριθμός Κατάθεσης)</label>
-            <input type="text" value={eak} onChange={e => setEak(e.target.value)} placeholder="π.χ. 6789/2026" />
-          </div>
-          <div className="form-group">
-            <label>Αριθμός εισαγωγικού εγγράφου / Κωδικός</label>
-            <input type="text" value={arithmosEisagogikou} onChange={e => setArithmosEisagogikou(e.target.value)} />
-          </div>
         </div>
         <div className="form-group">
           <label>Περίληψη / Περιγραφή</label>

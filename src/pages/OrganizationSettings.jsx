@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { orgSettings } from '../api';
 
@@ -189,59 +189,6 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         </div>
       </div>
 
-      <div className="section">
-        <h2>myDATA — Διαβίβαση στην ΑΑΔΕ</h2>
-        <div style={{ background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: 12, marginBottom: 16, fontSize: 13, color: '#4a5568' }}>
-          Τα credentials βρίσκονται στο portal myDATA της ΑΑΔΕ. Στο dev περιβάλλον χρησιμοποίησε test κωδικούς — δεν έχουν φορολογική δεσμευτικότητα.
-        </div>
-        <div className="form-grid-2">
-          <div className="form-group">
-            <label>Περιβάλλον</label>
-            <select value={form.mydata_environment || 'dev'} onChange={c('mydata_environment')} disabled={!isAdmin}>
-              <option value="dev">Sandbox (dev)</option>
-              <option value="prod">Παραγωγή (prod)</option>
-            </select>
-          </div>
-          <div />
-        </div>
-        <div className="form-grid-2">
-          <div className="form-group">
-            <label>myDATA User ID</label>
-            <input type="text" value={form.mydata_user_id || ''} onChange={c('mydata_user_id')} disabled={!isAdmin} autoComplete="off" />
-          </div>
-          <div className="form-group">
-            <label>myDATA Subscription Key</label>
-            <input type="password" value={form.mydata_subscription_key || ''} onChange={c('mydata_subscription_key')} disabled={!isAdmin} autoComplete="new-password" />
-          </div>
-        </div>
-        <div className="form-grid-3">
-          <div className="form-group">
-            <label>Προεπιλεγμένος τύπος παραστατικού</label>
-            <select value={form.mydata_default_invoice_type || '2.1'} onChange={c('mydata_default_invoice_type')} disabled={!isAdmin}>
-              <option value="2.1">2.1 — Παροχή Υπηρεσιών</option>
-              <option value="1.1">1.1 — Πώληση</option>
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Κατηγορία εσόδου (classificationType)</label>
-            <input type="text" value={form.mydata_classification_type || 'E3_561_001'} onChange={c('mydata_classification_type')} disabled={!isAdmin} placeholder="E3_561_001" />
-          </div>
-          <div className="form-group">
-            <label>Υποκατηγορία (classificationCategory)</label>
-            <input type="text" value={form.mydata_classification_category || 'category1_3'} onChange={c('mydata_classification_category')} disabled={!isAdmin} placeholder="category1_3" />
-          </div>
-        </div>
-        <div style={{ marginTop: 12, padding: 12, background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <button type="button" className="btn btn-sm" onClick={async () => { try { const { mydata } = await import('../api'); const r = await mydata.health(); if (r.ok) { alert('OK: ' + r.message); } else { alert('FAIL: ' + r.message); } } catch (e) { alert('FAIL: ' + e.message); } }} disabled={!isAdmin}>
-              🔍 Έλεγχος myDATA credentials
-            </button>
-            <span style={{ fontSize: 12, color: '#4a5568' }}>
-              Κάνει ένα test call στο ΑΑΔΕ για να επιβεβαιώσει ότι User ID + Subscription Key είναι σωστά.
-            </span>
-          </div>
-        </div>
-      </div>
       {isAdmin && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
           <button type="button" className="btn" disabled={saving} onClick={save}>

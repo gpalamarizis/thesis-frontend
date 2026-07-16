@@ -1,11 +1,10 @@
-﻿import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { invoices, invoiceSeries, orgSettings, fysika, nomika, cases } from '../../api';
 import { fmtDate, fmtCurrency, toDateInput } from '../../utils/format';
 import { generateInvoicePdf } from '../../utils/invoicePdf';
-import MyDataPanel from './MyDataPanel';
 
 function round2(n) { return Math.round(Number(n || 0) * 100) / 100; }
 
@@ -313,11 +312,6 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={title}>
       {error && <div className="error">{error}</div>}
-
-      {/* myDATA panel */}
-      {form.aa && form.status !== 'draft' && (
-        <MyDataPanel invoiceId={form.aa} invoiceStatus={form.status} />
-      )}
 
       {/* Status bar */}
       <div className="section" style={{ marginBottom: 20, padding: 12, background: form.status === 'issued' ? '#c6f6d5' : form.status === 'cancelled' ? '#fed7d7' : '#feebc8' }}>
