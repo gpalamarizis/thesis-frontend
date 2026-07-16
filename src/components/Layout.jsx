@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+﻿import { NavLink, useNavigate } from 'react-router-dom';
 
 const roleLabel = { admin: 'Διαχειριστής', lawyer: 'Δικηγόρος', secretary: 'Γραμματέας' };
 
@@ -62,6 +62,12 @@ const menuGroups = [
     ],
   },
   {
+    title: 'Platform (admin only)',
+    items: [
+      { path: '/platform', label: 'Platform Admin', icon: '\ud83d\udee1\ufe0f', platformOnly: true },
+    ],
+  },
+  {
     title: 'Βοήθεια',
     items: [
       { href: 'https://www.dsa.gr',              label: 'ΔΣΑ',                icon: '⚖️', external: true },
@@ -93,7 +99,7 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
             <div className="sidebar-group" key={gi}>
               {group.title && <div className="sidebar-group-title">{group.title}</div>}
               <ul className="sidebar-menu">
-                {group.items.map(item => (
+                {group.items.filter(item => !item.platformOnly || user.is_platform_admin).map(item => (
                   <li key={item.path || item.href}>
                     {item.external ? (
                       <a href={item.href} target="_blank" rel="noopener noreferrer">

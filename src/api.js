@@ -270,3 +270,29 @@ export const mydata = {
   status: (invoiceId)                              => api.get(`/api/mydata/invoices/${invoiceId}/status`),
   health: ()                                       => api.get(`/api/mydata/health`),
 };
+
+export const platform = {
+  stats:              ()                => api.get('/api/platform/stats'),
+  orgs:               (params)          => api.get('/api/platform/organizations' + (Object.keys(params||{}).length ? '?' + new URLSearchParams(params).toString() : '')),
+  orgDetail:          (id)              => api.get(`/api/platform/organizations/${id}`),
+  updateOrg:          (id, body)        => api.put(`/api/platform/organizations/${id}`, body),
+  extendTrial:        (id, days)        => api.post(`/api/platform/organizations/${id}/extend-trial`, { days }),
+  suspend:            (id, reason)      => api.post(`/api/platform/organizations/${id}/suspend`, { reason }),
+  unsuspend:          (id)              => api.post(`/api/platform/organizations/${id}/unsuspend`, {}),
+
+  partners:           ()                => api.get('/api/platform/partners'),
+  createPartner:      (body)            => api.post('/api/platform/partners', body),
+  updatePartner:      (id, body)        => api.put(`/api/platform/partners/${id}`, body),
+
+  subscriptions:      (params)          => api.get('/api/platform/subscriptions' + (Object.keys(params||{}).length ? '?' + new URLSearchParams(params).toString() : '')),
+  markCommissionPaid: (id)              => api.post(`/api/platform/subscriptions/${id}/mark-commission-paid`, {}),
+
+  plans:              ()                => api.get('/api/platform/plans'),
+  updatePlan:         (id, body)        => api.put(`/api/platform/plans/${id}`, body),
+
+  activity:           (limit)           => api.get('/api/platform/activity' + (limit ? `?limit=${limit}` : '')),
+
+  admins:             ()                => api.get('/api/platform/admins'),
+  grantAdmin:         (email)           => api.post('/api/platform/admins/grant', { email }),
+  revokeAdmin:        (user_id)         => api.post('/api/platform/admins/revoke', { user_id }),
+};
