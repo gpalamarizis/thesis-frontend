@@ -1,4 +1,4 @@
-// Thesis v3 — API client
+﻿// Thesis v3 — API client
 // Communicates with backend at Railway. JWT via localStorage.
 
 const API_URL = 'https://thesis-web-production-c215.up.railway.app';
@@ -263,3 +263,10 @@ export const documents = {
 };
 
 export { API_URL };
+
+export const mydata = {
+  send:   (invoiceId, invoiceType, correlatedMark) => api.post(`/api/mydata/invoices/${invoiceId}/send`, { invoiceType, correlatedMark }),
+  cancel: (invoiceId)                              => api.post(`/api/mydata/invoices/${invoiceId}/cancel`, {}),
+  status: (invoiceId)                              => api.get(`/api/mydata/invoices/${invoiceId}/status`),
+  health: ()                                       => api.get(`/api/mydata/health`),
+};
