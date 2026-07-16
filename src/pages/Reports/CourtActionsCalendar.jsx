@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { reports, people, lists } from '../../api';
 import { fmtDate, trunc } from '../../utils/format';
+import CalendarExportButton from '../../components/CalendarExportButton';
+import { eventFromCourtAction } from '../../utils/calendar';
 
 /**
  * CourtActionsCalendar — Ημερολόγιο δικαστικών ενεργειών με φίλτρα και calendar view.
@@ -156,7 +158,7 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
               Δικάσιμοι στις {selectedDate.toLocaleDateString('el-GR')} ({selectedEvents.length})
             </h3>
             <table className="table" style={{ marginBottom: 0 }}>
-              <thead><tr><th>Πρωτόκολλο</th><th>Δικαστήριο</th><th>Διαδικασία</th><th>Πελάτης</th><th>Περιγραφή</th></tr></thead>
+              <thead><tr><th>Πρωτόκολλο</th><th>Δικαστήριο</th><th>Διαδικασία</th><th>Πελάτης</th><th>Περιγραφή</th><th style={{width:60}}></th></tr></thead>
               <tbody>
                 {selectedEvents.map((e, i) => (
                   <tr key={i} className="clickable" onClick={() => e.ypothesi_id && navigate(`/cases/${e.ypothesi_id}`)}>
@@ -165,6 +167,7 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
                     <td>{e.diadikasia_name || '—'}</td>
                     <td>{e.pelatis || '—'}</td>
                     <td>{trunc(e.perigrafi || e.name, 50)}</td>
+                    <td onClick={ev => ev.stopPropagation()}><CalendarExportButton event={eventFromCourtAction(e)} filename={`dikasimos-${e.aa || e.id}.ics`} /></td>
                   </tr>
                 ))}
               </tbody>

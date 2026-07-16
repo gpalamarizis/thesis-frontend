@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import DataTable from '../../components/DataTable';
+import CalendarExportButton from '../../components/CalendarExportButton';
 import { reports } from '../../api';
 import { fmtDate, trunc } from '../../utils/format';
 import { exportToPdf, tableHtml } from '../../utils/printPdf';
+import { eventFromTaskAction } from '../../utils/calendar';
 
 function PendingTasks({ user, onLogout, onOpenCaseSearch }) {
   const [items, setItems] = useState([]);
@@ -22,6 +24,17 @@ function PendingTasks({ user, onLogout, onOpenCaseSearch }) {
     { key: 'xeirokinito_id', label: 'Πρωτόκολλο', width: 120, render: r => <strong>{r.xeirokinito_id}</strong> },
     { key: 'pelatis',        label: 'Πελάτης' },
     { key: 'perigrafi_energias', label: 'Ενέργεια', render: r => trunc(r.perigrafi_energias, 90) },
+    {
+      key: 'calendar',
+      label: '',
+      width: 60,
+      render: r => (
+        <CalendarExportButton
+          event={eventFromTaskAction(r)}
+          filename={`prothesmia-${r.aa || r.id}.ics`}
+        />
+      ),
+    },
   ];
 
   const onExport = () => {

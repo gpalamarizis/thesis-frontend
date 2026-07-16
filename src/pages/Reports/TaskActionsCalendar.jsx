@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { reports, people } from '../../api';
 import { fmtDate, trunc } from '../../utils/format';
+import CalendarExportButton from '../../components/CalendarExportButton';
+import { eventFromTaskAction } from '../../utils/calendar';
 
 /**
  * TaskActionsCalendar — Ημερολόγιο λοιπών ενεργειών με φίλτρα.
@@ -152,6 +154,9 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
                       <span className={`badge ${e.ekkremis !== false ? 'badge-open' : 'badge-closed'}`}>
                         {e.ekkremis !== false ? 'Εκκρεμής' : 'Έκλεισε'}
                       </span>
+                    </td>
+                    <td onClick={ev => ev.stopPropagation()}>
+                      <CalendarExportButton event={eventFromTaskAction(e)} filename={`prothesmia-${e.aa || e.id}.ics`} />
                     </td>
                   </tr>
                 ))}

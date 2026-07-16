@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
 import DataTable from '../../components/DataTable';
+import CalendarExportButton from '../../components/CalendarExportButton';
 import { reports } from '../../api';
 import { fmtDate, trunc } from '../../utils/format';
 import { exportToPdf, tableHtml } from '../../utils/printPdf';
+import { eventFromCourtAction } from '../../utils/calendar';
 
 function UpcomingHearings({ user, onLogout, onOpenCaseSearch }) {
   const today = new Date().toISOString().slice(0, 10);
@@ -31,6 +33,17 @@ function UpcomingHearings({ user, onLogout, onOpenCaseSearch }) {
     { key: 'pelatis',        label: 'Πελάτης' },
     { key: 'dikastirio_name',     label: 'Δικαστήριο', render: r => r.dikastirio_name || '—' },
     { key: 'perigrafi',      label: 'Περιγραφή', render: r => trunc(r.perigrafi || r.perigrafi_energias, 60) },
+    {
+      key: 'calendar',
+      label: '',
+      width: 60,
+      render: r => (
+        <CalendarExportButton
+          event={eventFromCourtAction(r)}
+          filename={`dikasimos-${r.aa || r.id}.ics`}
+        />
+      ),
+    },
   ];
 
   const onExport = () => {
