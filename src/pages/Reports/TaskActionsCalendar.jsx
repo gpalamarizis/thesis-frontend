@@ -82,13 +82,18 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
       >
         <div className="cal-day-num">{day}</div>
         {dayEvents.slice(0, 3).map((e, i) => (
-          <div
-            key={i}
-            className="cal-event cal-event-task"
-            title={`${e.perigrafi_energias || ''} - ${e.pelatis || ''}`}
-            onClick={(ev) => { ev.stopPropagation(); if (e.ypothesi_id) navigate(`/cases/${e.ypothesi_id}`); }}
-          >
-            {trunc(e.perigrafi_energias, 15) || '•'}
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <div
+              className="cal-event cal-event-task"
+              style={{ flex: 1 }}
+              title={`${e.perigrafi_energias || ''} - ${e.pelatis || ''}`}
+              onClick={(ev) => { ev.stopPropagation(); if (e.ypothesi_id) navigate(`/cases/${e.ypothesi_id}`); }}
+            >
+              {trunc(e.perigrafi_energias, 15) || '•'}
+            </div>
+            <span onClick={ev => ev.stopPropagation()}>
+              <CalendarExportButton event={eventFromTaskAction(e)} filename={`prothesmia-${e.aa || e.id}.ics`} />
+            </span>
           </div>
         ))}
         {dayEvents.length > 3 && <div className="cal-event-more">+{dayEvents.length - 3}</div>}
@@ -143,7 +148,7 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
               Προθεσμίες στις {selectedDate.toLocaleDateString('el-GR')} ({selectedEvents.length})
             </h3>
             <table className="table" style={{ marginBottom: 0 }}>
-              <thead><tr><th>Πρωτόκολλο</th><th>Περιγραφή</th><th>Πελάτης</th><th style={{width:100}}>Κατάσταση</th></tr></thead>
+              <thead><tr><th>Πρωτόκολλο</th><th>Περιγραφή</th><th>Πελάτης</th><th style={{width:100}}>Κατάσταση</th><th style={{width:60}}></th></tr></thead>
               <tbody>
                 {selectedEvents.map((e, i) => (
                   <tr key={i} className="clickable" onClick={() => e.ypothesi_id && navigate(`/cases/${e.ypothesi_id}`)}>
