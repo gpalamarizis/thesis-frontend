@@ -33,6 +33,12 @@ import InvoiceSeries from './pages/InvoiceSeries';
 import InvoicesList from './pages/Invoices/InvoicesList';
 import InvoiceEdit from './pages/Invoices/InvoiceEdit';
 import Templates from './pages/Templates';
+import SubscriptionSettings from './pages/SubscriptionSettings';
+import { SubscriptionSuccess, SubscriptionFailure } from './pages/SubscriptionReturn';
+import CaseAccess from './pages/CaseAccess';
+import Signup from './pages/Signup';
+import CourtsReport from './pages/Reports/CourtsReport';
+import GdprSettings from './pages/GdprSettings';
 import PlatformAdmin from './pages/PlatformAdmin';
 
 function App() {
@@ -137,6 +143,12 @@ function App() {
         <Route path="/settings/organization" element={guard(OrganizationSettings)} />
         <Route path="/settings/invoice-series" element={guard(InvoiceSeries)} />
         <Route path="/settings/templates" element={guard(Templates)} />
+        <Route path="/settings/subscription" element={guard(SubscriptionSettings)} />
+        <Route path="/subscription/success" element={guard(SubscriptionSuccess)} />
+        <Route path="/subscription/failure" element={guard(SubscriptionFailure)} />
+        <Route path="/cases/:id/access" element={guard(CaseAccess)} />
+        <Route path="/reports/courts" element={guard(CourtsReport)} />
+        <Route path="/settings/gdpr" element={guard(GdprSettings)} />
         <Route path="/platform"            element={guard(PlatformAdmin)} />
         <Route path="/invoices"     element={guard(InvoicesList)} />
         <Route path="/invoices/:id" element={guard(InvoiceEdit)} />

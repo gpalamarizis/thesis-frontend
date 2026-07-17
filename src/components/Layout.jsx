@@ -42,6 +42,7 @@ const menuGroups = [
       { path: '/reports/tasks',          label: 'Λοιπές ενέργειες',              icon: '📝' },
       { path: '/reports/calendar-court', label: 'Ημερολόγιο δικαστικών ενεργ.',  icon: '🗓️' },
       { path: '/reports/calendar-tasks', label: 'Ημερολόγιο λοιπών ενεργειών',   icon: '📅' },
+      { path: '/reports/courts', label: 'Αναορά Δικαστηρίων', icon: '\u2696\ufe0f' },
     ],
   },
   {
@@ -57,6 +58,8 @@ const menuGroups = [
     title: 'Ρυθμίσεις',
     items: [
       { path: '/settings/templates', label: 'Υποδείγματα Word', icon: '📋' },
+      { path: '/settings/subscription', label: 'Συνδρομή', icon: '\ud83d\udcb3' },
+      { path: '/settings/gdpr', label: 'GDPR', icon: '\ud83d\udee1\ufe0f' },
       { path: '/lists',              label: 'Επεξεργασία λιστών', icon: '⚙️' },
       { path: '/team',               label: 'Ομάδα (χρήστες)',    icon: '👥' },
     ],

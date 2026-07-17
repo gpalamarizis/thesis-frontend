@@ -271,6 +271,15 @@ export const mydata = {
   health: ()                                       => api.get(`/api/mydata/health`),
 };
 
+// ==================== SUBSCRIPTIONS (Viva) ====================
+export const subscriptions = {
+  plans:    ()                  => api.get('/api/subscriptions/plans'),
+  current:  ()                  => api.get('/api/subscriptions/current'),
+  checkout: (plan_code)         => api.post('/api/subscriptions/checkout', { plan_code }),
+  verify:   (transaction_id, order_code) => api.post('/api/subscriptions/verify', { transaction_id, order_code }),
+};
+
+// ==================== PLATFORM ADMIN ====================
 export const platform = {
   stats:              ()                => api.get('/api/platform/stats'),
   orgs:               (params)          => api.get('/api/platform/organizations' + (Object.keys(params||{}).length ? '?' + new URLSearchParams(params).toString() : '')),
@@ -279,20 +288,51 @@ export const platform = {
   extendTrial:        (id, days)        => api.post(`/api/platform/organizations/${id}/extend-trial`, { days }),
   suspend:            (id, reason)      => api.post(`/api/platform/organizations/${id}/suspend`, { reason }),
   unsuspend:          (id)              => api.post(`/api/platform/organizations/${id}/unsuspend`, {}),
-
   partners:           ()                => api.get('/api/platform/partners'),
   createPartner:      (body)            => api.post('/api/platform/partners', body),
   updatePartner:      (id, body)        => api.put(`/api/platform/partners/${id}`, body),
-
   subscriptions:      (params)          => api.get('/api/platform/subscriptions' + (Object.keys(params||{}).length ? '?' + new URLSearchParams(params).toString() : '')),
   markCommissionPaid: (id)              => api.post(`/api/platform/subscriptions/${id}/mark-commission-paid`, {}),
-
   plans:              ()                => api.get('/api/platform/plans'),
   updatePlan:         (id, body)        => api.put(`/api/platform/plans/${id}`, body),
-
   activity:           (limit)           => api.get('/api/platform/activity' + (limit ? `?limit=${limit}` : '')),
-
   admins:             ()                => api.get('/api/platform/admins'),
   grantAdmin:         (email)           => api.post('/api/platform/admins/grant', { email }),
   revokeAdmin:        (user_id)         => api.post('/api/platform/admins/revoke', { user_id }),
+};
+
+// ==================== TEAM ====================
+export const usersAdmin = {
+  list:          ()             => api.get('/api/users-admin'),
+  create:        (body)         => api.post('/api/users-admin', body),
+  update:        (id, body)     => api.put(`/api/users-admin/${id}`, body),
+  resetPassword: (id, password) => api.post(`/api/users-admin/${id}/reset-password`, { password }),
+  deactivate:    (id)           => api.delete(`/api/users-admin/${id}`),
+};
+
+// ==================== CASE ACCESS ====================
+export const caseAccess = {
+  list:   (caseId)                 => api.get(`/api/case-access/${caseId}/access`),
+  grant:  (caseId, user_id, can_edit) => api.post(`/api/case-access/${caseId}/access`, { user_id, can_edit }),
+  revoke: (caseId, userId)         => api.delete(`/api/case-access/${caseId}/access/${userId}`),
+};
+
+// ==================== COURTS REPORT ====================
+export const courtsReport = {
+  list:    (params) => api.get('/api/reports/courts-report' + (Object.keys(params||{}).length ? '?' + new URLSearchParams(params).toString() : '')),
+  filters: ()       => api.get('/api/reports/courts-report/filters'),
+};
+
+// ==================== GDPR ====================
+export const gdpr = {
+  exportData:    async () => {
+    const token = localStorage.getItem('token');
+    const base = (typeof window !== 'undefined' && window.__API_BASE) || '';
+    const r = await fetch(`${base}/api/gdpr/export`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+    if (!r.ok) { let m = 'Export failed'; try { m = (await r.json()).error || m; } catch {} throw new Error(m); }
+    return await r.blob();
+  },
+  requestDelete: (reason, confirm_email) => api.post('/api/gdpr/delete', { reason, confirm_email }),
+  deleteStatus:  ()  => api.get('/api/gdpr/delete-status'),
+  cancelDelete:  ()  => api.post('/api/gdpr/delete/cancel', {}),
 };
