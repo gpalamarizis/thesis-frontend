@@ -1,7 +1,4 @@
-// src/components/Layout.jsx
-// Sidebar με independent scroll — δεν χάνει τη θέση σε navigation.
-
-import { NavLink, useNavigate } from 'react-router-dom';
+﻿import { NavLink, useNavigate } from 'react-router-dom';
 
 const roleLabel = { admin: 'Διαχειριστής', lawyer: 'Δικηγόρος', secretary: 'Γραμματέας' };
 
@@ -45,7 +42,7 @@ const menuGroups = [
       { path: '/reports/tasks',          label: 'Λοιπές ενέργειες',              icon: '📝' },
       { path: '/reports/calendar-court', label: 'Ημερολόγιο δικαστικών ενεργ.',  icon: '🗓️' },
       { path: '/reports/calendar-tasks', label: 'Ημερολόγιο λοιπών ενεργειών',   icon: '📅' },
-      { path: '/reports/courts',         label: 'Αναφορά Δικαστηρίων',           icon: '⚖️' },
+      { path: '/reports/courts', label: 'Αναορά Δικαστηρίων', icon: '\u2696\ufe0f' },
     ],
   },
   {
@@ -60,24 +57,24 @@ const menuGroups = [
   {
     title: 'Ρυθμίσεις',
     items: [
-      { path: '/settings/templates',     label: 'Υποδείγματα Word', icon: '📋' },
-      { path: '/settings/subscription',  label: 'Συνδρομή',         icon: '💳' },
-      { path: '/settings/gdpr',          label: 'GDPR',             icon: '🛡️' },
-      { path: '/lists',                  label: 'Επεξεργασία λιστών', icon: '⚙️' },
-      { path: '/team',                   label: 'Ομάδα (χρήστες)',    icon: '👥' },
+      { path: '/settings/templates', label: 'Υποδείγματα Word', icon: '📋' },
+      { path: '/settings/subscription', label: 'Συνδρομή', icon: '\ud83d\udcb3' },
+      { path: '/settings/gdpr', label: 'GDPR', icon: '\ud83d\udee1\ufe0f' },
+      { path: '/lists',              label: 'Επεξεργασία λιστών', icon: '⚙️' },
+      { path: '/team',               label: 'Ομάδα (χρήστες)',    icon: '👥' },
     ],
   },
   {
     title: 'Platform (admin only)',
     items: [
-      { path: '/platform', label: 'Platform Admin', icon: '🛡️', platformOnly: true },
+      { path: '/platform', label: 'Platform Admin', icon: '\ud83d\udee1\ufe0f', platformOnly: true },
     ],
   },
   {
     title: 'Βοήθεια',
     items: [
       { href: 'https://www.dsa.gr',              label: 'ΔΣΑ',                icon: '⚖️', external: true },
-      { href: 'https://www.olomeleia.gr',        label: 'Ολομέλεια',          icon: '🏛️', external: true },
+      { href: 'https://www.olomeleia.gr',     	 label: 'Ολομέλεια',          icon: '🏛️', external: true },
       { href: 'https://www.gsis.gr',             label: 'ΓΓΠΣ / TAXISnet',    icon: '💼', external: true },
       { href: 'https://www.businessregistry.gr', label: 'ΓΕΜΗ',               icon: '📊', external: true },
       { href: 'https://solon.gov.gr',            label: 'Νομοθεσία (ΣΟΛΩΝ)',  icon: '📚', external: true },
@@ -90,20 +87,8 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
   const navigate = useNavigate();
 
   return (
-    <div className="app-layout" style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Sidebar: sticky με δικό του scroll — δεν χάνει τη θέση του σε navigation */}
-      <aside
-        className="sidebar"
-        style={{
-          position: 'sticky',
-          top: 0,
-          alignSelf: 'flex-start',
-          height: '100vh',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          flexShrink: 0,
-        }}
-      >
+    <div className="app-layout">
+      <aside className="sidebar">
         <div className="sidebar-header">
           <h2>Thesis</h2>
           <div className="user">
@@ -146,7 +131,7 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
         </nav>
       </aside>
 
-      <div className="main-content" style={{ flex: 1, minWidth: 0 }}>
+      <div className="main-content">
         <div className="topbar">
           <h1>{title}</h1>
           {onOpenCaseSearch && (
