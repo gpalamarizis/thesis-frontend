@@ -44,9 +44,6 @@ import CourtsReport from './pages/Reports/CourtsReport';
 import GdprSettings from './pages/GdprSettings';
 import PlatformAdmin from './pages/PlatformAdmin';
 import BulkTemplatesImport from './pages/BulkTemplatesImport';
-import ReportPending from './pages/ReportPending';
-import ReportHearings from './pages/ReportHearings';
-import ReportTasks from './pages/ReportTasks';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -139,9 +136,9 @@ function App() {
 
         <Route path="/courts" element={guard(Courts)} />
 
-        <Route path="/reports/pending" element={guard(ReportPending)} />
-        <Route path="/reports/hearings" element={guard(ReportHearings)} />
-        <Route path="/reports/tasks" element={guard(ReportTasks)} />
+        <Route path="/reports/pending"          element={guard(PendingCases)} />
+        <Route path="/reports/hearings"         element={guard(UpcomingHearings)} />
+        <Route path="/reports/tasks"            element={guard(PendingTasks)} />
         <Route path="/reports/calendar-court"   element={guard(CourtActionsCalendar)} />
         <Route path="/reports/calendar-tasks"   element={guard(TaskActionsCalendar)} />
 
