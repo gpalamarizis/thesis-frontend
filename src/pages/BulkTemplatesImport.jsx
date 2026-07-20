@@ -1,5 +1,5 @@
 // src/pages/BulkTemplatesImport.jsx
-// v3: back button + auto-redirect after success + workers/progress/ETA
+// v4: duplicate detection (name+category), replace/skip actions, bulk toolbar
 
 import { useState, useRef, useEffect } from 'react';
 import { templates } from '../api';
@@ -46,8 +46,20 @@ function goBackToTemplates() {
   window.location.href = '/settings/templates';
 }
 
+function norm(s) {
+  return (s || '').toString().toLowerCase().trim();
+}
+
+function findDuplicate(existing, name, category) {
+  const n = norm(name);
+  const c = norm(category);
+  return existing.find(e => norm(e.name) === n && norm(e.category) === c);
+}
+
 export default function BulkTemplatesImport() {
   const [items, setItems] = useState([]);
+  const [existing, setExisting] = useState([]);
+  const [checking, setChecking] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [now, setNow] = useState(Date.now());
@@ -63,16 +75,16 @@ export default function BulkTemplatesImport() {
     return () => clearInterval(iv);
   }, [uploading]);
 
-  // Auto-redirect countdown όταν όλα OK
+  // Auto-redirect countdown
   useEffect(() => {
     if (uploading || items.length === 0) return;
-    const allOk = items.every(it => it.status === 'ok');
-    if (allOk && redirectIn === null) {
+    const allDoneOk = items.every(it => it.status === 'ok' || it.status === 'skipped');
+    const anyFailed = items.some(it => it.status === 'error');
+    if (allDoneOk && !anyFailed && redirectIn === null) {
       setRedirectIn(REDIRECT_SECONDS);
     }
   }, [uploading, items, redirectIn]);
 
-  // Redirect ticker
   useEffect(() => {
     if (redirectIn === null) return;
     if (redirectIn <= 0) {
@@ -87,19 +99,43 @@ export default function BulkTemplatesImport() {
     setRedirectIn(null);
   }
 
-  function handleFiles(fileList) {
+  async function handleFiles(fileList) {
     const arr = Array.from(fileList).filter(f =>
       f.name.toLowerCase().endsWith('.docx')
     );
-    const newItems = arr.map(file => ({
-      file,
-      name: file.name.replace(/\.docx$/i, ''),
-      category: inferCategory(file.name),
-      status: 'pending',
-      error: null,
-    }));
+    if (arr.length === 0) return;
+
+    setChecking(true);
+
+    // Fresh fetch existing templates
+    let existingList = [];
+    try {
+      const res = await templates.list();
+      const list = res?.data || res || [];
+      existingList = Array.isArray(list) ? list : [];
+    } catch (e) {
+      console.warn('Could not fetch existing templates:', e);
+    }
+    setExisting(existingList);
+
+    const newItems = arr.map(file => {
+      const name = file.name.replace(/\.docx$/i, '');
+      const category = inferCategory(file.name);
+      const match = findDuplicate(existingList, name, category);
+      return {
+        file,
+        name,
+        category,
+        status: 'pending',
+        error: null,
+        isDuplicate: !!match,
+        existingId: match ? (match.aa || match.id) : null,
+        action: match ? 'replace' : 'upload',
+      };
+    });
     setItems(newItems);
     setRedirectIn(null);
+    setChecking(false);
   }
 
   function handleDrop(e) {
@@ -108,11 +144,39 @@ export default function BulkTemplatesImport() {
   }
 
   function updateCategory(idx, cat) {
-    setItems(prev => prev.map((it, i) => i === idx ? { ...it, category: cat } : it));
+    setItems(prev => prev.map((it, i) => {
+      if (i !== idx) return it;
+      const match = findDuplicate(existing, it.name, cat);
+      return {
+        ...it,
+        category: cat,
+        isDuplicate: !!match,
+        existingId: match ? (match.aa || match.id) : null,
+        action: match ? (it.action === 'skip' ? 'skip' : 'replace') : 'upload',
+      };
+    }));
   }
 
   function updateName(idx, name) {
-    setItems(prev => prev.map((it, i) => i === idx ? { ...it, name } : it));
+    setItems(prev => prev.map((it, i) => {
+      if (i !== idx) return it;
+      const match = findDuplicate(existing, name, it.category);
+      return {
+        ...it,
+        name,
+        isDuplicate: !!match,
+        existingId: match ? (match.aa || match.id) : null,
+        action: match ? (it.action === 'skip' ? 'skip' : 'replace') : 'upload',
+      };
+    }));
+  }
+
+  function updateAction(idx, action) {
+    setItems(prev => prev.map((it, i) => i === idx ? { ...it, action } : it));
+  }
+
+  function setAllDuplicatesAction(action) {
+    setItems(prev => prev.map(it => it.isDuplicate ? { ...it, action } : it));
   }
 
   function removeItem(idx) {
@@ -120,16 +184,26 @@ export default function BulkTemplatesImport() {
   }
 
   async function uploadOne(snapshotItem, idx) {
+    if (snapshotItem.action === 'skip') {
+      setItems(prev => prev.map((it, i) => i === idx ? { ...it, status: 'skipped', error: null } : it));
+      return;
+    }
+
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, status: 'uploading', error: null } : it));
 
-    const fd = new FormData();
-    fd.append('name', snapshotItem.name);
-    fd.append('category', snapshotItem.category);
-    fd.append('description', 'Bulk import');
-    fd.append('file', snapshotItem.file);
-
     try {
+      // Replace: DELETE existing first
+      if (snapshotItem.action === 'replace' && snapshotItem.existingId) {
+        await templates.remove(snapshotItem.existingId);
+      }
+
+      const fd = new FormData();
+      fd.append('name', snapshotItem.name);
+      fd.append('category', snapshotItem.category);
+      fd.append('description', 'Bulk import');
+      fd.append('file', snapshotItem.file);
       await templates.upload(fd);
+
       setItems(prev => prev.map((it, i) => i === idx ? { ...it, status: 'ok', error: null } : it));
     } catch (err) {
       setItems(prev => prev.map((it, i) => i === idx ? { ...it, status: 'error', error: err.message || 'Upload failed' } : it));
@@ -146,7 +220,8 @@ export default function BulkTemplatesImport() {
     const snapshot = items;
     const queue = [];
     for (let i = 0; i < snapshot.length; i++) {
-      if (snapshot[i].status !== 'ok') queue.push(i);
+      const s = snapshot[i].status;
+      if (s !== 'ok' && s !== 'skipped') queue.push(i);
     }
 
     async function worker() {
@@ -158,7 +233,6 @@ export default function BulkTemplatesImport() {
     }
 
     await Promise.all(Array.from({ length: WORKERS }, () => worker()));
-
     setUploading(false);
   }
 
@@ -170,6 +244,7 @@ export default function BulkTemplatesImport() {
     setItems([]);
     setStartTime(null);
     setRedirectIn(null);
+    setExisting([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (folderInputRef.current) folderInputRef.current.value = '';
   }
@@ -177,22 +252,28 @@ export default function BulkTemplatesImport() {
   const okCount = items.filter(it => it.status === 'ok').length;
   const failCount = items.filter(it => it.status === 'error').length;
   const uploadingCount = items.filter(it => it.status === 'uploading').length;
-  const pendingCount = items.length - okCount - failCount - uploadingCount;
-  const doneCount = okCount + failCount;
+  const skippedCount = items.filter(it => it.status === 'skipped').length;
+  const pendingCount = items.length - okCount - failCount - uploadingCount - skippedCount;
+  const doneCount = okCount + failCount + skippedCount;
   const progressPct = items.length > 0 ? (doneCount / items.length) * 100 : 0;
+  const duplicateCount = items.filter(it => it.isDuplicate).length;
+  const dupToReplace = items.filter(it => it.isDuplicate && it.action === 'replace').length;
+  const dupToSkip = items.filter(it => it.isDuplicate && it.action === 'skip').length;
 
   const elapsedSec = startTime ? Math.max(0, (now - startTime) / 1000) : 0;
   const rate = elapsedSec > 0 && doneCount > 0 ? doneCount / elapsedSec : 0;
   const remaining = pendingCount + uploadingCount;
   const etaSec = rate > 0 && remaining > 0 ? remaining / rate : 0;
 
+  const allDone = !uploading && items.length > 0 && items.every(it => it.status === 'ok' || it.status === 'skipped');
+  const anyFailed = items.some(it => it.status === 'error');
+
   const S = {
-    page: { padding: 20, maxWidth: 1200, margin: '0 auto', fontFamily: 'system-ui, -apple-system, sans-serif' },
+    page: { padding: 20, maxWidth: 1250, margin: '0 auto', fontFamily: 'system-ui, -apple-system, sans-serif' },
     headerRow: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 },
     backBtn: {
       padding: '6px 14px', fontSize: 14, cursor: 'pointer',
-      backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: 4,
-      color: '#333',
+      backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: 4, color: '#333',
     },
     h1: { margin: 0, flex: 1 },
     subtitle: { color: '#666', marginBottom: 24, fontSize: 14 },
@@ -222,7 +303,20 @@ export default function BulkTemplatesImport() {
       padding: '10px 20px', fontSize: 16, cursor: 'pointer',
       backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: 4,
     },
+    btnWarning: {
+      padding: '6px 12px', fontSize: 13, cursor: 'pointer',
+      backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffeeba', borderRadius: 4,
+    },
     hint: { marginTop: 20, fontSize: 13, color: '#666' },
+    checkingBanner: {
+      padding: 16, backgroundColor: '#e7f3fe', border: '1px solid #b8daff',
+      borderRadius: 4, marginBottom: 12, color: '#004085'
+    },
+    dupWarnBar: {
+      padding: '10px 14px', backgroundColor: '#fff3cd', border: '1px solid #ffeeba',
+      borderRadius: 4, marginBottom: 12, display: 'flex', alignItems: 'center',
+      gap: 12, flexWrap: 'wrap', fontSize: 14, color: '#856404'
+    },
     toolbar: {
       margin: '16px 0 12px 0', display: 'flex', gap: 10,
       alignItems: 'center', flexWrap: 'wrap'
@@ -279,14 +373,14 @@ export default function BulkTemplatesImport() {
     },
   };
 
-  const rowStyle = (status) => {
-    if (status === 'uploading') return { backgroundColor: '#fff8e1' };
-    if (status === 'ok')        return { backgroundColor: '#e8f5e9' };
-    if (status === 'error')     return { backgroundColor: '#ffebee' };
+  const rowStyle = (it) => {
+    if (it.status === 'uploading') return { backgroundColor: '#fff8e1' };
+    if (it.status === 'ok')        return { backgroundColor: '#e8f5e9' };
+    if (it.status === 'error')     return { backgroundColor: '#ffebee' };
+    if (it.status === 'skipped')   return { backgroundColor: '#f0f0f0', color: '#888' };
+    if (it.isDuplicate)            return { backgroundColor: '#fffdf5' };
     return {};
   };
-
-  const allDone = !uploading && items.length > 0 && items.every(it => it.status === 'ok');
 
   return (
     <div style={S.page}>
@@ -299,10 +393,11 @@ export default function BulkTemplatesImport() {
 
       <div style={S.subtitle}>
         Ανεβάζει πολλά .docx αρχεία ταυτόχρονα από φάκελο. Η κατηγορία εντοπίζεται
-        αυτόματα από το όνομα (μπορείς να την αλλάξεις πριν το ανέβασμα).
+        αυτόματα από το όνομα. Ελέγχει διπλότυπα (ίδιο όνομα + κατηγορία) και
+        μπορείς να επιλέξεις Αντικατάσταση ή Παράλειψη.
       </div>
 
-      {items.length === 0 && (
+      {items.length === 0 && !checking && (
         <div style={S.dropzone} onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
           <div style={S.dropzoneText}>Σύρετε εδώ .docx αρχεία ή φάκελο</div>
           <div style={S.dropzoneSep}>ή</div>
@@ -326,19 +421,40 @@ export default function BulkTemplatesImport() {
             onChange={e => handleFiles(e.target.files)}
           />
           <div style={S.hint}>
-            Θα φιλτραριστούν αυτόματα μόνο τα .docx από τον φάκελο.
+            Θα φιλτραριστούν αυτόματα μόνο τα .docx.
           </div>
         </div>
       )}
 
-      {items.length > 0 && (
+      {checking && (
+        <div style={S.checkingBanner}>
+          🔍 Έλεγχος διπλότυπων στη βάση...
+        </div>
+      )}
+
+      {items.length > 0 && !checking && (
         <>
+          {duplicateCount > 0 && !uploading && !allDone && (
+            <div style={S.dupWarnBar}>
+              <span>
+                ⚠️ Βρέθηκαν <b>{duplicateCount}</b> διπλότυπα με ίδιο όνομα + κατηγορία
+                (τώρα: {dupToReplace} για αντικατάσταση, {dupToSkip} για παράλειψη).
+              </span>
+              <button style={S.btnWarning} onClick={() => setAllDuplicatesAction('replace')}>
+                🔄 Αντικατάσταση όλων ({duplicateCount})
+              </button>
+              <button style={S.btnWarning} onClick={() => setAllDuplicatesAction('skip')}>
+                ⏸️ Παράλειψη όλων ({duplicateCount})
+              </button>
+            </div>
+          )}
+
           <div style={S.toolbar}>
             {!uploading && !allDone && (
               <button
                 onClick={startUpload}
-                disabled={items.every(it => it.status === 'ok')}
-                style={items.every(it => it.status === 'ok') ? S.btnDisabled : S.btnPrimary}
+                disabled={items.every(it => it.status === 'ok' || it.status === 'skipped')}
+                style={items.every(it => it.status === 'ok' || it.status === 'skipped') ? S.btnDisabled : S.btnPrimary}
               >
                 ⬆️ Ανέβασμα ({pendingCount + failCount} αρχεία)
               </button>
@@ -348,7 +464,7 @@ export default function BulkTemplatesImport() {
                 ⛔ Διακοπή
               </button>
             )}
-            {allDone && (
+            {allDone && !anyFailed && (
               <button onClick={goBackToTemplates} style={S.btnSuccess}>
                 ✅ Ολοκληρώθηκε — Επιστροφή στα υποδείγματα
               </button>
@@ -360,6 +476,7 @@ export default function BulkTemplatesImport() {
             <div style={S.counters}>
               <span style={{ ...S.counter, color: '#080' }}>✅ {okCount}</span>
               <span style={{ ...S.counter, color: '#0066cc' }}>⬆️ {uploadingCount}</span>
+              <span style={{ ...S.counter, color: '#888' }}>⏸️ {skippedCount}</span>
               <span style={{ ...S.counter, color: '#888' }}>⏳ {pendingCount}</span>
               <span style={{ ...S.counter, color: '#c00' }}>❌ {failCount}</span>
               <span style={{ ...S.counter, color: '#333', fontWeight: 'bold' }}>
@@ -392,11 +509,10 @@ export default function BulkTemplatesImport() {
             </div>
           )}
 
-          {/* Auto-redirect banner όταν όλα OK */}
-          {allDone && redirectIn !== null && (
+          {allDone && !anyFailed && redirectIn !== null && (
             <div style={S.successBanner}>
               <span style={{ fontSize: 16 }}>
-                ✅ Ανέβηκαν {okCount} / {items.length} επιτυχώς σε {formatTime(elapsedSec)}.
+                ✅ Ολοκληρώθηκαν {okCount} νέα, {skippedCount} παραλείφθηκαν σε {formatTime(elapsedSec)}.
               </span>
               <span style={{ color: '#155724' }}>
                 Επιστροφή στα υποδείγματα σε <b>{redirectIn}s</b>...
@@ -417,36 +533,62 @@ export default function BulkTemplatesImport() {
                   <th style={{ ...S.th, width: 40 }}>#</th>
                   <th style={S.th}>Όνομα υποδείγματος</th>
                   <th style={{ ...S.th, width: 180 }}>Κατηγορία</th>
-                  <th style={{ ...S.th, width: 120, textAlign: 'center' }}>Κατάσταση</th>
+                  <th style={{ ...S.th, width: 150 }}>Ενέργεια</th>
+                  <th style={{ ...S.th, width: 130, textAlign: 'center' }}>Κατάσταση</th>
                   <th style={{ ...S.th, width: 40 }}></th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((it, idx) => (
-                  <tr key={idx} style={rowStyle(it.status)}>
+                  <tr key={idx} style={rowStyle(it)}>
                     <td style={{ ...S.td, color: '#888' }}>{idx + 1}</td>
                     <td style={S.td}>
-                      <input
-                        type="text" value={it.name}
-                        onChange={e => updateName(idx, e.target.value)}
-                        disabled={uploading || it.status === 'ok'}
-                        style={S.input}
-                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {it.isDuplicate && (
+                          <span title="Υπάρχει ήδη υπόδειγμα με ίδιο όνομα + κατηγορία" style={{ color: '#f0ad4e', fontSize: 16 }}>⚠️</span>
+                        )}
+                        <input
+                          type="text" value={it.name}
+                          onChange={e => updateName(idx, e.target.value)}
+                          disabled={uploading || it.status === 'ok' || it.status === 'skipped'}
+                          style={S.input}
+                        />
+                      </div>
                     </td>
                     <td style={S.td}>
                       <select
                         value={it.category}
                         onChange={e => updateCategory(idx, e.target.value)}
-                        disabled={uploading || it.status === 'ok'}
+                        disabled={uploading || it.status === 'ok' || it.status === 'skipped'}
                         style={S.select}
                       >
                         {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </td>
+                    <td style={S.td}>
+                      {it.isDuplicate ? (
+                        <select
+                          value={it.action}
+                          onChange={e => updateAction(idx, e.target.value)}
+                          disabled={uploading || it.status === 'ok' || it.status === 'skipped'}
+                          style={{
+                            ...S.select,
+                            backgroundColor: it.action === 'skip' ? '#f8d7da' : '#fff3cd',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          <option value="replace">🔄 Αντικατάσταση</option>
+                          <option value="skip">⏸️ Παράλειψη</option>
+                        </select>
+                      ) : (
+                        <span style={{ color: '#888', fontSize: 12, fontStyle: 'italic' }}>— Νέο —</span>
+                      )}
+                    </td>
                     <td style={{ ...S.td, textAlign: 'center', fontSize: 13 }}>
                       {it.status === 'pending'   && <span style={{ color: '#888' }}>⏳ Αναμονή</span>}
                       {it.status === 'uploading' && <span style={{ color: '#0066cc', fontWeight: 'bold' }}>⬆️ Ανεβαίνει...</span>}
                       {it.status === 'ok'        && <span style={{ color: '#080', fontWeight: 'bold' }}>✅ OK</span>}
+                      {it.status === 'skipped'   && <span style={{ color: '#666' }}>⏸️ Παραλείφθηκε</span>}
                       {it.status === 'error'     && (
                         <span style={{ color: '#c00', fontWeight: 'bold', cursor: 'help' }} title={it.error}>
                           ❌ {(it.error || '').substring(0, 25)}
@@ -454,7 +596,7 @@ export default function BulkTemplatesImport() {
                       )}
                     </td>
                     <td style={{ ...S.td, textAlign: 'center' }}>
-                      {!uploading && it.status !== 'ok' && (
+                      {!uploading && it.status !== 'ok' && it.status !== 'skipped' && (
                         <button style={S.xbtn} onClick={() => removeItem(idx)} title="Αφαίρεση από λίστα">
                           ✕
                         </button>
@@ -466,11 +608,10 @@ export default function BulkTemplatesImport() {
             </table>
           </div>
 
-          {/* Summary όταν υπάρχουν failures */}
           {!uploading && failCount > 0 && (
             <div style={S.summaryBanner}>
-              <strong>Σύνοψη:</strong> {okCount} / {items.length} επιτυχή σε {formatTime(elapsedSec)}.
-              Απέτυχαν {failCount} (hover στο ❌ για λεπτομέρειες, μετά «Ανέβασμα» ξανά για retry).
+              <strong>Σύνοψη:</strong> {okCount} επιτυχή, {skippedCount} παραλείφθηκαν,
+              απέτυχαν <b>{failCount}</b> (hover στο ❌ για λεπτομέρειες, μετά «Ανέβασμα» ξανά για retry).
             </div>
           )}
         </>
