@@ -1,5 +1,5 @@
 // src/pages/BulkTemplatesImport.jsx
-// v2: queue-based workers, live progress, ETA, abort, .docx only
+// v3: back button + auto-redirect after success + workers/progress/ETA
 
 import { useState, useRef, useEffect } from 'react';
 import { templates } from '../api';
@@ -12,6 +12,7 @@ const CATEGORIES = [
 ];
 
 const WORKERS = 5;
+const REDIRECT_SECONDS = 5;
 
 function inferCategory(filename) {
   const up = filename.toUpperCase();
@@ -41,21 +42,50 @@ function formatTime(sec) {
   return `${s}s`;
 }
 
+function goBackToTemplates() {
+  window.location.href = '/settings/templates';
+}
+
 export default function BulkTemplatesImport() {
   const [items, setItems] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [startTime, setStartTime] = useState(null);
   const [now, setNow] = useState(Date.now());
+  const [redirectIn, setRedirectIn] = useState(null);
   const fileInputRef = useRef(null);
   const folderInputRef = useRef(null);
   const abortRef = useRef(false);
 
-  // Timer tick για elapsed/ETA (μόνο κατά τη διάρκεια upload)
+  // Timer tick για elapsed/ETA
   useEffect(() => {
     if (!uploading) return;
     const iv = setInterval(() => setNow(Date.now()), 500);
     return () => clearInterval(iv);
   }, [uploading]);
+
+  // Auto-redirect countdown όταν όλα OK
+  useEffect(() => {
+    if (uploading || items.length === 0) return;
+    const allOk = items.every(it => it.status === 'ok');
+    if (allOk && redirectIn === null) {
+      setRedirectIn(REDIRECT_SECONDS);
+    }
+  }, [uploading, items, redirectIn]);
+
+  // Redirect ticker
+  useEffect(() => {
+    if (redirectIn === null) return;
+    if (redirectIn <= 0) {
+      goBackToTemplates();
+      return;
+    }
+    const t = setTimeout(() => setRedirectIn(redirectIn - 1), 1000);
+    return () => clearTimeout(t);
+  }, [redirectIn]);
+
+  function cancelRedirect() {
+    setRedirectIn(null);
+  }
 
   function handleFiles(fileList) {
     const arr = Array.from(fileList).filter(f =>
@@ -69,6 +99,7 @@ export default function BulkTemplatesImport() {
       error: null,
     }));
     setItems(newItems);
+    setRedirectIn(null);
   }
 
   function handleDrop(e) {
@@ -89,7 +120,6 @@ export default function BulkTemplatesImport() {
   }
 
   async function uploadOne(snapshotItem, idx) {
-    // Immediate mark as uploading τη στιγμή που το πιάνει ο worker
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, status: 'uploading', error: null } : it));
 
     const fd = new FormData();
@@ -111,17 +141,14 @@ export default function BulkTemplatesImport() {
     setUploading(true);
     setStartTime(Date.now());
     setNow(Date.now());
+    setRedirectIn(null);
 
-    // Snapshot της τρέχουσας κατάστασης
     const snapshot = items;
-
-    // Queue από indices που χρειάζονται upload (skip όσα ήδη OK)
     const queue = [];
     for (let i = 0; i < snapshot.length; i++) {
       if (snapshot[i].status !== 'ok') queue.push(i);
     }
 
-    // Worker: παίρνει από την ουρά, ανεβάζει, επόμενο
     async function worker() {
       while (!abortRef.current) {
         const idx = queue.shift();
@@ -130,7 +157,6 @@ export default function BulkTemplatesImport() {
       }
     }
 
-    // Παράλληλα N workers
     await Promise.all(Array.from({ length: WORKERS }, () => worker()));
 
     setUploading(false);
@@ -143,11 +169,11 @@ export default function BulkTemplatesImport() {
   function resetAll() {
     setItems([]);
     setStartTime(null);
+    setRedirectIn(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (folderInputRef.current) folderInputRef.current.value = '';
   }
 
-  // Counters
   const okCount = items.filter(it => it.status === 'ok').length;
   const failCount = items.filter(it => it.status === 'error').length;
   const uploadingCount = items.filter(it => it.status === 'uploading').length;
@@ -155,7 +181,6 @@ export default function BulkTemplatesImport() {
   const doneCount = okCount + failCount;
   const progressPct = items.length > 0 ? (doneCount / items.length) * 100 : 0;
 
-  // Timing
   const elapsedSec = startTime ? Math.max(0, (now - startTime) / 1000) : 0;
   const rate = elapsedSec > 0 && doneCount > 0 ? doneCount / elapsedSec : 0;
   const remaining = pendingCount + uploadingCount;
@@ -163,7 +188,13 @@ export default function BulkTemplatesImport() {
 
   const S = {
     page: { padding: 20, maxWidth: 1200, margin: '0 auto', fontFamily: 'system-ui, -apple-system, sans-serif' },
-    h1: { marginBottom: 8 },
+    headerRow: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 },
+    backBtn: {
+      padding: '6px 14px', fontSize: 14, cursor: 'pointer',
+      backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: 4,
+      color: '#333',
+    },
+    h1: { margin: 0, flex: 1 },
     subtitle: { color: '#666', marginBottom: 24, fontSize: 14 },
     dropzone: {
       border: '2px dashed #999', padding: '60px 20px', textAlign: 'center',
@@ -186,6 +217,10 @@ export default function BulkTemplatesImport() {
     btnDanger: {
       padding: '10px 20px', fontSize: 16, cursor: 'pointer',
       backgroundColor: '#cc0000', color: '#fff', border: 'none', borderRadius: 4,
+    },
+    btnSuccess: {
+      padding: '10px 20px', fontSize: 16, cursor: 'pointer',
+      backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: 4,
     },
     hint: { marginTop: 20, fontSize: 13, color: '#666' },
     toolbar: {
@@ -234,6 +269,14 @@ export default function BulkTemplatesImport() {
       padding: '2px 6px', cursor: 'pointer', border: '1px solid #ccc',
       borderRadius: 3, backgroundColor: '#fff', fontSize: 12
     },
+    successBanner: {
+      marginTop: 16, padding: 16, backgroundColor: '#d4edda',
+      border: '1px solid #c3e6cb', borderRadius: 6,
+      display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap'
+    },
+    summaryBanner: {
+      marginTop: 16, padding: 12, backgroundColor: '#f0f8ff', borderRadius: 4
+    },
   };
 
   const rowStyle = (status) => {
@@ -243,9 +286,17 @@ export default function BulkTemplatesImport() {
     return {};
   };
 
+  const allDone = !uploading && items.length > 0 && items.every(it => it.status === 'ok');
+
   return (
     <div style={S.page}>
-      <h1 style={S.h1}>Μαζική εισαγωγή υποδειγμάτων Word</h1>
+      <div style={S.headerRow}>
+        <button style={S.backBtn} onClick={goBackToTemplates}>
+          ← Επιστροφή στα υποδείγματα
+        </button>
+        <h1 style={S.h1}>Μαζική εισαγωγή υποδειγμάτων Word</h1>
+      </div>
+
       <div style={S.subtitle}>
         Ανεβάζει πολλά .docx αρχεία ταυτόχρονα από φάκελο. Η κατηγορία εντοπίζεται
         αυτόματα από το όνομα (μπορείς να την αλλάξεις πριν το ανέβασμα).
@@ -283,7 +334,7 @@ export default function BulkTemplatesImport() {
       {items.length > 0 && (
         <>
           <div style={S.toolbar}>
-            {!uploading && (
+            {!uploading && !allDone && (
               <button
                 onClick={startUpload}
                 disabled={items.every(it => it.status === 'ok')}
@@ -295,6 +346,11 @@ export default function BulkTemplatesImport() {
             {uploading && (
               <button onClick={abort} style={S.btnDanger}>
                 ⛔ Διακοπή
+              </button>
+            )}
+            {allDone && (
+              <button onClick={goBackToTemplates} style={S.btnSuccess}>
+                ✅ Ολοκληρώθηκε — Επιστροφή στα υποδείγματα
               </button>
             )}
             <button onClick={resetAll} disabled={uploading} style={S.btn}>
@@ -312,7 +368,6 @@ export default function BulkTemplatesImport() {
             </div>
           </div>
 
-          {/* Progress bar πάντα visible όταν υπάρχουν items */}
           <div style={S.progressWrap}>
             <div style={{ ...S.progressBar, width: `${progressPct}%` }} />
             <div style={S.progressText}>
@@ -320,7 +375,6 @@ export default function BulkTemplatesImport() {
             </div>
           </div>
 
-          {/* Timing row */}
           {(uploading || doneCount > 0) && (
             <div style={S.timerRow}>
               <span>⏱️ Elapsed: <b>{formatTime(elapsedSec)}</b></span>
@@ -335,6 +389,24 @@ export default function BulkTemplatesImport() {
                   🔄 {uploadingCount} ενεργά upload{uploadingCount !== 1 ? 's' : ''}
                 </span>
               )}
+            </div>
+          )}
+
+          {/* Auto-redirect banner όταν όλα OK */}
+          {allDone && redirectIn !== null && (
+            <div style={S.successBanner}>
+              <span style={{ fontSize: 16 }}>
+                ✅ Ανέβηκαν {okCount} / {items.length} επιτυχώς σε {formatTime(elapsedSec)}.
+              </span>
+              <span style={{ color: '#155724' }}>
+                Επιστροφή στα υποδείγματα σε <b>{redirectIn}s</b>...
+              </span>
+              <button onClick={cancelRedirect} style={S.btn}>
+                Ακύρωση redirect
+              </button>
+              <button onClick={goBackToTemplates} style={S.btnSuccess}>
+                Επιστροφή τώρα
+              </button>
             </div>
           )}
 
@@ -394,10 +466,11 @@ export default function BulkTemplatesImport() {
             </table>
           </div>
 
-          {!uploading && (okCount > 0 || failCount > 0) && (
-            <div style={{ marginTop: 16, padding: 12, backgroundColor: '#f0f8ff', borderRadius: 4 }}>
+          {/* Summary όταν υπάρχουν failures */}
+          {!uploading && failCount > 0 && (
+            <div style={S.summaryBanner}>
               <strong>Σύνοψη:</strong> {okCount} / {items.length} επιτυχή σε {formatTime(elapsedSec)}.
-              {failCount > 0 && ` Απέτυχαν ${failCount} (hover στο ❌ για λεπτομέρειες, μετά «Ανέβασμα» ξανά για retry).`}
+              Απέτυχαν {failCount} (hover στο ❌ για λεπτομέρειες, μετά «Ανέβασμα» ξανά για retry).
             </div>
           )}
         </>
