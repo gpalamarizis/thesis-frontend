@@ -40,7 +40,6 @@ import Signup from './pages/Signup';
 import CourtsReport from './pages/Reports/CourtsReport';
 import GdprSettings from './pages/GdprSettings';
 import PlatformAdmin from './pages/PlatformAdmin';
-import BulkTemplatesImport from './pages/BulkTemplatesImport';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -109,7 +108,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/settings/templates/bulk" element={<BulkTemplatesImport />} />
         <Route path="/login"    element={user ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />} />
         <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <Register onLogin={handleLogin} />} />
 
