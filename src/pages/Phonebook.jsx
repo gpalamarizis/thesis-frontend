@@ -1,88 +1,190 @@
+// src/pages/Phonebook.jsx
+// Τηλεφωνικός Κατάλογος — read-only ενοποιημένη αναζήτηση από όλα τα person tables
+
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
-import DataTable from '../components/DataTable';
 import { phonebook } from '../api';
 
 const SOURCES = [
-  { key: '',                    label: 'Όλα' },
-  { key: 'fysika',              label: 'Φυσικά' },
-  { key: 'nomika',              label: 'Νομικά' },
-  { key: 'sxetika',             label: 'Σχετικά' },
-  { key: 'dikigoroi_grafeiou',  label: 'Δικηγόροι γραφείου' },
-  { key: 'dikigoroi_antidikon', label: 'Δικηγόροι αντιδίκων' },
-  { key: 'antidikoi',           label: 'Αντίδικοι' },
+  { key: 'fysika',              label: 'Φυσικά Πρόσωπα (πελάτες)',        color: '#0066cc' },
+  { key: 'nomika',              label: 'Νομικά Πρόσωπα (πελάτες)',        color: '#0055aa' },
+  { key: 'sxetika',             label: 'Σχετικά Πρόσωπα',                 color: '#28a745' },
+  { key: 'dikigoroi_grafeiou',  label: 'Δικηγόροι Γραφείου',              color: '#6f42c1' },
+  { key: 'dikigoroi_antidikon', label: 'Δικηγόροι Αντιδίκων',             color: '#e83e8c' },
+  { key: 'antidikoi',           label: 'Αντίδικοι',                       color: '#dc3545' },
 ];
 
-const SOURCE_LABEL = {
-  fysika: 'Φυσικό',
-  nomika: 'Νομικό',
-  sxetika: 'Σχετικό',
-  dikigoroi_grafeiou: 'Δικ. γραφείου',
-  dikigoroi_antidikon: 'Δικ. αντιδίκου',
-  antidikoi: 'Αντίδικος',
-};
+const SOURCE_LABEL = Object.fromEntries(SOURCES.map(s => [s.key, s.label]));
+const SOURCE_COLOR = Object.fromEntries(SOURCES.map(s => [s.key, s.color]));
 
 function Phonebook({ user, onLogout, onOpenCaseSearch }) {
   const [items, setItems] = useState([]);
   const [q, setQ] = useState('');
-  const [source, setSource] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [selectedSources, setSelectedSources] = useState(SOURCES.map(s => s.key));
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [total, setTotal] = useState(0);
 
   const load = () => {
     setLoading(true);
+    setError('');
+    const source = selectedSources.length === SOURCES.length ? '' : selectedSources.join(',');
     phonebook.search(q, source)
-      .then(d => setItems(Array.isArray(d) ? d : (d?.data || [])))
+      .then(d => {
+        setItems(d?.data || []);
+        setTotal(d?.total || 0);
+      })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  // Initial load & reload on source change (immediate) or search (debounced)
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [source]);
   useEffect(() => {
-    const h = setTimeout(load, 300);
-    return () => clearTimeout(h);
-    /* eslint-disable-next-line */
-  }, [q]);
+    const t = setTimeout(load, 400);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line
+  }, [q, selectedSources]);
 
-  const columns = [
-    { key: 'source', label: 'Τύπος',    width: 130, render: r => <span className="badge badge-closed">{SOURCE_LABEL[r.source] || r.source}</span> },
-    { key: 'eponymo_or_eponymia', label: 'Επώνυμο / Επωνυμία' },
-    { key: 'onoma', label: 'Όνομα' },
-    { key: 'tilefono_grafeiou', label: 'Τηλέφωνο',  width: 130 },
-    { key: 'kinito', label: 'Κινητό',   width: 130 },
-    { key: 'fax',   label: 'Fax',       width: 120 },
-    { key: 'email', label: 'Email' },
-  ];
+  const toggleSource = (key) => {
+    setSelectedSources(prev =>
+      prev.includes(key)
+        ? prev.filter(s => s !== key)
+        : [...prev, key]
+    );
+  };
+
+  const selectAll  = () => setSelectedSources(SOURCES.map(s => s.key));
+  const selectNone = () => setSelectedSources([]);
 
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Τηλεφωνικός Κατάλογος">
-      {error && <div className="error">{error}</div>}
       <div className="section">
-        <div className="phonebook-controls">
+        <div className="section-header">
+          <h2>Αναζήτηση σε όλα τα πρόσωπα ({total})</h2>
           <input
-            type="search"
-            className="search-input"
-            placeholder="🔍 Αναζήτηση σε όλα τα πεδία..."
+            type="text"
+            placeholder="🔍 Επώνυμο, όνομα, email, τηλέφωνο..."
             value={q}
             onChange={e => setQ(e.target.value)}
+            style={{
+              padding: '8px 12px',
+              border: '1px solid #ccc',
+              borderRadius: 4,
+              minWidth: 320,
+              fontSize: 14,
+            }}
+            autoFocus
           />
-          <select value={source} onChange={e => setSource(e.target.value)}>
-            {SOURCES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
-          </select>
         </div>
 
+        {/* Source filters */}
+        <div style={{
+          margin: '12px 0 20px 0',
+          padding: 12,
+          backgroundColor: '#f8f9fa',
+          border: '1px solid #e9ecef',
+          borderRadius: 6,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+            <strong style={{ fontSize: 13 }}>Πηγές:</strong>
+            <button
+              type="button"
+              onClick={selectAll}
+              style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
+            >
+              Όλες
+            </button>
+            <button
+              type="button"
+              onClick={selectNone}
+              style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
+            >
+              Καμία
+            </button>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {SOURCES.map(s => {
+              const active = selectedSources.includes(s.key);
+              return (
+                <label
+                  key={s.key}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '4px 10px',
+                    border: `1px solid ${active ? s.color : '#ccc'}`,
+                    borderRadius: 20,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                    backgroundColor: active ? `${s.color}15` : '#fff',
+                    color: active ? s.color : '#666',
+                    fontWeight: active ? 'bold' : 'normal',
+                    userSelect: 'none',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={active}
+                    onChange={() => toggleSource(s.key)}
+                    style={{ margin: 0 }}
+                  />
+                  {s.label}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        {error && <div className="error">{error}</div>}
+
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">Αναζήτηση...</div>
+        ) : items.length === 0 ? (
+          <div className="empty-state">
+            {q ? `Δεν βρέθηκαν αποτελέσματα για "${q}".` : 'Επίλεξε πηγές ή πληκτρολόγησε αναζήτηση.'}
+          </div>
         ) : (
-          <DataTable
-            columns={columns}
-            rows={items}
-            rowKey={r => `${r.source}-${r.id}`}
-            searchable={false}
-            emptyMessage="Δεν βρέθηκαν αποτελέσματα."
-            pageSize={50}
-          />
+          <table className="table">
+            <thead>
+              <tr>
+                <th style={{ width: 160 }}>Πηγή</th>
+                <th>Επώνυμο / Επωνυμία</th>
+                <th>Όνομα</th>
+                <th>Τηλέφωνο</th>
+                <th>Κινητό</th>
+                <th>Fax</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((r, idx) => (
+                <tr key={`${r.source}-${r.id}-${idx}`}>
+                  <td>
+                    <span style={{
+                      fontSize: 11,
+                      fontWeight: 'bold',
+                      padding: '2px 8px',
+                      borderRadius: 10,
+                      backgroundColor: `${SOURCE_COLOR[r.source] || '#888'}20`,
+                      color: SOURCE_COLOR[r.source] || '#666',
+                    }}>
+                      {SOURCE_LABEL[r.source] || r.source}
+                    </span>
+                  </td>
+                  <td><strong>{r.eponymo_or_eponymia}</strong></td>
+                  <td>{r.onoma || '—'}</td>
+                  <td>{r.tilefono_grafeiou || '—'}</td>
+                  <td>{r.kinito || '—'}</td>
+                  <td>{r.fax || '—'}</td>
+                  <td>
+                    {r.email
+                      ? <a href={`mailto:${r.email}`}>{r.email}</a>
+                      : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </Layout>
