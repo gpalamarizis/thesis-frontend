@@ -1,11 +1,12 @@
 // src/pages/Cases/CaseNew.jsx
 // Νέα Υπόθεση — πλήρες form με όλα τα fields του VB.NET Thesis 2010
+// Sidebar «Υποθέσεις ίδιου πελάτη» εμφανίζεται μόλις επιλεγεί πελάτης (ΦΠ ή ΝΠ)
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
-import { cases, fysika, nomika, lists, people } from '../../api';
+import { cases, fysika, nomika, lists, people, api } from '../../api';
 
 function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
@@ -41,8 +42,9 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   const [thesiOptions, setThesiOptions] = useState([]);
   const [archiveOptions, setArchiveOptions] = useState([]);
 
-  // Related cases for same client
+  // Sidebar: existing cases of the selected client
   const [sameClientCases, setSameClientCases] = useState([]);
+  const [loadingSameClient, setLoadingSameClient] = useState(false);
 
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -79,7 +81,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
       .catch(() => {});
   }, []);
 
-  // Preview protocol when client selection changes
+  // Preview protocol + load same-client cases when client selection changes
   useEffect(() => {
     const clientType = fysikoProsopoId ? 'fysiko' : nomikoProsopoId ? 'nomiko' : null;
     const clientId = fysikoProsopoId || nomikoProsopoId;
@@ -95,6 +97,13 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
       .then(d => setProtocolPreview(d?.xeirokinito_id || d?.protocol || ''))
       .catch(e => { setPreviewError(e.message); setProtocolPreview(''); })
       .finally(() => setPreviewing(false));
+
+    // Load existing cases of the selected client
+    setLoadingSameClient(true);
+    api.get(`/api/cases/by-client?type=${clientType}&id=${clientId}`)
+      .then(d => setSameClientCases(Array.isArray(d?.data) ? d.data : []))
+      .catch(() => setSameClientCases([]))
+      .finally(() => setLoadingSameClient(false));
   }, [fysikoProsopoId, nomikoProsopoId]);
 
   const visibleLawyers = lawyers.filter(l => showInactiveLawyers || l.energos !== false);
@@ -162,177 +171,289 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
     }
   };
 
+  const hasClient = !!(fysikoProsopoId || nomikoProsopoId);
+  const fmtDate = (d) => {
+    if (!d) return '';
+    try {
+      const dt = new Date(d);
+      if (isNaN(dt.getTime())) return '';
+      return dt.toLocaleDateString('el-GR');
+    } catch { return ''; }
+  };
+
+  // Sidebar component: rendered as sticky floating panel to the right of the form
+  const Sidebar = () => (
+    <aside
+      style={{
+        position: 'sticky',
+        top: 80,
+        alignSelf: 'flex-start',
+        width: 320,
+        maxHeight: 'calc(100vh - 120px)',
+        overflowY: 'auto',
+        background: '#fff',
+        border: '1px solid #e2e8f0',
+        borderRadius: 8,
+        padding: 16,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      }}
+    >
+      <h4 style={{ margin: '0 0 12px 0', fontSize: 15, color: '#2d3748' }}>
+        Υποθέσεις ίδιου πελάτη
+        {sameClientCases.length > 0 && (
+          <span style={{ marginLeft: 6, color: '#4a5568', fontWeight: 'normal', fontSize: 13 }}>
+            ({sameClientCases.length})
+          </span>
+        )}
+      </h4>
+
+      {loadingSameClient ? (
+        <div style={{ color: '#a0aec0', fontSize: 13 }}>⏳ φόρτωση...</div>
+      ) : sameClientCases.length === 0 ? (
+        <div style={{ color: '#a0aec0', fontSize: 13, fontStyle: 'italic' }}>
+          Δεν υπάρχουν άλλες υποθέσεις για τον επιλεγμένο πελάτη.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {sameClientCases.map(c => (
+            <div
+              key={c.aa}
+              style={{
+                padding: 10,
+                border: '1px solid #edf2f7',
+                borderRadius: 6,
+                background: '#f7fafc',
+                fontSize: 13,
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+                <a
+                  href={`/cases/${c.aa}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontWeight: 600, color: '#2b6cb0', textDecoration: 'none' }}
+                  title="Άνοιγμα σε νέα καρτέλα"
+                >
+                  {c.xeirokinito_id || `#${c.aa}`}
+                </a>
+                <span
+                  className={`badge ${c.ekkremis ? 'badge-open' : 'badge-closed'}`}
+                  style={{ fontSize: 11 }}
+                >
+                  {c.ekkremis ? 'Εκκρεμής' : 'Κλειστή'}
+                </span>
+              </div>
+              {c.onomasia_name && (
+                <div style={{ color: '#4a5568', marginTop: 4, fontSize: 12 }}>{c.onomasia_name}</div>
+              )}
+              {c.perilipsi && (
+                <div
+                  style={{
+                    color: '#718096',
+                    marginTop: 4,
+                    fontSize: 12,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {c.perilipsi}
+                </div>
+              )}
+              {c.date_eisagogis && (
+                <div style={{ color: '#a0aec0', marginTop: 4, fontSize: 11 }}>
+                  Εισαγωγή: {fmtDate(c.date_eisagogis)}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </aside>
+  );
+
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Νέα Υπόθεση">
       {error && <div className="error">{error}</div>}
-      <form onSubmit={handleSubmit}>
 
-        {/* -------- Ημερομηνίες φακέλου + Πρωτόκολλο -------- */}
-        <div className="section">
-          <h3 style={{ marginBottom: 12 }}>Ημερομηνίες φακέλου</h3>
-          <div className="form-grid-3">
-            <div className="form-group">
-              <label>Άνοιγμα (εισαγωγή)</label>
-              <input type="date" value={dateEnarxis} onChange={e => setDateEnarxis(e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Κλείσιμο (τέλος)</label>
-              <input type="date" value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
-            </div>
-            <div className="form-group" style={{ display: 'flex', alignItems: 'end' }}>
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', paddingBottom: 8 }}>
-                <input type="checkbox" checked={ekkremis} onChange={e => setEkkremis(e.target.checked)} />
-                <span>Εκκρεμής</span>
-              </label>
-            </div>
-          </div>
+      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+        {/* -------- Form (main column) -------- */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <form onSubmit={handleSubmit}>
 
-          {(fysikoProsopoId || nomikoProsopoId) && (
-            <div className="protocol-preview" style={{ marginTop: 8 }}>
-              <div className="protocol-preview-label">Αριθμός Πρωτοκόλλου (θα δημιουργηθεί):</div>
-              <div className="protocol-preview-value">
-                {previewing ? '⏳ υπολογισμός...' : (previewError ? <span style={{color:'#c53030'}}>{previewError}</span> : (protocolPreview || '—'))}
+            {/* -------- Ημερομηνίες φακέλου + Πρωτόκολλο -------- */}
+            <div className="section">
+              <h3 style={{ marginBottom: 12 }}>Ημερομηνίες φακέλου</h3>
+              <div className="form-grid-3">
+                <div className="form-group">
+                  <label>Άνοιγμα (εισαγωγή)</label>
+                  <input type="date" value={dateEnarxis} onChange={e => setDateEnarxis(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Κλείσιμο (τέλος)</label>
+                  <input type="date" value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
+                </div>
+                <div className="form-group" style={{ display: 'flex', alignItems: 'end' }}>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', paddingBottom: 8 }}>
+                    <input type="checkbox" checked={ekkremis} onChange={e => setEkkremis(e.target.checked)} />
+                    <span>Εκκρεμής</span>
+                  </label>
+                </div>
+              </div>
+
+              {hasClient && (
+                <div className="protocol-preview" style={{ marginTop: 8 }}>
+                  <div className="protocol-preview-label">Αριθμός Πρωτοκόλλου (θα δημιουργηθεί):</div>
+                  <div className="protocol-preview-value">
+                    {previewing ? '⏳ υπολογισμός...' : (previewError ? <span style={{color:'#c53030'}}>{previewError}</span> : (protocolPreview || '—'))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* -------- Στοιχεία υπόθεσης -------- */}
+            <div className="section">
+              <h3 style={{ marginBottom: 12 }}>Στοιχεία υπόθεσης</h3>
+
+              <div className="form-grid-2">
+                <div className="form-group">
+                  <label>Είδος υπόθεσης</label>
+                  <select value={onomasiaId} onChange={e => setOnomasiaId(e.target.value)}>
+                    <option value="">— κανένα —</option>
+                    {onomasiaOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Θέση στην υπόθεση</label>
+                  <select value={thesi} onChange={e => setThesi(e.target.value)}>
+                    <option value="">— καμία —</option>
+                    {thesiOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Πελάτης ΦΠ + ΝΠ (visible together, user picks one) */}
+              <div className="form-grid-2" style={{ marginTop: 12 }}>
+                <div className="form-group">
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                    <label>Πελάτης ΦΠ (Φυσικό Πρόσωπο)</label>
+                    <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('fysiko'); }} style={{ fontSize: 12 }}>+ Νέος</a>
+                  </div>
+                  <select
+                    value={fysikoProsopoId}
+                    onChange={e => { setFysikoProsopoId(e.target.value); if (e.target.value) setNomikoProsopoId(''); }}
+                  >
+                    <option value="">— κανένας —</option>
+                    {fysikaList.map(f => (
+                      <option key={f.aa || f.id} value={f.aa || f.id}>
+                        {`${f.eponymo || ''} ${f.onoma || ''}`.trim() || `#${f.aa || f.id}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                    <label>Πελάτης ΝΠ (Νομικό Πρόσωπο)</label>
+                    <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('nomiko'); }} style={{ fontSize: 12 }}>+ Νέο</a>
+                  </div>
+                  <select
+                    value={nomikoProsopoId}
+                    onChange={e => { setNomikoProsopoId(e.target.value); if (e.target.value) setFysikoProsopoId(''); }}
+                  >
+                    <option value="">— κανένα —</option>
+                    {nomikaList.map(n => (
+                      <option key={n.aa || n.id} value={n.aa || n.id}>
+                        {n.eponymia || n.diakritikos_titlos || `#${n.aa || n.id}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-grid-2" style={{ marginTop: 12 }}>
+                <div className="form-group">
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+                    <label>Αντίδικος</label>
+                    <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opponent'); }} style={{ fontSize: 12 }}>+ Νέος</a>
+                  </div>
+                  <select value={diadikosId} onChange={e => setDiadikosId(e.target.value)}>
+                    <option value="">— κανένας —</option>
+                    {opponents.map(r => (
+                      <option key={r.aa || r.id} value={r.aa || r.id}>
+                        {`${r.eponymo || ''} ${r.onoma || ''}`.trim() || `#${r.aa || r.id}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Αρχειοθετημένη σε</label>
+                  <select value={thesiArxeiothetisisId} onChange={e => setThesiArxeiothetisisId(e.target.value)}>
+                    <option value="">— επιλογή —</option>
+                    {archiveOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-grid-2" style={{ marginTop: 12 }}>
+                <div className="form-group">
+                  <label>Ονομασία φακέλου</label>
+                  <input type="text" value={onomasiaFakelou} onChange={e => setOnomasiaFakelou(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Παλιός Κωδικός</label>
+                  <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginTop: 12 }}>
+                <label>Περίληψη / Περιγραφή</label>
+                <textarea rows="5" value={perilipsi} onChange={e => setPerilipsi(e.target.value)} placeholder="Σύντομη περιγραφή της υπόθεσης..." />
               </div>
             </div>
-          )}
-        </div>
 
-        {/* -------- Στοιχεία υπόθεσης -------- */}
-        <div className="section">
-          <h3 style={{ marginBottom: 12 }}>Στοιχεία υπόθεσης</h3>
-
-          <div className="form-grid-2">
-            <div className="form-group">
-              <label>Είδος υπόθεσης</label>
-              <select value={onomasiaId} onChange={e => setOnomasiaId(e.target.value)}>
-                <option value="">— κανένα —</option>
-                {onomasiaOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Θέση στην υπόθεση</label>
-              <select value={thesi} onChange={e => setThesi(e.target.value)}>
-                <option value="">— καμία —</option>
-                {thesiOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {/* Πελάτης ΦΠ + ΝΠ (visible together, user picks one) */}
-          <div className="form-grid-2" style={{ marginTop: 12 }}>
-            <div className="form-group">
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                <label>Πελάτης ΦΠ (Φυσικό Πρόσωπο)</label>
-                <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('fysiko'); }} style={{ fontSize: 12 }}>+ Νέος</a>
+            {/* -------- Χειριστές δικηγόροι γραφείου -------- */}
+            <div className="section">
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+                <h3 style={{ margin: 0 }}>Χειριστές ({xeiristesIds.length} επιλεγμένοι)</h3>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: 12 }}>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={showInactiveLawyers} onChange={e => setShowInactiveLawyers(e.target.checked)} />
+                    Εμφάνιση μη ενεργών
+                  </label>
+                  <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('lawyer'); }}>+ Νέος δικηγόρος γραφείου</a>
+                </div>
               </div>
-              <select
-                value={fysikoProsopoId}
-                onChange={e => { setFysikoProsopoId(e.target.value); if (e.target.value) setNomikoProsopoId(''); }}
-              >
-                <option value="">— κανένας —</option>
-                {fysikaList.map(f => (
-                  <option key={f.aa || f.id} value={f.aa || f.id}>
-                    {`${f.eponymo || ''} ${f.onoma || ''}`.trim() || `#${f.aa || f.id}`}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="form-group">
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                <label>Πελάτης ΝΠ (Νομικό Πρόσωπο)</label>
-                <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('nomiko'); }} style={{ fontSize: 12 }}>+ Νέο</a>
+              <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 6, padding: 8 }}>
+                {visibleLawyers.length === 0 ? (
+                  <div style={{ color: '#a0aec0', padding: 8 }}>Δεν υπάρχουν δικηγόροι γραφείου.</div>
+                ) : visibleLawyers.map(l => {
+                  const id = l.aa || l.id;
+                  const checked = xeiristesIds.includes(id);
+                  return (
+                    <label key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 6, cursor: 'pointer', borderRadius: 4 }}>
+                      <input type="checkbox" checked={checked} onChange={() => toggleXeiristis(id)} />
+                      <span>{`${l.eponymo || ''} ${l.onoma || ''}`.trim() || `#${id}`}</span>
+                      {l.energos === false && <small style={{ color: '#a0aec0' }}>(μη ενεργός)</small>}
+                    </label>
+                  );
+                })}
               </div>
-              <select
-                value={nomikoProsopoId}
-                onChange={e => { setNomikoProsopoId(e.target.value); if (e.target.value) setFysikoProsopoId(''); }}
-              >
-                <option value="">— κανένα —</option>
-                {nomikaList.map(n => (
-                  <option key={n.aa || n.id} value={n.aa || n.id}>
-                    {n.eponymia || n.diakritikos_titlos || `#${n.aa || n.id}`}
-                  </option>
-                ))}
-              </select>
             </div>
-          </div>
 
-          <div className="form-grid-2" style={{ marginTop: 12 }}>
-            <div className="form-group">
-              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                <label>Αντίδικος</label>
-                <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opponent'); }} style={{ fontSize: 12 }}>+ Νέος</a>
-              </div>
-              <select value={diadikosId} onChange={e => setDiadikosId(e.target.value)}>
-                <option value="">— κανένας —</option>
-                {opponents.map(r => (
-                  <option key={r.aa || r.id} value={r.aa || r.id}>
-                    {`${r.eponymo || ''} ${r.onoma || ''}`.trim() || `#${r.aa || r.id}`}
-                  </option>
-                ))}
-              </select>
+            <div className="form-actions">
+              <button type="button" className="btn btn-secondary" onClick={() => navigate('/cases')}>Ακύρωση</button>
+              <button type="submit" className="btn" disabled={saving || (!fysikoProsopoId && !nomikoProsopoId)}>
+                {saving ? 'Δημιουργία...' : 'Δημιουργία Υπόθεσης'}
+              </button>
             </div>
-            <div className="form-group">
-              <label>Αρχειοθετημένη σε</label>
-              <select value={thesiArxeiothetisisId} onChange={e => setThesiArxeiothetisisId(e.target.value)}>
-                <option value="">— επιλογή —</option>
-                {archiveOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div className="form-grid-2" style={{ marginTop: 12 }}>
-            <div className="form-group">
-              <label>Ονομασία φακέλου</label>
-              <input type="text" value={onomasiaFakelou} onChange={e => setOnomasiaFakelou(e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label>Παλιός Κωδικός</label>
-              <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
-            </div>
-          </div>
-
-          <div className="form-group" style={{ marginTop: 12 }}>
-            <label>Περίληψη / Περιγραφή</label>
-            <textarea rows="5" value={perilipsi} onChange={e => setPerilipsi(e.target.value)} placeholder="Σύντομη περιγραφή της υπόθεσης..." />
-          </div>
+          </form>
         </div>
 
-        {/* -------- Χειριστές δικηγόροι γραφείου -------- */}
-        <div className="section">
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
-            <h3 style={{ margin: 0 }}>Χειριστές ({xeiristesIds.length} επιλεγμένοι)</h3>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: 12 }}>
-              <label style={{ display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-                <input type="checkbox" checked={showInactiveLawyers} onChange={e => setShowInactiveLawyers(e.target.checked)} />
-                Εμφάνιση μη ενεργών
-              </label>
-              <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('lawyer'); }}>+ Νέος δικηγόρος γραφείου</a>
-            </div>
-          </div>
-          <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 6, padding: 8 }}>
-            {visibleLawyers.length === 0 ? (
-              <div style={{ color: '#a0aec0', padding: 8 }}>Δεν υπάρχουν δικηγόροι γραφείου.</div>
-            ) : visibleLawyers.map(l => {
-              const id = l.aa || l.id;
-              const checked = xeiristesIds.includes(id);
-              return (
-                <label key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 6, cursor: 'pointer', borderRadius: 4 }}>
-                  <input type="checkbox" checked={checked} onChange={() => toggleXeiristis(id)} />
-                  <span>{`${l.eponymo || ''} ${l.onoma || ''}`.trim() || `#${id}`}</span>
-                  {l.energos === false && <small style={{ color: '#a0aec0' }}>(μη ενεργός)</small>}
-                </label>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="form-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/cases')}>Ακύρωση</button>
-          <button type="submit" className="btn" disabled={saving || (!fysikoProsopoId && !nomikoProsopoId)}>
-            {saving ? 'Δημιουργία...' : 'Δημιουργία Υπόθεσης'}
-          </button>
-        </div>
-      </form>
+        {/* -------- Sidebar (right, only when client selected) -------- */}
+        {hasClient && <Sidebar />}
+      </div>
 
       {quickCreate && (
         <QuickCreatePersonModal
