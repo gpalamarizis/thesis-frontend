@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { reports, people, lists } from '../../api';
@@ -24,7 +24,7 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
   const [selectedDate, setSelectedDate] = useState(null);
 
   useEffect(() => {
-    people.lawyers.list().then(d => setLawyers(Array.isArray(d) ? d : d?.data || [])).catch(() => {});
+    people.lawyers().then(d => setLawyers(Array.isArray(d) ? d : d?.data || [])).catch(() => {});
     lists.get('diadikasies').then(d => setProcedures(Array.isArray(d) ? d : d?.data || [])).catch(() => {});
   }, []);
 
