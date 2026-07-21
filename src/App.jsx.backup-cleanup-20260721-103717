@@ -23,6 +23,9 @@ import RelatedPersons from './pages/RelatedPersons';
 
 import Courts from './pages/Courts';
 
+import PendingCases from './pages/Reports/PendingCases';
+import UpcomingHearings from './pages/Reports/UpcomingHearings';
+import PendingTasks from './pages/Reports/PendingTasks';
 import CourtActionsCalendar from './pages/Reports/CourtActionsCalendar';
 import TaskActionsCalendar from './pages/Reports/TaskActionsCalendar';
 
