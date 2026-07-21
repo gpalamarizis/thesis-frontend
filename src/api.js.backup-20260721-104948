@@ -229,17 +229,7 @@ export const reports = {
     return api.get('/api/reports/upcoming-hearings' + (p.length ? `?${p.join('&')}` : ''));
   },
   pendingTasks:     ()                 => api.get('/api/reports/pending-tasks'),
-
-  courtActionsCalendar: (params = {}) => {
-    const p = new URLSearchParams();
-    if (params.from)         p.set('from', params.from);
-    if (params.to)           p.set('to', params.to);
-    if (params.xeiristId)    p.set('dikigoros_id', params.xeiristId);
-    if (params.diadikasiaId) p.set('diadikasia_id', params.diadikasiaId);
-    if (params.ekkremis && params.ekkremis !== 'all') p.set('ekkremis', params.ekkremis);
-    const qs = p.toString();
-    return api.get('/api/reports/upcoming-hearings' + (qs ? `?${qs}` : ''));
-  },};
+};
 
 export const finance = {
   list:   (resource, caseId)          => api.get(`/api/finance/${resource}?ypothesi_id=${caseId}`),
