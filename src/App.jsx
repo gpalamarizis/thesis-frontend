@@ -4,6 +4,8 @@ import { auth } from './api';
 import CaseSearchModal from './components/CaseSearchModal';
 
 import Login from './pages/Login';
+import ForgotPassword from './pages/Auth/ForgotPassword';
+import ResetPassword from './pages/Auth/ResetPassword';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 
@@ -114,6 +116,8 @@ function App() {
       <Routes>
         <Route path="/settings/templates/bulk" element={<BulkTemplatesImport />} />
         <Route path="/login"    element={user ? <Navigate to="/dashboard" replace /> : <Login onLogin={handleLogin} />} />
+        <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" replace /> : <ForgotPassword />} />
+        <Route path="/reset-password"  element={user ? <Navigate to="/dashboard" replace /> : <ResetPassword />} />
         <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <Register onLogin={handleLogin} />} />
 
         <Route path="/dashboard" element={guard(Dashboard)} />

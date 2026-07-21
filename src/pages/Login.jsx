@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 
@@ -42,6 +42,11 @@ function Login({ onLogin }) {
           <button type="submit" className="btn btn-full" disabled={loading}>
             {loading ? 'Σύνδεση...' : 'Είσοδος'}
           </button>
+          <div style={{ marginTop: 12, textAlign: 'right' }}>
+            <Link to="/forgot-password" style={{ fontSize: 13, color: '#2b6cb0', textDecoration: 'none' }}>
+              Ξέχασα τον κωδικό μου
+            </Link>
+          </div>
         </form>
         <div className="link">
           Δεν έχετε λογαριασμό; <Link to="/register">Εγγραφή εδώ</Link>
