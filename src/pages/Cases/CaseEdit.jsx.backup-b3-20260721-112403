@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
@@ -113,17 +113,7 @@ function CaseTab({ caseData, onSave, saving }) {
   const [gak, setGak] = useState(caseData.gak || '');
   const [eak, setEak] = useState(caseData.eak || '');
   const [arithmosEisagogikou, setArithmosEisagogikou] = useState(caseData.arithmos_eisagogikou || '');
-  const [onomasiaId, setOnomasiaId] = useState(caseData.onomasia_id || '');
-  const [thesi, setThesi] = useState(caseData.thesi || '');
-  const [fysikoProsopoId, setFysikoProsopoId] = useState(caseData.fysiko_prosopo_id || '');
-  const [nomikoProsopoId, setNomikoProsopoId] = useState(caseData.nomiko_prosopo_id || '');
   const [archiveOptions, setArchiveOptions] = useState([]);
-  const [onomasiaOptions, setOnomasiaOptions] = useState([]);
-  const [thesiOptions, setThesiOptions] = useState([]);
-  const [fysikaList, setFysikaList] = useState([]);
-  const [nomikaList, setNomikaList] = useState([]);
-  const [sameClientCases, setSameClientCases] = useState([]);
-  const [showInactiveLawyers, setShowInactiveLawyers] = useState(false);
 
   // Merged from PeopleTab
   const initialXeiristes = Array.isArray(caseData.xeiristes)
@@ -135,13 +125,6 @@ function CaseTab({ caseData, onSave, saving }) {
   const [opponents, setOpponents] = useState([]);
   const [loadErr, setLoadErr] = useState('');
   const [quickCreate, setQuickCreate] = useState(null);
-
-  const reloadFysika = () => fysika.list()
-    .then(d => setFysikaList(Array.isArray(d) ? d : (d?.data || [])))
-    .catch(() => {});
-  const reloadNomika = () => nomika.list()
-    .then(d => setNomikaList(Array.isArray(d) ? d : (d?.data || [])))
-    .catch(() => {});
 
   const reloadPeople = () => {
     Promise.allSettled([
@@ -160,20 +143,7 @@ function CaseTab({ caseData, onSave, saving }) {
     lists.get('theseis_arxeiothetisis')
       .then(d => setArchiveOptions(Array.isArray(d) ? d : (d?.data || [])))
       .catch(() => {});
-    lists.get('ypotheseis_onomasies')
-      .then(d => setOnomasiaOptions(Array.isArray(d) ? d : (d?.data || [])))
-      .catch(() => {});
-    lists.get('thesi')
-      .then(d => setThesiOptions(Array.isArray(d) ? d : (d?.data || [])))
-      .catch(() => {});
-    reloadFysika();
-    reloadNomika();
     reloadPeople();
-    if (caseData && (caseData.aa || caseData.id)) {
-      cases.sameClient(caseData.aa || caseData.id)
-        .then(d => setSameClientCases(Array.isArray(d) ? d : (d?.data || [])))
-        .catch(() => setSameClientCases([]));
-    }
   }, []);
 
   useEffect(() => {
@@ -189,11 +159,7 @@ function CaseTab({ caseData, onSave, saving }) {
     setArithmosEisagogikou(caseData.arithmos_eisagogikou || '');
     setXeiristesIds(Array.isArray(caseData.xeiristes) ? caseData.xeiristes.map(x => x.aa || x.id).filter(Boolean) : []);
     setDiadikosId(caseData.diadikos_id || '');
-    setOnomasiaId(caseData.onomasia_id || '');
-    setThesi(caseData.thesi || '');
-    setFysikoProsopoId(caseData.fysiko_prosopo_id || '');
-    setNomikoProsopoId(caseData.nomiko_prosopo_id || '');
-  }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou, caseData.thesi_arxeiothetisis_id, caseData.old_kod, caseData.diadikos_id, caseData.xeiristes, caseData.onomasia_id, caseData.thesi, caseData.fysiko_prosopo_id, caseData.nomiko_prosopo_id]);
+  }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou, caseData.thesi_arxeiothetisis_id, caseData.old_kod, caseData.diadikos_id, caseData.xeiristes]);
 
   const toggleXeiristis = (id) => {
     setXeiristesIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -201,20 +167,11 @@ function CaseTab({ caseData, onSave, saving }) {
 
   const handleQuickCreated = (kind, rec) => {
     setQuickCreate(null);
+    reloadPeople();
     const newId = rec?.aa || rec?.id;
-    if (kind === 'fysiko') {
-      reloadFysika();
-      if (newId) { setFysikoProsopoId(String(newId)); setNomikoProsopoId(''); }
-    } else if (kind === 'nomiko') {
-      reloadNomika();
-      if (newId) { setNomikoProsopoId(String(newId)); setFysikoProsopoId(''); }
-    } else if (kind === 'lawyer') {
-      reloadPeople();
-      if (newId) setXeiristesIds(prev => [...prev, newId]);
-    } else if (kind === 'opponent') {
-      reloadPeople();
-      if (newId) setDiadikosId(newId);
-    }
+    if (!newId) return;
+    if (kind === 'lawyer') setXeiristesIds(prev => [...prev, newId]);
+    else if (kind === 'opponent') setDiadikosId(newId);
   };
 
   const clientLabel = caseData.fysiko_full_name
@@ -235,10 +192,6 @@ function CaseTab({ caseData, onSave, saving }) {
     ekkremis:                ekkremis,
     diadikos_id:             diadikosId ? Number(diadikosId) : null,
     xeiristes_ids:           xeiristesIds.map(Number),
-    onomasia_id:             onomasiaId ? Number(onomasiaId) : null,
-    thesi:                   thesi ? Number(thesi) : null,
-    fysiko_prosopo_id:       fysikoProsopoId ? Number(fysikoProsopoId) : null,
-    nomiko_prosopo_id:       nomikoProsopoId ? Number(nomikoProsopoId) : null,
   });
 
   return (
@@ -287,22 +240,6 @@ function CaseTab({ caseData, onSave, saving }) {
           </div>
           <div />
         </div>
-        <div className="form-grid-2">
-          <div className="form-group">
-            <label>Είδος υπόθεσης</label>
-            <select value={onomasiaId} onChange={e => setOnomasiaId(e.target.value)}>
-              <option value="">— κανένα —</option>
-              {onomasiaOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
-            </select>
-          </div>
-          <div className="form-group">
-            <label>Θέση στην υπόθεση</label>
-            <select value={thesi} onChange={e => setThesi(e.target.value)}>
-              <option value="">— καμία —</option>
-              {thesiOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
-            </select>
-          </div>
-        </div>
         <div className="form-grid-3">
           <div className="form-group">
             <label>ΓΑΚ (Γενικός Αριθμός Κατάθεσης)</label>
@@ -324,44 +261,12 @@ function CaseTab({ caseData, onSave, saving }) {
 
         {loadErr && <div className="error">Σφάλμα φόρτωσης προσώπων: {loadErr}</div>}
 
-        {/* --- Πελάτης ΦΠ + ΝΠ + Αντίδικος --- */}
+        {/* --- Πελάτης + Αντίδικος --- */}
         <div className="form-grid-2" style={{ marginTop: 20, borderTop: '1px solid #e2e8f0', paddingTop: 20 }}>
           <div className="form-group">
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-              <label>Πελάτης ΦΠ (Φυσικό Πρόσωπο)</label>
-              <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('fysiko'); }} style={{ fontSize: 12 }}>+ Νέος</a>
-            </div>
-            <select
-              value={fysikoProsopoId}
-              onChange={e => { setFysikoProsopoId(e.target.value); if (e.target.value) setNomikoProsopoId(''); }}
-            >
-              <option value="">— κανένας —</option>
-              {fysikaList.map(f => (
-                <option key={f.aa || f.id} value={f.aa || f.id}>
-                  {`${f.eponymo || ''} ${f.onoma || ''}`.trim() || `#${f.aa || f.id}`}
-                </option>
-              ))}
-            </select>
+            <label>Πελάτης (σταθερός)</label>
+            <div style={{ padding: '8px 12px', background: '#f7fafc', borderRadius: 4, fontSize: 14 }}>{clientLabel}</div>
           </div>
-          <div className="form-group">
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-              <label>Πελάτης ΝΠ (Νομικό Πρόσωπο)</label>
-              <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('nomiko'); }} style={{ fontSize: 12 }}>+ Νέο</a>
-            </div>
-            <select
-              value={nomikoProsopoId}
-              onChange={e => { setNomikoProsopoId(e.target.value); if (e.target.value) setFysikoProsopoId(''); }}
-            >
-              <option value="">— κανένα —</option>
-              {nomikaList.map(n => (
-                <option key={n.aa || n.id} value={n.aa || n.id}>
-                  {n.eponymia || n.diakritikos_titlos || `#${n.aa || n.id}`}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="form-grid-2">
           <div className="form-group">
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
               <label>Αντίδικος</label>
@@ -372,7 +277,6 @@ function CaseTab({ caseData, onSave, saving }) {
               {opponents.map(r => <option key={r.aa || r.id} value={r.aa || r.id}>{`${r.eponymo || ''} ${r.onoma || ''}`.trim()}</option>)}
             </select>
           </div>
-          <div />
         </div>
 
         {/* --- Χειριστές δικηγόροι --- */}
@@ -406,25 +310,6 @@ function CaseTab({ caseData, onSave, saving }) {
       </div>
 
       <aside className="case-tab-sidebar">
-        <div className="section" style={{ marginBottom: 16 }}>
-          <h3 style={{ fontSize: 14, marginTop: 0, marginBottom: 8 }}>Υποθέσεις ίδιου πελάτη ({sameClientCases.length})</h3>
-          {sameClientCases.length === 0 ? (
-            <div style={{ color: '#a0aec0', fontSize: 12 }}>Δεν υπάρχουν άλλες υποθέσεις.</div>
-          ) : (
-            <div style={{ maxHeight: 200, overflowY: 'auto' }}>
-              {sameClientCases.map(sc => (
-                <a
-                  key={sc.aa || sc.id}
-                  href={`/cases/${sc.aa || sc.id}`}
-                  style={{ display: 'block', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: 12, textDecoration: 'none', color: '#2d3748' }}
-                >
-                  <strong>{sc.xeirokinito_id || `#${sc.aa || sc.id}`}</strong>
-                  {sc.perilipsi && <div style={{ color: '#718096', fontSize: 11, marginTop: 2 }}>{sc.perilipsi.substring(0, 60)}{sc.perilipsi.length > 60 ? '...' : ''}</div>}
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
         <RelatedCasesPanel caseId={caseData.aa || caseData.id} />
       </aside>
 
@@ -1275,5 +1160,3 @@ function formatBytes(b) {
 }
 
 export default CaseEdit;
-
-
