@@ -1,470 +1,439 @@
 // src/pages/PlatformAdmin.jsx
-// Super-admin panel: διαχείριση όλης της πλατφόρμας.
-// Ορατή μόνο σε users με is_platform_admin = true.
+// Platform admin page - Organizations & Users management
+// Route: /platform
+// Requires: is_platform_admin = true
 
-import { useState, useEffect } from 'react';
-import Layout from '../components/Layout';
-import Tabs from '../components/Tabs';
-import Modal from '../components/Modal';
-import { platform } from '../api';
+import { useEffect, useState } from 'react';
+import { api } from '../api';
 
-function fmtDate(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleDateString('el-GR');
-}
-function fmtDateTime(d) {
-  if (!d) return '—';
-  return new Date(d).toLocaleString('el-GR');
-}
-function fmtCurrency(n) {
-  if (n == null) return '—';
-  return new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(n);
-}
-function fmtBytes(b) {
-  if (b == null || b === 0) return '0 B';
-  const mb = b / (1024 * 1024);
-  if (mb < 1024) return `${mb.toFixed(1)} MB`;
-  return `${(mb / 1024).toFixed(2)} GB`;
-}
-function statusBadge(status) {
-  const map = {
-    active:    { color: '#38a169', bg: '#c6f6d5', label: 'Ενεργή' },
-    trial:     { color: '#3182ce', bg: '#bee3f8', label: 'Δοκιμαστική' },
-    expired:   { color: '#e53e3e', bg: '#fed7d7', label: 'Ληγμένη' },
-    cancelled: { color: '#718096', bg: '#e2e8f0', label: 'Ακυρωμένη' },
-  };
-  const s = map[status] || { color: '#718096', bg: '#e2e8f0', label: status };
-  return <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, color: s.color, background: s.bg }}>{s.label}</span>;
-}
-
-// ==================== DASHBOARD TAB ====================
-function DashboardTab() {
-  const [stats, setStats] = useState(null);
-  const [err, setErr] = useState('');
-  useEffect(() => {
-    platform.stats().then(d => setStats(d.data || d)).catch(e => setErr(e.message));
-  }, []);
-  if (err) return <div className="error">{err}</div>;
-  if (!stats) return <div className="empty-state">Φόρτωση...</div>;
-
-  const cards = [
-    { label: 'Σύνολο οργανισμών', value: stats.organizations?.total, color: '#3182ce' },
-    { label: 'Ενεργές συνδρομές',  value: stats.organizations?.active, color: '#38a169' },
-    { label: 'Trial',              value: stats.organizations?.trial, color: '#d69e2e' },
-    { label: 'Ληγμένες',           value: stats.organizations?.expired, color: '#e53e3e' },
-    { label: 'Νέες (30 ημερών)',   value: stats.organizations?.new_last_30d, color: '#805ad5' },
-    { label: 'Ενεργοί χρήστες',    value: stats.users, color: '#3182ce' },
-    { label: 'MRR (μηνιαία)',      value: fmtCurrency(stats.mrr), color: '#38a169' },
-    { label: 'Έσοδα 30 ημερών',    value: fmtCurrency(stats.subscriptions?.revenue_last_30d), color: '#38a169' },
-    { label: 'Έσοδα σύνολο',       value: fmtCurrency(stats.subscriptions?.revenue_total), color: '#2d3748' },
-    { label: 'Ενεργοί partners',   value: stats.partners_active, color: '#805ad5' },
-    { label: 'Commissions που οφείλονται', value: fmtCurrency(stats.subscriptions?.commissions_owed), color: '#e53e3e' },
-    { label: 'Suspended',          value: stats.organizations?.suspended, color: '#e53e3e' },
-  ];
-
-  return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12, marginBottom: 20 }}>
-        {cards.map((c, i) => (
-          <div key={i} style={{ padding: 16, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>{c.label}</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: c.color }}>{c.value ?? 0}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ==================== ORGANIZATIONS TAB ====================
-function OrganizationsTab() {
-  const [rows, setRows] = useState([]);
+export default function PlatformAdmin() {
+  const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState('');
-  const [filters, setFilters] = useState({ q: '', status: '', plan_type: '' });
-  const [selectedOrg, setSelectedOrg] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [detailId, setDetailId] = useState(null);
+  const [error, setError] = useState(null);
 
-  const load = () => {
+  const refresh = async () => {
     setLoading(true);
-    const p = {};
-    if (filters.q) p.q = filters.q;
-    if (filters.status) p.status = filters.status;
-    if (filters.plan_type) p.plan_type = filters.plan_type;
-    platform.orgs(p).then(d => setRows(d.data || [])).catch(e => setErr(e.message)).finally(() => setLoading(false));
+    try {
+      const res = await api.get('/platform/organizations');
+      const data = res.data?.data || res.data || [];
+      setOrgs(Array.isArray(data) ? data : []);
+      setError(null);
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
+    } finally {
+      setLoading(false);
+    }
   };
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [filters]);
+
+  useEffect(() => { refresh(); }, []);
+
+  const daysUntilExpiry = (dateStr) => {
+    if (!dateStr) return null;
+    const now = new Date();
+    const end = new Date(dateStr);
+    return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const daysLabel = (dateStr) => {
+    const d = daysUntilExpiry(dateStr);
+    if (d === null) return '—';
+    if (d < 0) return <span style={{color:'#dc2626', fontWeight:600}}>Έληξε ({Math.abs(d)} ημ.)</span>;
+    if (d === 0) return <span style={{color:'#dc2626', fontWeight:600}}>Λήγει σήμερα</span>;
+    if (d <= 30) return <span style={{color:'#d97706', fontWeight:600}}>{d} ημέρες</span>;
+    return <span style={{color:'#059669'}}>{d} ημέρες</span>;
+  };
 
   return (
-    <div>
-      <div className="filter-bar" style={{ marginBottom: 16 }}>
-        <input type="text" placeholder="Αναζήτηση (όνομα, slug, email)" value={filters.q} onChange={e => setFilters(f => ({ ...f, q: e.target.value }))} style={{ minWidth: 300 }} />
-        <select value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
-          <option value="">— κατάσταση —</option>
-          <option value="active">Ενεργή</option>
-          <option value="trial">Trial</option>
-          <option value="expired">Ληγμένη</option>
-          <option value="cancelled">Ακυρωμένη</option>
-        </select>
-        <select value={filters.plan_type} onChange={e => setFilters(f => ({ ...f, plan_type: e.target.value }))}>
-          <option value="">— τύπος —</option>
-          <option value="solo">Solo</option>
-          <option value="partnership_shared">Partnership Shared</option>
-          <option value="partnership_private">Partnership Private</option>
-          <option value="law_firm">Law Firm</option>
-        </select>
+    <div style={{padding:'24px', maxWidth:'1280px', margin:'0 auto'}}>
+      <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'24px'}}>
+        <h1 style={{fontSize:'24px', fontWeight:600, margin:0}}>Διαχείριση Εταιρειών (Platform Admin)</h1>
+        <button
+          onClick={() => setShowCreate(true)}
+          style={{background:'#059669', color:'white', padding:'8px 16px', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'14px'}}
+        >
+          + Νέα εταιρεία
+        </button>
       </div>
 
-      {err && <div className="error">{err}</div>}
-      {loading ? <div className="empty-state">Φόρτωση...</div> : (
-        <table className="table">
-          <thead><tr>
-            <th>Όνομα</th>
-            <th>Τύπος</th>
-            <th>Κατάσταση</th>
-            <th>Χρήστες</th>
-            <th>Υποθέσεις</th>
-            <th>Storage</th>
-            <th>Trial λήγει</th>
-            <th>Συνδρομή λήγει</th>
-            <th>Partner</th>
-            <th>Έσοδα</th>
-            <th></th>
-          </tr></thead>
+      {error && (
+        <div style={{background:'#fef2f2', color:'#991b1b', padding:'8px 16px', borderRadius:'6px', marginBottom:'16px'}}>
+          {error}
+        </div>
+      )}
+      {loading && <div>Φόρτωση...</div>}
+
+      <div style={{background:'white', borderRadius:'8px', boxShadow:'0 1px 3px rgba(0,0,0,0.1)', overflow:'hidden'}}>
+        <table style={{width:'100%', fontSize:'14px', borderCollapse:'collapse'}}>
+          <thead style={{background:'#f8fafc', borderBottom:'1px solid #e2e8f0'}}>
+            <tr>
+              <th style={{padding:'8px 16px', textAlign:'left'}}>Επωνυμία</th>
+              <th style={{padding:'8px 16px', textAlign:'left'}}>Slug</th>
+              <th style={{padding:'8px 16px', textAlign:'left'}}>Πλάνο</th>
+              <th style={{padding:'8px 16px', textAlign:'left'}}>Κατάσταση</th>
+              <th style={{padding:'8px 16px', textAlign:'left'}}>Λήξη</th>
+              <th style={{padding:'8px 16px', textAlign:'right'}}>Ενέργειες</th>
+            </tr>
+          </thead>
           <tbody>
-            {rows.map(r => (
-              <tr key={r.id} className={r.suspended ? 'row-danger' : ''}>
-                <td><strong>{r.name}</strong>{r.suspended && <div style={{ fontSize: 11, color: '#e53e3e' }}>⛔ Suspended</div>}</td>
-                <td style={{ fontSize: 12 }}>{r.plan_type || '—'}</td>
-                <td>{statusBadge(r.subscription_status)}</td>
-                <td>{r.active_users}/{r.max_users || '?'}</td>
-                <td>{r.total_cases}</td>
-                <td>{fmtBytes(r.storage_bytes_used)} / {r.storage_quota_mb ? `${(r.storage_quota_mb/1024).toFixed(0)} GB` : '?'}</td>
-                <td style={{ fontSize: 12 }}>{fmtDate(r.trial_ends_at)}</td>
-                <td style={{ fontSize: 12 }}>{fmtDate(r.subscription_ends_at)}</td>
-                <td style={{ fontSize: 12 }}>{r.partner_name || '—'}</td>
-                <td style={{ textAlign: 'right' }}>{fmtCurrency(r.revenue_ytd)}</td>
-                <td><button className="btn btn-sm btn-secondary" onClick={() => setSelectedOrg(r.id)}>Λεπτ.</button></td>
+            {orgs.map(o => (
+              <tr key={o.id} style={{borderBottom:'1px solid #e2e8f0', background: o.suspended ? '#fef2f2' : 'white'}}>
+                <td style={{padding:'8px 16px', fontWeight:500}}>{o.name}</td>
+                <td style={{padding:'8px 16px', color:'#64748b'}}>{o.slug || '—'}</td>
+                <td style={{padding:'8px 16px'}}>{o.plan_type}</td>
+                <td style={{padding:'8px 16px'}}>
+                  {o.suspended ? <span style={{color:'#dc2626'}}>Ανασταλμένη</span> : o.subscription_status}
+                </td>
+                <td style={{padding:'8px 16px'}}>{daysLabel(o.subscription_ends_at)}</td>
+                <td style={{padding:'8px 16px', textAlign:'right'}}>
+                  <button
+                    onClick={() => setDetailId(o.id)}
+                    style={{color:'#2563eb', background:'none', border:'none', cursor:'pointer', fontSize:'14px', textDecoration:'underline'}}
+                  >
+                    Λεπτομέρειες
+                  </button>
+                </td>
               </tr>
             ))}
+            {orgs.length === 0 && !loading && (
+              <tr><td colSpan={6} style={{padding:'32px', textAlign:'center', color:'#64748b'}}>Καμία εταιρεία</td></tr>
+            )}
           </tbody>
         </table>
-      )}
+      </div>
 
-      {selectedOrg && <OrgDetailModal orgId={selectedOrg} onClose={() => setSelectedOrg(null)} onReload={load} />}
+      {showCreate && <CreateOrgModal onClose={() => setShowCreate(false)} onCreated={refresh} />}
+      {detailId && <OrgDetailModal orgId={detailId} onClose={() => setDetailId(null)} onChanged={refresh} />}
     </div>
   );
 }
 
-function OrgDetailModal({ orgId, onClose, onReload }) {
-  const [data, setData] = useState(null);
-  const [err, setErr] = useState('');
-  const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({});
+function CreateOrgModal({ onClose, onCreated }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    name: '', slug: '', plan_type: 'enterprise',
+    admin_email: '', admin_password: '',
+    admin_first_name: '', admin_last_name: '',
+    subscription_start: today,
+    subscription_years: 1,
+    billing_email: '', billing_afm: '', billing_phone: '',
+    max_users: 20, notes: ''
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [err, setErr] = useState(null);
 
-  const load = () => {
-    platform.orgDetail(orgId).then(d => {
-      setData(d);
-      setForm({
-        name: d.organization.name || '',
-        subscription_status: d.organization.subscription_status || '',
-        plan_type: d.organization.plan_type || '',
-        max_users: d.organization.max_users || 1,
-        storage_quota_mb: d.organization.storage_quota_mb || 5120,
-        trial_ends_at: d.organization.trial_ends_at?.slice(0, 10) || '',
-        subscription_ends_at: d.organization.subscription_ends_at?.slice(0, 10) || '',
-        notes: d.organization.notes || '',
-      });
-    }).catch(e => setErr(e.message));
-  };
-  useEffect(load, [orgId]);
-
-  const save = async () => {
+  const submit = async () => {
+    setSubmitting(true);
+    setErr(null);
     try {
-      await platform.updateOrg(orgId, form);
-      setEditing(false);
-      load();
-      onReload && onReload();
-    } catch (e) { setErr(e.message); }
+      await api.post('/platform/organizations', form);
+      onCreated();
+      onClose();
+    } catch (e) {
+      setErr(e.response?.data?.error || e.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const extendTrial = async () => {
-    const days = prompt('Πόσες ημέρες να επεκταθεί το trial;', '30');
-    if (!days) return;
+  const upd = (k, v) => setForm({ ...form, [k]: v });
+  const input = {width:'100%', border:'1px solid #cbd5e1', borderRadius:'4px', padding:'6px 10px', fontSize:'14px'};
+
+  return (
+    <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:50, padding:'16px'}}>
+      <div style={{background:'white', borderRadius:'8px', width:'100%', maxWidth:'640px', maxHeight:'90vh', overflowY:'auto'}}>
+        <div style={{padding:'24px'}}>
+          <h2 style={{fontSize:'20px', fontWeight:600, marginTop:0, marginBottom:'16px'}}>Νέα εταιρεία</h2>
+          {err && <div style={{background:'#fef2f2', color:'#991b1b', padding:'8px 12px', borderRadius:'4px', marginBottom:'12px', fontSize:'14px'}}>{err}</div>}
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
+            <label style={{gridColumn:'span 2'}}>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Επωνυμία*</div>
+              <input value={form.name} onChange={e=>upd('name',e.target.value)} style={input} required />
+            </label>
+            <label>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Slug*</div>
+              <input value={form.slug} onChange={e=>upd('slug',e.target.value)} style={input} placeholder="onoma-etaireias" required />
+            </label>
+            <label>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Τύπος πλάνου</div>
+              <select value={form.plan_type} onChange={e=>upd('plan_type',e.target.value)} style={input}>
+                <option value="solo">Solo</option>
+                <option value="pro">Pro</option>
+                <option value="enterprise">Enterprise</option>
+              </select>
+            </label>
+            <label>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Έναρξη συνδρομής</div>
+              <input type="date" value={form.subscription_start} onChange={e=>upd('subscription_start',e.target.value)} style={input} />
+            </label>
+            <label>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Διάρκεια (έτη)</div>
+              <input type="number" min={1} max={10} value={form.subscription_years} onChange={e=>upd('subscription_years',Number(e.target.value))} style={input} />
+            </label>
+            <label>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Μέγιστοι χρήστες</div>
+              <input type="number" value={form.max_users} onChange={e=>upd('max_users',Number(e.target.value))} style={input} />
+            </label>
+            <label style={{gridColumn:'span 2'}}>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Email τιμολόγησης</div>
+              <input type="email" value={form.billing_email} onChange={e=>upd('billing_email',e.target.value)} style={input} />
+            </label>
+            <label>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>ΑΦΜ</div>
+              <input value={form.billing_afm} onChange={e=>upd('billing_afm',e.target.value)} style={input} />
+            </label>
+            <label>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Τηλέφωνο</div>
+              <input value={form.billing_phone} onChange={e=>upd('billing_phone',e.target.value)} style={input} />
+            </label>
+            <div style={{gridColumn:'span 2', borderTop:'1px solid #e2e8f0', paddingTop:'12px', marginTop:'4px'}}>
+              <h3 style={{fontWeight:500, margin:0, marginBottom:'8px'}}>Πρώτος Χρήστης (Admin)</h3>
+            </div>
+            <label>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Όνομα</div>
+              <input value={form.admin_first_name} onChange={e=>upd('admin_first_name',e.target.value)} style={input} />
+            </label>
+            <label>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Επώνυμο</div>
+              <input value={form.admin_last_name} onChange={e=>upd('admin_last_name',e.target.value)} style={input} />
+            </label>
+            <label style={{gridColumn:'span 2'}}>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Email admin*</div>
+              <input type="email" value={form.admin_email} onChange={e=>upd('admin_email',e.target.value)} style={input} required />
+            </label>
+            <label style={{gridColumn:'span 2'}}>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Password admin* (min 8)</div>
+              <input type="text" value={form.admin_password} onChange={e=>upd('admin_password',e.target.value)} style={input} required minLength={8} />
+            </label>
+            <label style={{gridColumn:'span 2'}}>
+              <div style={{fontSize:'13px', fontWeight:500, marginBottom:'4px'}}>Σημειώσεις</div>
+              <textarea value={form.notes} onChange={e=>upd('notes',e.target.value)} style={{...input, resize:'vertical'}} rows={2} />
+            </label>
+          </div>
+          <div style={{display:'flex', justifyContent:'flex-end', gap:'8px', marginTop:'24px'}}>
+            <button onClick={onClose} style={{padding:'8px 16px', border:'1px solid #cbd5e1', borderRadius:'4px', background:'white', cursor:'pointer'}}>Άκυρο</button>
+            <button onClick={submit} disabled={submitting} style={{background:'#059669', color:'white', padding:'8px 16px', border:'none', borderRadius:'4px', cursor:'pointer', opacity: submitting ? 0.5 : 1}}>
+              {submitting ? 'Δημιουργία...' : 'Δημιουργία'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OrgDetailModal({ orgId, onClose, onChanged }) {
+  const [org, setOrg] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => {
     try {
-      await platform.extendTrial(orgId, parseInt(days, 10));
-      load(); onReload && onReload();
-    } catch (e) { setErr(e.message); }
+      const [orgRes, usersRes] = await Promise.all([
+        api.get(`/platform/organizations/${orgId}`),
+        api.get(`/platform/organizations/${orgId}/users`)
+      ]);
+      setOrg(orgRes.data?.data || orgRes.data);
+      setUsers(usersRes.data?.data || usersRes.data || []);
+    } catch (e) {
+      alert(e.response?.data?.error || e.message);
+    }
+  };
+  useEffect(() => { load(); }, [orgId]);
+
+  const extend = async () => {
+    if (!window.confirm('Παράταση 1 έτος;')) return;
+    setBusy(true);
+    try {
+      await api.post(`/platform/organizations/${orgId}/extend`, { years: 1 });
+      await load();
+      onChanged();
+    } catch (e) {
+      alert(e.response?.data?.error || e.message);
+    } finally { setBusy(false); }
   };
 
   const toggleSuspend = async () => {
+    setBusy(true);
     try {
-      if (data.organization.suspended) {
-        await platform.unsuspend(orgId);
+      if (org.suspended) {
+        await api.post(`/platform/organizations/${orgId}/unsuspend`);
       } else {
-        const reason = prompt('Λόγος suspend;', 'Καθυστέρηση πληρωμής');
-        if (reason == null) return;
-        await platform.suspend(orgId, reason);
+        const reason = window.prompt('Λόγος αναστολής;');
+        await api.post(`/platform/organizations/${orgId}/suspend`, { reason });
       }
-      load(); onReload && onReload();
-    } catch (e) { setErr(e.message); }
+      await load();
+      onChanged();
+    } catch (e) {
+      alert(e.response?.data?.error || e.message);
+    } finally { setBusy(false); }
   };
 
-  if (!data) return <Modal title="Φόρτωση..." onClose={onClose}><div>Φόρτωση</div></Modal>;
-  const o = data.organization;
+  const deleteOrg = async () => {
+    const c = window.prompt(`ΔΙΑΓΡΑΦΗ ${org.name}. Πληκτρολογήστε DELETE-${orgId} για επιβεβαίωση:`);
+    if (c !== `DELETE-${orgId}`) return;
+    setBusy(true);
+    try {
+      await api.delete(`/platform/organizations/${orgId}`, { data: { confirm: `DELETE-${orgId}` } });
+      onChanged();
+      onClose();
+    } catch (e) {
+      alert(e.response?.data?.error || e.message);
+    } finally { setBusy(false); }
+  };
+
+  const deleteUser = async (userId) => {
+    if (!window.confirm('Διαγραφή χρήστη;')) return;
+    setBusy(true);
+    try {
+      await api.delete(`/platform/users/${userId}`);
+      await load();
+    } catch (e) {
+      alert(e.response?.data?.error || e.message);
+    } finally { setBusy(false); }
+  };
+
+  const toggleUserActive = async (u) => {
+    setBusy(true);
+    try {
+      await api.patch(`/platform/users/${u.id}`, { is_active: !u.is_active });
+      await load();
+    } catch (e) {
+      alert(e.response?.data?.error || e.message);
+    } finally { setBusy(false); }
+  };
+
+  const resetUserPassword = async (u) => {
+    const pwd = window.prompt(`Νέο password για ${u.email} (min 8):`);
+    if (!pwd || pwd.length < 8) return;
+    setBusy(true);
+    try {
+      await api.patch(`/platform/users/${u.id}`, { password: pwd });
+      alert('Το password άλλαξε');
+    } catch (e) {
+      alert(e.response?.data?.error || e.message);
+    } finally { setBusy(false); }
+  };
+
+  if (!org) return null;
+
+  const btn = (bg) => ({background: bg, color:'white', padding:'6px 12px', border:'none', borderRadius:'4px', cursor:'pointer', fontSize:'13px'});
 
   return (
-    <Modal title={o.name} onClose={onClose} size="xl" actions={<>
-      <button className="btn btn-secondary" onClick={onClose}>Κλείσιμο</button>
-      {!editing && <button className="btn btn-sm" onClick={extendTrial}>+ Trial ημέρες</button>}
-      {!editing && <button className={`btn btn-sm ${o.suspended ? '' : 'btn-danger'}`} onClick={toggleSuspend}>{o.suspended ? 'Επανενεργοποίηση' : 'Suspend'}</button>}
-      {editing ? <button className="btn" onClick={save}>Αποθήκευση</button> : <button className="btn" onClick={() => setEditing(true)}>Επεξεργασία</button>}
-    </>}>
-      {err && <div className="error">{err}</div>}
-
-      <div className="form-grid-2" style={{ marginBottom: 20 }}>
-        <div><strong>Slug:</strong> {o.slug}</div>
-        <div><strong>Δημιουργήθηκε:</strong> {fmtDate(o.created_at)}</div>
-        <div><strong>Billing email:</strong> {o.billing_email || '—'}</div>
-        <div><strong>Billing AFM:</strong> {o.billing_afm || '—'}</div>
-        <div><strong>Partner:</strong> {o.partner_name ? `${o.partner_name} (${o.partner_commission_rate}%)` : '—'}</div>
-        <div><strong>Visibility:</strong> {o.visibility_mode || 'shared'}</div>
-      </div>
-
-      {editing && (
-        <div className="section" style={{ marginBottom: 20 }}>
-          <h3>Επεξεργασία</h3>
-          <div className="form-grid-2">
-            <div className="form-group"><label>Όνομα</label><input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-            <div className="form-group"><label>Plan type</label>
-              <select value={form.plan_type} onChange={e => setForm(f => ({ ...f, plan_type: e.target.value }))}>
-                <option value="solo">Solo</option>
-                <option value="partnership_shared">Partnership Shared</option>
-                <option value="partnership_private">Partnership Private</option>
-                <option value="law_firm">Law Firm</option>
-              </select>
-            </div>
-            <div className="form-group"><label>Κατάσταση</label>
-              <select value={form.subscription_status} onChange={e => setForm(f => ({ ...f, subscription_status: e.target.value }))}>
-                <option value="trial">Trial</option>
-                <option value="active">Active</option>
-                <option value="expired">Expired</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-            <div className="form-group"><label>Max χρήστες</label><input type="number" value={form.max_users} onChange={e => setForm(f => ({ ...f, max_users: parseInt(e.target.value) }))} /></div>
-            <div className="form-group"><label>Storage quota (MB)</label><input type="number" value={form.storage_quota_mb} onChange={e => setForm(f => ({ ...f, storage_quota_mb: parseInt(e.target.value) }))} /></div>
-            <div className="form-group"><label>Trial ends</label><input type="date" value={form.trial_ends_at} onChange={e => setForm(f => ({ ...f, trial_ends_at: e.target.value }))} /></div>
-            <div className="form-group"><label>Subscription ends</label><input type="date" value={form.subscription_ends_at} onChange={e => setForm(f => ({ ...f, subscription_ends_at: e.target.value }))} /></div>
+    <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:50, padding:'16px'}}>
+      <div style={{background:'white', borderRadius:'8px', width:'100%', maxWidth:'900px', maxHeight:'90vh', overflowY:'auto'}}>
+        <div style={{padding:'24px'}}>
+          <div style={{display:'flex', justifyContent:'space-between', marginBottom:'16px'}}>
+            <h2 style={{fontSize:'20px', fontWeight:600, margin:0}}>{org.name}</h2>
+            <button onClick={onClose} style={{background:'none', border:'none', fontSize:'20px', cursor:'pointer', color:'#64748b'}}>✕</button>
           </div>
-          <div className="form-group"><label>Σημειώσεις</label><textarea rows="2" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
+
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', fontSize:'14px'}}>
+            <div><span style={{color:'#64748b'}}>Slug:</span> {org.slug || '—'}</div>
+            <div><span style={{color:'#64748b'}}>Πλάνο:</span> {org.plan_type}</div>
+            <div><span style={{color:'#64748b'}}>Κατάσταση:</span> {org.subscription_status}</div>
+            <div><span style={{color:'#64748b'}}>Λήξη:</span> {org.subscription_ends_at ? new Date(org.subscription_ends_at).toLocaleDateString('el-GR') : '—'}</div>
+            <div><span style={{color:'#64748b'}}>Email τιμ.:</span> {org.billing_email || '—'}</div>
+            <div><span style={{color:'#64748b'}}>ΑΦΜ:</span> {org.billing_afm || '—'}</div>
+          </div>
+
+          <div style={{display:'flex', gap:'8px', marginTop:'16px', flexWrap:'wrap'}}>
+            <button onClick={extend} disabled={busy} style={btn('#2563eb')}>+ 1 έτος</button>
+            <button onClick={toggleSuspend} disabled={busy} style={btn(org.suspended ? '#059669' : '#d97706')}>
+              {org.suspended ? 'Επανενεργοποίηση' : 'Αναστολή'}
+            </button>
+            <button onClick={deleteOrg} disabled={busy} style={{...btn('#dc2626'), marginLeft:'auto'}}>🗑 Διαγραφή</button>
+          </div>
+
+          <div style={{marginTop:'24px', borderTop:'1px solid #e2e8f0', paddingTop:'16px'}}>
+            <div style={{display:'flex', justifyContent:'space-between', marginBottom:'8px'}}>
+              <h3 style={{fontWeight:500, margin:0}}>Χρήστες ({users.length})</h3>
+              <button onClick={() => setShowAddUser(true)} style={btn('#059669')}>+ Νέος χρήστης</button>
+            </div>
+            <table style={{width:'100%', fontSize:'14px', borderCollapse:'collapse'}}>
+              <thead style={{background:'#f8fafc'}}>
+                <tr>
+                  <th style={{padding:'6px 12px', textAlign:'left'}}>Email</th>
+                  <th style={{padding:'6px 12px', textAlign:'left'}}>Όνομα</th>
+                  <th style={{padding:'6px 12px', textAlign:'left'}}>Ρόλος</th>
+                  <th style={{padding:'6px 12px', textAlign:'center'}}>Ενεργός</th>
+                  <th style={{padding:'6px 12px', textAlign:'right'}}>Ενέργειες</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(u => (
+                  <tr key={u.id} style={{borderBottom:'1px solid #e2e8f0'}}>
+                    <td style={{padding:'6px 12px'}}>{u.email}</td>
+                    <td style={{padding:'6px 12px'}}>{u.first_name} {u.last_name}</td>
+                    <td style={{padding:'6px 12px'}}>
+                      {u.role} {u.is_platform_admin && <span style={{color:'#9333ea', fontSize:'11px'}}>(platform)</span>}
+                    </td>
+                    <td style={{padding:'6px 12px', textAlign:'center'}}>
+                      <input type="checkbox" checked={u.is_active} onChange={() => toggleUserActive(u)} />
+                    </td>
+                    <td style={{padding:'6px 12px', textAlign:'right'}}>
+                      <button onClick={() => resetUserPassword(u)} style={{color:'#2563eb', background:'none', border:'none', cursor:'pointer', fontSize:'12px', textDecoration:'underline', marginRight:'8px'}}>Reset PW</button>
+                      <button onClick={() => deleteUser(u.id)} style={{color:'#dc2626', background:'none', border:'none', cursor:'pointer', fontSize:'12px', textDecoration:'underline'}}>Διαγραφή</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {showAddUser && <AddUserForm orgId={orgId} onClose={() => setShowAddUser(false)} onAdded={load} />}
         </div>
-      )}
-
-      <h3>Χρήστες ({data.users.length})</h3>
-      <table className="table" style={{ marginBottom: 20 }}>
-        <thead><tr><th>Email</th><th>Όνομα</th><th>Ρόλος</th><th>Δημιουργία</th><th>Ενεργός</th></tr></thead>
-        <tbody>{data.users.map(u => <tr key={u.id}><td>{u.email}</td><td>{u.first_name} {u.last_name}</td><td>{u.role}</td><td>{fmtDate(u.created_at)}</td><td>{u.is_active ? '✓' : '✗'}</td></tr>)}</tbody>
-      </table>
-
-      <h3>Συνδρομές ({data.subscriptions.length})</h3>
-      <table className="table" style={{ marginBottom: 20 }}>
-        <thead><tr><th>Plan</th><th>Ποσό</th><th>Περίοδος</th><th>Κατάσταση</th><th>Viva Order</th></tr></thead>
-        <tbody>{data.subscriptions.map(s => <tr key={s.aa}><td>{s.plan_code}</td><td>{fmtCurrency(s.amount_gross)}</td><td>{fmtDate(s.period_start)} – {fmtDate(s.period_end)}</td><td>{statusBadge(s.status)}</td><td style={{ fontSize: 11 }}>{s.viva_order_code || '—'}</td></tr>)}</tbody>
-      </table>
-
-      <h3>Activity log ({data.activity_log.length})</h3>
-      <div style={{ maxHeight: 200, overflow: 'auto', background: '#f7fafc', padding: 8, borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }}>
-        {data.activity_log.map(a => <div key={a.aa}>{fmtDateTime(a.created_at)} — <strong>{a.action}</strong> από {a.admin_email}</div>)}
       </div>
-    </Modal>
-  );
-}
-
-// ==================== PARTNERS TAB ====================
-function PartnersTab() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState('');
-  const [showNew, setShowNew] = useState(false);
-
-  const load = () => {
-    setLoading(true);
-    platform.partners().then(d => setRows(d.data || [])).catch(e => setErr(e.message)).finally(() => setLoading(false));
-  };
-  useEffect(load, []);
-
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h2>Partners ({rows.length})</h2>
-        <button className="btn" onClick={() => setShowNew(true)}>+ Νέος partner</button>
-      </div>
-      {err && <div className="error">{err}</div>}
-      {loading ? <div className="empty-state">Φόρτωση...</div> : (
-        <table className="table">
-          <thead><tr><th>Code</th><th>Όνομα</th><th>Email</th><th>Commission %</th><th>Οργανισμοί</th><th>Σύνολο commission</th><th>Οφείλεται</th><th>Ενεργός</th></tr></thead>
-          <tbody>
-            {rows.map(r => (
-              <tr key={r.aa}>
-                <td><strong>{r.code}</strong></td>
-                <td>{r.full_name}</td>
-                <td style={{ fontSize: 12 }}>{r.email || '—'}</td>
-                <td>{Number(r.commission_rate).toFixed(2)}%</td>
-                <td>{r.org_count}</td>
-                <td>{fmtCurrency(r.commission_total)}</td>
-                <td style={{ color: r.commission_owed > 0 ? '#e53e3e' : '#718096' }}>{fmtCurrency(r.commission_owed)}</td>
-                <td>{r.active ? '✓' : '✗'}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-      {showNew && <NewPartnerModal onClose={() => setShowNew(false)} onCreated={() => { setShowNew(false); load(); }} />}
     </div>
   );
 }
 
-function NewPartnerModal({ onClose, onCreated }) {
-  const [form, setForm] = useState({ code: '', full_name: '', email: '', phone: '', afm: '', commission_rate: 10, iban: '', notes: '' });
-  const [err, setErr] = useState('');
-  const [saving, setSaving] = useState(false);
-  const save = async () => {
-    setSaving(true); setErr('');
-    try { await platform.createPartner(form); onCreated(); }
-    catch (e) { setErr(e.message); }
-    finally { setSaving(false); }
+function AddUserForm({ orgId, onClose, onAdded }) {
+  const [f, setF] = useState({ email:'', password:'', first_name:'', last_name:'', role:'lawyer', is_active:true });
+  const [err, setErr] = useState(null);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      await api.post(`/platform/organizations/${orgId}/users`, f);
+      onAdded();
+      onClose();
+    } catch (e) {
+      setErr(e.response?.data?.error || e.message);
+    } finally { setBusy(false); }
   };
-  const c = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const input = {border:'1px solid #cbd5e1', borderRadius:'4px', padding:'4px 8px', fontSize:'14px'};
+
   return (
-    <Modal title="Νέος partner" onClose={onClose} actions={<>
-      <button className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-      <button className="btn" onClick={save} disabled={saving}>{saving ? 'Δημιουργία...' : 'Δημιουργία'}</button>
-    </>}>
-      {err && <div className="error">{err}</div>}
-      <div className="form-grid-2">
-        <div className="form-group"><label>Code *</label><input value={form.code} onChange={c('code')} placeholder="π.χ. PART001" /></div>
-        <div className="form-group"><label>Ονοματεπώνυμο *</label><input value={form.full_name} onChange={c('full_name')} /></div>
-        <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={c('email')} /></div>
-        <div className="form-group"><label>Τηλέφωνο</label><input value={form.phone} onChange={c('phone')} /></div>
-        <div className="form-group"><label>ΑΦΜ</label><input value={form.afm} onChange={c('afm')} /></div>
-        <div className="form-group"><label>Commission %</label><input type="number" step="0.5" value={form.commission_rate} onChange={c('commission_rate')} /></div>
-        <div className="form-group" style={{ gridColumn: 'span 2' }}><label>IBAN (για πληρωμή commission)</label><input value={form.iban} onChange={c('iban')} /></div>
+    <div style={{marginTop:'16px', border:'1px solid #e2e8f0', borderRadius:'4px', padding:'12px', background:'#f8fafc'}}>
+      <h4 style={{fontWeight:500, margin:0, marginBottom:'8px'}}>Προσθήκη χρήστη</h4>
+      {err && <div style={{background:'#fef2f2', color:'#991b1b', padding:'4px 8px', borderRadius:'4px', fontSize:'13px', marginBottom:'8px'}}>{err}</div>}
+      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px', fontSize:'14px'}}>
+        <input placeholder="Email" value={f.email} onChange={e=>setF({...f, email:e.target.value})} style={{...input, gridColumn:'span 2'}} />
+        <input placeholder="Password (min 8)" value={f.password} onChange={e=>setF({...f, password:e.target.value})} style={{...input, gridColumn:'span 2'}} />
+        <input placeholder="Όνομα" value={f.first_name} onChange={e=>setF({...f, first_name:e.target.value})} style={input} />
+        <input placeholder="Επώνυμο" value={f.last_name} onChange={e=>setF({...f, last_name:e.target.value})} style={input} />
+        <select value={f.role} onChange={e=>setF({...f, role:e.target.value})} style={input}>
+          <option value="admin">Admin</option>
+          <option value="lawyer">Δικηγόρος</option>
+          <option value="secretary">Γραμματεία</option>
+        </select>
+        <label style={{display:'flex', alignItems:'center', gap:'6px'}}>
+          <input type="checkbox" checked={f.is_active} onChange={e=>setF({...f, is_active:e.target.checked})} />
+          Ενεργός
+        </label>
       </div>
-      <div className="form-group"><label>Σημειώσεις</label><textarea rows="2" value={form.notes} onChange={c('notes')} /></div>
-    </Modal>
-  );
-}
-
-// ==================== SUBSCRIPTIONS TAB ====================
-function SubscriptionsTab() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState('');
-
-  const load = () => {
-    setLoading(true);
-    platform.subscriptions().then(d => setRows(d.data || [])).catch(e => setErr(e.message)).finally(() => setLoading(false));
-  };
-  useEffect(load, []);
-
-  const markPaid = async (id) => {
-    if (!confirm('Επιβεβαίωση: το commission καταβλήθηκε στον partner;')) return;
-    try { await platform.markCommissionPaid(id); load(); }
-    catch (e) { setErr(e.message); }
-  };
-
-  return (
-    <div>
-      <h2>Συνδρομές ({rows.length})</h2>
-      {err && <div className="error">{err}</div>}
-      {loading ? <div className="empty-state">Φόρτωση...</div> : (
-        <table className="table">
-          <thead><tr><th>Οργανισμός</th><th>Plan</th><th>Ποσό</th><th>Περίοδος</th><th>Κατάσταση</th><th>Partner</th><th>Commission</th><th>Πληρώθηκε;</th><th></th></tr></thead>
-          <tbody>
-            {rows.map(s => (
-              <tr key={s.aa}>
-                <td>{s.organization_name}</td>
-                <td style={{ fontSize: 12 }}>{s.plan_code}</td>
-                <td>{fmtCurrency(s.amount_gross)}</td>
-                <td style={{ fontSize: 12 }}>{fmtDate(s.period_start)} – {fmtDate(s.period_end)}</td>
-                <td>{statusBadge(s.status)}</td>
-                <td>{s.partner_name || '—'}</td>
-                <td>{fmtCurrency(s.commission_amount)}</td>
-                <td>{s.commission_paid ? '✓ ' + fmtDate(s.commission_paid_at) : (s.partner_id ? '✗' : '—')}</td>
-                <td>{s.partner_id && !s.commission_paid && <button className="btn btn-sm" onClick={() => markPaid(s.aa)}>✓ Πληρώθηκε</button>}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      <div style={{display:'flex', justifyContent:'flex-end', gap:'8px', marginTop:'8px'}}>
+        <button onClick={onClose} style={{fontSize:'13px', padding:'4px 12px', border:'1px solid #cbd5e1', borderRadius:'4px', background:'white', cursor:'pointer'}}>Άκυρο</button>
+        <button onClick={submit} disabled={busy} style={{fontSize:'13px', background:'#059669', color:'white', padding:'4px 12px', border:'none', borderRadius:'4px', cursor:'pointer', opacity: busy ? 0.5 : 1}}>
+          {busy ? 'Προσθήκη...' : 'Προσθήκη'}
+        </button>
+      </div>
     </div>
   );
 }
-
-// ==================== CO-ADMINS TAB ====================
-function AdminsTab() {
-  const [rows, setRows] = useState([]);
-  const [err, setErr] = useState('');
-  const load = () => platform.admins().then(d => setRows(d.data || [])).catch(e => setErr(e.message));
-  useEffect(load, []);
-
-  const grant = async () => {
-    const email = prompt('Email του χρήστη που θα γίνει co-admin:');
-    if (!email) return;
-    try { await platform.grantAdmin(email); load(); }
-    catch (e) { setErr(e.message); }
-  };
-
-  const revoke = async (userId, email) => {
-    if (!confirm(`Αφαίρεση δικαιώματος co-admin από ${email};`)) return;
-    try { await platform.revokeAdmin(userId); load(); }
-    catch (e) { setErr(e.message); }
-  };
-
-  return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-        <h2>Co-admins ({rows.length})</h2>
-        <button className="btn" onClick={grant}>+ Νέος co-admin</button>
-      </div>
-      {err && <div className="error">{err}</div>}
-      <table className="table">
-        <thead><tr><th>Email</th><th>Όνομα</th><th>Οργανισμός</th><th>Δημιουργία</th><th></th></tr></thead>
-        <tbody>
-          {rows.map(r => (
-            <tr key={r.id}>
-              <td><strong>{r.email}</strong></td>
-              <td>{r.first_name} {r.last_name}</td>
-              <td style={{ fontSize: 12 }}>{r.organization_name}</td>
-              <td style={{ fontSize: 12 }}>{fmtDate(r.created_at)}</td>
-              <td><button className="btn btn-sm btn-danger" onClick={() => revoke(r.id, r.email)}>Αφαίρεση</button></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// ==================== MAIN ====================
-function PlatformAdmin({ user, onLogout, onOpenCaseSearch }) {
-  if (!user?.is_platform_admin) {
-    return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Πρόσβαση χωρίς δικαίωμα">
-      <div className="error">Απαιτείται δικαίωμα platform admin. Επικοινώνησε με τον διαχειριστή.</div>
-    </Layout>;
-  }
-
-  return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Platform Admin">
-      <Tabs tabs={[
-        { label: '📊 Dashboard',      content: <DashboardTab /> },
-        { label: '🏢 Οργανισμοί',     content: <OrganizationsTab /> },
-        { label: '💰 Συνδρομές',      content: <SubscriptionsTab /> },
-        { label: '🤝 Partners',        content: <PartnersTab /> },
-        { label: '👤 Co-admins',      content: <AdminsTab /> },
-      ]} />
-    </Layout>
-  );
-}
-
-export default PlatformAdmin;
