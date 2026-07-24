@@ -1,7 +1,7 @@
 ﻿// Thesis v3 — API client
 // Communicates with backend at Railway. JWT via localStorage.
 
-const API_URL = 'https://thesis-web-production-c215.up.railway.app';
+const API_URL = 'https://api.thesislegal.gr';
 
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('token');
@@ -54,7 +54,7 @@ export const api = {
   post:   (endpoint, body) => request(endpoint, { method: 'POST',   body: body instanceof FormData ? body : JSON.stringify(body) }),
   put:    (endpoint, body) => request(endpoint, { method: 'PUT',    body: body instanceof FormData ? body : JSON.stringify(body) }),
   patch:  (endpoint, body) => request(endpoint, { method: 'PATCH',  body: JSON.stringify(body) }),
-  delete: (endpoint)       => request(endpoint, { method: 'DELETE' }),
+  delete: (endpoint, options) => request(endpoint, { method: 'DELETE', ...(options?.data ? { body: JSON.stringify(options.data) } : {}) }),
 };
 
 // Convenience helpers — grouped by resource. Not required but keep call sites clean.
@@ -309,6 +309,14 @@ export const platform = {
   admins:             ()                => api.get('/api/platform/admins'),
   grantAdmin:         (email)           => api.post('/api/platform/admins/grant', { email }),
   revokeAdmin:        (user_id)         => api.post('/api/platform/admins/revoke', { user_id }),
+  // New endpoints (create org, extend, delete, users mgmt)
+  createOrg:          (body)            => api.post('/api/platform/organizations', body),
+  extendYears:        (id, years)       => api.post(`/api/platform/organizations/${id}/extend`, { years }),
+  deleteOrg:          (id)              => api.delete(`/api/platform/organizations/${id}`, { data: { confirm: `DELETE-${id}` } }),
+  orgUsers:           (id)              => api.get(`/api/platform/organizations/${id}/users`),
+  createOrgUser:      (id, body)        => api.post(`/api/platform/organizations/${id}/users`, body),
+  updateUser:         (userId, body)    => api.patch(`/api/platform/users/${userId}`, body),
+  deleteUser:         (userId)          => api.delete(`/api/platform/users/${userId}`),
 };
 
 // ==================== TEAM ====================
