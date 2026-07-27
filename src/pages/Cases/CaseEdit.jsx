@@ -384,13 +384,36 @@ function CaseTab({ caseData, onSave, saving }) {
           <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 6, padding: 8 }}>
             {lawyers.length === 0 ? (
               <div style={{ color: '#a0aec0', padding: 8 }}>Δεν υπάρχουν δικηγόροι γραφείου. Πάτησε «+ Νέος δικηγόρος γραφείου» για να προσθέσεις τον πρώτο.</div>
-            ) : lawyers.map(l => {
+            ) : lawyers.map((l, idx) => {
               const id = l.aa || l.id;
               const checked = xeiristesIds.includes(id);
+              const isLast = idx === lawyers.length - 1;
               return (
-                <label key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 6, cursor: 'pointer', borderRadius: 4 }}>
-                  <input type="checkbox" checked={checked} onChange={() => toggleXeiristis(id)} />
-                  <span>{`${l.eponymo || ''} ${l.onoma || ''}`.trim() || `#${id}`}</span>
+                <label
+                  key={id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    padding: '8px 10px',
+                    cursor: 'pointer',
+                    borderRadius: 4,
+                    borderBottom: isLast ? 'none' : '1px solid #f1f5f9',
+                    transition: 'background 0.1s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <span style={{ flex: 1, textAlign: 'left' }}>
+                    {`${l.eponymo || ''} ${l.onoma || ''}`.trim() || `#${id}`}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleXeiristis(id)}
+                    style={{ flexShrink: 0 }}
+                  />
                 </label>
               );
             })}
