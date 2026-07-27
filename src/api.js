@@ -219,16 +219,34 @@ export const phonebook = {
   },
 };
 
+// v3: χτίζει query string παραλείποντας κενές τιμές.
+// Δεχτά φίλτρα: q, dikigoros_id, antidikos_id, onomasia_id, diadikasia_id,
+//               dikastirio_id, from, to, ekkremis
+function qs(params = {}) {
+  const p = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== '') p.set(k, v);
+  });
+  const s = p.toString();
+  return s ? `?${s}` : '';
+}
+
 export const reports = {
   summary:          ()                 => api.get('/api/reports/summary'),
-  pending:          ()                 => api.get('/api/reports/pending'),
-  upcomingHearings: (from = '', to = '') => {
-    const p = [];
-    if (from) p.push(`from=${from}`);
-    if (to)   p.push(`to=${to}`);
-    return api.get('/api/reports/upcoming-hearings' + (p.length ? `?${p.join('&')}` : ''));
+
+  // v3 FIX: δέχονταν ΜΗΔΕΝ παραμέτρους, οπότε κανένα φίλτρο δεν έφτανε ποτέ στο backend.
+  pending:          (params = {})      => api.get('/api/reports/pending' + qs(params)),
+  pendingTasks:     (params = {})      => api.get('/api/reports/pending-tasks' + qs(params)),
+
+  // Συμβατό και με τις δύο μορφές:
+  //   upcomingHearings('2026-01-01', '2026-12-31')
+  //   upcomingHearings({ from, to, dikigoros_id, antidikos_id, ... })
+  upcomingHearings: (from = '', to = '', extra = {}) => {
+    if (from && typeof from === 'object') {
+      return api.get('/api/reports/upcoming-hearings' + qs(from));
+    }
+    return api.get('/api/reports/upcoming-hearings' + qs({ from, to, ...extra }));
   },
-  pendingTasks:     ()                 => api.get('/api/reports/pending-tasks'),
 
   courtActionsCalendar: (params = {}) => {
     const p = new URLSearchParams();
