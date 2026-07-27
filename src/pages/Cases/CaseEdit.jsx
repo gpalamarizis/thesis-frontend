@@ -409,9 +409,6 @@ function CaseTab({ caseData, onSave, saving }) {
                     flex: 1,
                     textAlign: 'left',
                     whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    minWidth: 0,
                   }}>
                     {`${l.eponymo || ''} ${l.onoma || ''}`.trim() || `#${id}`}
                   </span>
