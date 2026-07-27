@@ -292,6 +292,42 @@ export const documents = {
 
 export { API_URL };
 
+// v4: Κατέβασμα αρχείου (Word export). Δεν περνάει από το request() γιατί
+// εκείνο κάνει parse σε JSON/text — εδώ θέλουμε binary blob.
+export async function downloadFile(endpoint, fallbackName = 'download.docx') {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (!res.ok) {
+    let msg = `Σφάλμα (${res.status})`;
+    try { const j = await res.json(); msg = j.error || msg; } catch (e) { /* όχι JSON */ }
+    throw new Error(msg);
+  }
+
+  // Όνομα αρχείου από το Content-Disposition, αλλιώς fallback
+  let name = fallbackName;
+  const cd = res.headers.get('content-disposition') || '';
+  const star  = cd.match(/filename\*=UTF-8''([^;]+)/i);
+  const plain = cd.match(/filename="?([^";]+)"?/i);
+  if (star) {
+    try { name = decodeURIComponent(star[1]); } catch (e) { /* κράτα fallback */ }
+  } else if (plain) {
+    name = plain[1];
+  }
+
+  const blob = await res.blob();
+  const url  = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export const mydata = {
   send:   (invoiceId, invoiceType, correlatedMark) => api.post(`/api/mydata/invoices/${invoiceId}/send`, { invoiceType, correlatedMark }),
   cancel: (invoiceId)                              => api.post(`/api/mydata/invoices/${invoiceId}/cancel`, {}),

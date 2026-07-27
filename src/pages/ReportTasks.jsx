@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { api } from '../api';
+import { api, people, lists, downloadFile } from '../api';
 
 const todayISO = () => new Date().toISOString().substring(0, 10);
 const addDaysISO = (n) => {
@@ -21,15 +21,52 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [onlyPending, setOnlyPending] = useState(true);
+  const [dikigorosId, setDikigorosId] = useState('');
+  const [onomasiaId, setOnomasiaId] = useState('');
+  const [antidikosId, setAntidikosId] = useState('');
+  const [lawyers, setLawyers] = useState([]);
+  const [caseTypes, setCaseTypes] = useState([]);
+  const [opponents, setOpponents] = useState([]);
+  const [exporting, setExporting] = useState(false);
+
+  // v4: κοινό query string για την προβολή και για το Word export
+  const buildParams = () => {
+    const params = new URLSearchParams();
+    if (fromDate)     params.set('from', fromDate);
+    if (toDate)       params.set('to', toDate);
+    if (!onlyPending) params.set('ekkremis', 'false');
+    if (dikigorosId)  params.set('dikigoros_id', dikigorosId);
+    if (onomasiaId)   params.set('onomasia_id', onomasiaId);
+    if (antidikosId)  params.set('antidikos_id', antidikosId);
+    return params;
+  };
+
+  const exportWord = async () => {
+    setExporting(true);
+    setError('');
+    try {
+      const params = buildParams();
+      params.set('format', 'docx');
+      await downloadFile('/api/reports/pending-tasks?' + params.toString(),
+                         'Loipes-Energeies.docx');
+    } catch (e) {
+      setError(e.message || 'Η εξαγωγή απέτυχε');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  useEffect(() => {
+    const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
+    people.lawyers.list().then(d => setLawyers(unwrap(d))).catch(() => {});
+    lists.get('ypotheseis_onomasies').then(d => setCaseTypes(unwrap(d))).catch(() => {});
+    people.opponents.list().then(d => setOpponents(unwrap(d))).catch(() => {});
+  }, []);
 
   const load = () => {
     setLoading(true);
     setError('');
-    const params = new URLSearchParams();
-    if (fromDate) params.set('from', fromDate);
-    if (toDate) params.set('to', toDate);
-    if (!onlyPending) params.set('ekkremis', 'false');
-    const qs = params.toString();
+    const qs = buildParams().toString();
     api.get('/api/reports/pending-tasks' + (qs ? '?' + qs : ''))
       .then(d => {
         setItems(d?.data || []);
@@ -43,7 +80,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
     const t = setTimeout(load, 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line
-  }, [fromDate, toDate, onlyPending]);
+  }, [fromDate, toDate, onlyPending, dikigorosId, onomasiaId, antidikosId]);
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('el-GR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
 
@@ -95,7 +132,54 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
             </label>
           </div>
 
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+          <div>
+            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Δικηγόρος</label>
+            <select
+              value={dikigorosId}
+              onChange={e => setDikigorosId(e.target.value)}
+              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 200 }}
+            >
+              <option value="">— Όλοι —</option>
+              {lawyers.map(l => (
+                <option key={l.aa} value={l.aa}>{`${l.eponymo || ''} ${l.onoma || ''}`.trim()}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Είδος υπόθεσης</label>
+            <select
+              value={onomasiaId}
+              onChange={e => setOnomasiaId(e.target.value)}
+              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 200 }}
+            >
+              <option value="">— Όλα —</option>
+              {caseTypes.map(t => (
+                <option key={t.aa} value={t.aa}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Αντίδικος</label>
+            <select
+              value={antidikosId}
+              onChange={e => setAntidikosId(e.target.value)}
+              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 200 }}
+            >
+              <option value="">— Όλοι —</option>
+              {opponents.map(o => (
+                <option key={o.aa} value={o.aa}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
+            <button
+              onClick={exportWord}
+              disabled={exporting || loading}
+              style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1E293B', borderRadius: 3, backgroundColor: '#1E293B', color: '#fff', fontWeight: 600 }}
+            >
+              {exporting ? 'Εξαγωγή...' : 'Εξαγωγή σε Word'}
+            </button>
             <button
               onClick={() => setRange(null, null)}
               style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
@@ -133,6 +217,8 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                   <th>Περιγραφή</th>
                   <th style={{ width: 130 }}>Πρωτόκολλο</th>
                   <th>Πελάτης</th>
+                  <th style={{ width: 160 }}>Είδος υπόθεσης</th>
+                  <th style={{ width: 180 }}>Χειριστές</th>
                 </tr>
               </thead>
               <tbody>
@@ -174,6 +260,8 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                         ) : '—'}
                       </td>
                       <td>{r.pelatis?.trim() || '—'}</td>
+                      <td>{r.onomasia_name || '—'}</td>
+                      <td>{r.dikigoroi_energeias || r.xeiristes || '—'}</td>
                     </tr>
                   );
                 })}

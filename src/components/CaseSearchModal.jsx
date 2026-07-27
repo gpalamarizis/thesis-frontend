@@ -5,95 +5,115 @@ import { cases, fysika, nomika, people, lists } from '../api';
 import { fmtDate, trunc } from '../utils/format';
 
 /**
- * CaseSearchModal — full case search.
- * Uses server-side search via GET /api/cases?q=...&fysiko_prosopo_id=...&nomiko_prosopo_id=...&ekkremis=...
- * so that partial matches on xeirokinito_id (e.g. "2222") and client names work.
- * Extra criteria (dikigoros, diadikasia, date range) are applied client-side after fetching.
+ * CaseSearchModal v4 — πλήρης αναζήτηση υπόθεσης.
+ *
+ * ΤΙ ΑΛΛΑΞΕ:
+ *  • ΟΛΑ τα φίλτρα πάνε πλέον server-side. Πριν, τα φίλτρα δικηγόρου και
+ *    διαδικασίας εφαρμόζονταν client-side πάνω σε πεδία που το backend
+ *    δεν επέστρεφε ποτέ (c.xeiristes, c.diadikasia_id) — οπότε έσβηναν
+ *    πάντα όλα τα αποτελέσματα.
+ *  • Έφυγε το pageSize=500 που έκοβε την αναζήτηση στις πρώτες 500 από
+ *    τις 4.537 υποθέσεις.
+ *  • Νέα φίλτρα: Είδος υπόθεσης (ypotheseis_onomasies) και Αντίδικος.
+ *  • Κάθε πεδίο δουλεύει ανεξάρτητα από τα υπόλοιπα.
  */
 function CaseSearchModal({ onClose }) {
   const navigate = useNavigate();
-  const [criteria, setCriteria] = useState({
-    fysiko_prosopo_id:  '',
-    nomiko_prosopo_id:  '',
-    dikigoros_id:       '',
-    diadikasia_id:      '',
-    from:               '',
-    to:                 '',
-    text:               '',
-    status:             '', // 'ekkremis' | 'kleismeni' | ''
-  });
-  const [fysikaList, setFysikaList] = useState([]);
-  const [nomikaList, setNomikaList] = useState([]);
-  const [lawyers, setLawyers] = useState([]);
-  const [procedures, setProcedures] = useState([]);
-  const [results, setResults] = useState(null);
-  const [loading, setLoading] = useState(true);
+
+  const EMPTY = {
+    fysiko_prosopo_id: '',
+    nomiko_prosopo_id: '',
+    dikigoros_id:      '',
+    diadikasia_id:     '',
+    onomasia_id:       '',
+    antidikos_id:      '',
+    from:              '',
+    to:                '',
+    text:              '',
+    status:            '', // 'ekkremis' | 'kleismeni' | ''
+  };
+
+  const [criteria, setCriteria]   = useState(EMPTY);
+  const [fysikaList, setFysikaList]   = useState([]);
+  const [nomikaList, setNomikaList]   = useState([]);
+  const [lawyers, setLawyers]         = useState([]);
+  const [procedures, setProcedures]   = useState([]);
+  const [caseTypes, setCaseTypes]     = useState([]);
+  const [opponents, setOpponents]     = useState([]);
+  const [results, setResults]   = useState(null);
+  const [total, setTotal]       = useState(0);
+  const [loading, setLoading]   = useState(true);
   const [searching, setSearching] = useState(false);
+  const [error, setError]       = useState('');
 
   useEffect(() => {
+    const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
     Promise.allSettled([
       fysika.list(),
       nomika.list(),
       people.lawyers.list(),
       lists.get('diadikasies'),
-    ]).then(([fRes, nRes, lRes, pRes]) => {
-      const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
+      lists.get('ypotheseis_onomasies'),
+      people.opponents.list(),
+    ]).then(([fRes, nRes, lRes, pRes, oRes, aRes]) => {
       if (fRes.status === 'fulfilled') setFysikaList(unwrap(fRes.value));
       if (nRes.status === 'fulfilled') setNomikaList(unwrap(nRes.value));
       if (lRes.status === 'fulfilled') setLawyers(unwrap(lRes.value));
       if (pRes.status === 'fulfilled') setProcedures(unwrap(pRes.value));
+      if (oRes.status === 'fulfilled') setCaseTypes(unwrap(oRes.value));
+      if (aRes.status === 'fulfilled') setOpponents(unwrap(aRes.value));
     }).finally(() => setLoading(false));
   }, []);
 
   const c = (k) => (e) => setCriteria(cr => ({ ...cr, [k]: e.target.value }));
 
+  const buildParams = () => {
+    const p = new URLSearchParams();
+    if (criteria.text.trim())        p.set('q', criteria.text.trim());
+    if (criteria.fysiko_prosopo_id)  p.set('fysiko_prosopo_id', criteria.fysiko_prosopo_id);
+    if (criteria.nomiko_prosopo_id)  p.set('nomiko_prosopo_id', criteria.nomiko_prosopo_id);
+    if (criteria.dikigoros_id)       p.set('dikigoros_id', criteria.dikigoros_id);
+    if (criteria.diadikasia_id)      p.set('diadikasia_id', criteria.diadikasia_id);
+    if (criteria.onomasia_id)        p.set('onomasia_id', criteria.onomasia_id);
+    if (criteria.antidikos_id)       p.set('antidikos_id', criteria.antidikos_id);
+    if (criteria.from)               p.set('from', criteria.from);
+    if (criteria.to)                 p.set('to', criteria.to);
+    if (criteria.status === 'ekkremis')  p.set('ekkremis', 'true');
+    if (criteria.status === 'kleismeni') p.set('ekkremis', 'false');
+    p.set('pageSize', '2000');
+    return p;
+  };
+
   const search = async () => {
     setSearching(true);
+    setError('');
     try {
-      // Build server-side query params
-      const params = new URLSearchParams();
-      if (criteria.text.trim()) params.set('q', criteria.text.trim());
-      if (criteria.fysiko_prosopo_id) params.set('fysiko_prosopo_id', criteria.fysiko_prosopo_id);
-      if (criteria.nomiko_prosopo_id) params.set('nomiko_prosopo_id', criteria.nomiko_prosopo_id);
-      if (criteria.status === 'ekkremis')  params.set('ekkremis', 'true');
-      if (criteria.status === 'kleismeni') params.set('ekkremis', 'false');
-      params.set('pageSize', '500');
-
-      const res = await cases.list(params.toString());
-      let list = Array.isArray(res) ? res : (res?.data || []);
-
-      // Apply additional client-side filters (not supported by backend query)
-      if (criteria.dikigoros_id) {
-        const did = Number(criteria.dikigoros_id);
-        list = list.filter(c => Array.isArray(c.xeiristes) && c.xeiristes.some(x => (x.aa || x.id) === did));
-      }
-      if (criteria.diadikasia_id) {
-        list = list.filter(c => String(c.diadikasia_id) === criteria.diadikasia_id);
-      }
-      if (criteria.from) list = list.filter(c => c.date_eisagogis && c.date_eisagogis >= criteria.from);
-      if (criteria.to)   list = list.filter(c => c.date_eisagogis && c.date_eisagogis <= criteria.to);
-
+      const res = await cases.list(buildParams().toString());
+      const list = Array.isArray(res) ? res : (res?.data || []);
       setResults(list);
+      setTotal(typeof res?.total === 'number' ? res.total : list.length);
     } catch (e) {
-      console.error('search failed', e);
+      setError(e.message || 'Σφάλμα αναζήτησης');
       setResults([]);
+      setTotal(0);
     } finally {
       setSearching(false);
     }
   };
 
   const reset = () => {
-    setCriteria({
-      fysiko_prosopo_id: '', nomiko_prosopo_id: '', dikigoros_id: '',
-      diadikasia_id: '', from: '', to: '', text: '', status: '',
-    });
+    setCriteria(EMPTY);
     setResults(null);
+    setTotal(0);
+    setError('');
   };
 
   const openCase = (r) => {
     navigate(`/cases/${r.aa || r.id}`);
     onClose();
   };
+
+  const nameOf = (p) => `${p.eponymo || ''} ${p.onoma || ''}`.trim() || p.eponymia || '—';
 
   return (
     <Modal
@@ -108,12 +128,14 @@ function CaseSearchModal({ onClose }) {
         </button>
       </>}
     >
+      {error && <div className="error">{error}</div>}
+
       <div className="form-grid-2">
         <div className="form-group">
           <label>Πελάτης Φυσικό Πρόσωπο</label>
           <select value={criteria.fysiko_prosopo_id} onChange={c('fysiko_prosopo_id')}>
             <option value="">— όλα —</option>
-            {fysikaList.map(f => <option key={f.aa} value={f.aa}>{`${f.eponymo || ''} ${f.onoma || ''}`.trim()}</option>)}
+            {fysikaList.map(f => <option key={f.aa} value={f.aa}>{nameOf(f)}</option>)}
           </select>
         </div>
         <div className="form-group">
@@ -124,12 +146,30 @@ function CaseSearchModal({ onClose }) {
           </select>
         </div>
       </div>
+
+      <div className="form-grid-2">
+        <div className="form-group">
+          <label>Είδος υπόθεσης</label>
+          <select value={criteria.onomasia_id} onChange={c('onomasia_id')}>
+            <option value="">— όλα —</option>
+            {caseTypes.map(t => <option key={t.aa} value={t.aa}>{t.name}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Αντίδικος</label>
+          <select value={criteria.antidikos_id} onChange={c('antidikos_id')}>
+            <option value="">— όλοι —</option>
+            {opponents.map(o => <option key={o.aa} value={o.aa}>{nameOf(o)}</option>)}
+          </select>
+        </div>
+      </div>
+
       <div className="form-grid-2">
         <div className="form-group">
           <label>Δικηγόρος γραφείου</label>
           <select value={criteria.dikigoros_id} onChange={c('dikigoros_id')}>
             <option value="">— όλοι —</option>
-            {lawyers.map(l => <option key={l.aa} value={l.aa}>{`${l.eponymo || ''} ${l.onoma || ''}`.trim()}</option>)}
+            {lawyers.map(l => <option key={l.aa} value={l.aa}>{nameOf(l)}</option>)}
           </select>
         </div>
         <div className="form-group">
@@ -140,6 +180,7 @@ function CaseSearchModal({ onClose }) {
           </select>
         </div>
       </div>
+
       <div className="form-grid-3">
         <div className="form-group">
           <label>Εισαγωγή από</label>
@@ -158,6 +199,7 @@ function CaseSearchModal({ onClose }) {
           </select>
         </div>
       </div>
+
       <div className="form-group">
         <label>Κείμενο σε πρωτόκολλο / πελάτη / περίληψη</label>
         <input
@@ -169,14 +211,15 @@ function CaseSearchModal({ onClose }) {
           autoFocus
         />
         <small style={{ color: '#718096', fontSize: 12, marginTop: 4, display: 'block' }}>
-          Ψάχνει σε πρωτόκολλο (π.χ. 2222), όνομα πελάτη (φυσικού ή νομικού), περίληψη και όνομα φακέλου.
+          Ψάχνει σε πρωτόκολλο, όνομα πελάτη (φυσικού ή νομικού) και περίληψη.
+          Κάθε φίλτρο παραπάνω λειτουργεί και μόνο του.
         </small>
       </div>
 
       {results !== null && (
         <div style={{ marginTop: 16 }}>
           <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-            Αποτελέσματα ({results.length})
+            Αποτελέσματα ({results.length}{total > results.length ? ` από ${total}` : ''})
           </h3>
           {results.length === 0 ? (
             <div className="empty-state">Δεν βρέθηκαν υποθέσεις με αυτά τα κριτήρια.</div>
@@ -187,6 +230,8 @@ function CaseSearchModal({ onClose }) {
                   <tr>
                     <th>Πρωτόκολλο</th>
                     <th>Πελάτης</th>
+                    <th>Είδος</th>
+                    <th>Χειριστές</th>
                     <th>Περιγραφή</th>
                     <th style={{ width: 100 }}>Εισαγωγή</th>
                   </tr>
@@ -196,6 +241,12 @@ function CaseSearchModal({ onClose }) {
                     <tr key={r.aa || r.id} className="clickable" onClick={() => openCase(r)}>
                       <td><strong>{r.xeirokinito_id}</strong></td>
                       <td>{r.fysiko_full_name || r.nomiko_eponymia || '—'}</td>
+                      <td>{r.onomasia_name || '—'}</td>
+                      <td>
+                        {Array.isArray(r.xeiristes) && r.xeiristes.length
+                          ? r.xeiristes.map(x => `${x.eponymo || ''} ${x.onoma || ''}`.trim()).join(', ')
+                          : '—'}
+                      </td>
                       <td>{trunc(r.perilipsi, 60)}</td>
                       <td>{fmtDate(r.date_eisagogis)}</td>
                     </tr>

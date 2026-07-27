@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { api, people } from '../api';
+import { api, people, lists, downloadFile } from '../api';
 
 // Utility: today, today+N as YYYY-MM-DD
 const todayISO = () => new Date().toISOString().substring(0, 10);
@@ -22,16 +22,43 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
   const [fromDate, setFromDate] = useState(todayISO());
   const [toDate, setToDate] = useState(addDaysISO(30));
   const [dikigorosId, setDikigorosId] = useState('');
+  const [onomasiaId, setOnomasiaId] = useState('');
+  const [antidikosId, setAntidikosId] = useState('');
   const [lawyers, setLawyers] = useState([]);
+  const [caseTypes, setCaseTypes] = useState([]);
+  const [opponents, setOpponents] = useState([]);
+  const [exporting, setExporting] = useState(false);
+
+  // v4: κοινό query string για την προβολή και για το Word export
+  const buildParams = () => {
+    const params = new URLSearchParams();
+    if (fromDate)    params.set('from', fromDate);
+    if (toDate)      params.set('to', toDate);
+    if (dikigorosId) params.set('dikigoros_id', dikigorosId);
+    if (onomasiaId)  params.set('onomasia_id', onomasiaId);
+    if (antidikosId) params.set('antidikos_id', antidikosId);
+    return params;
+  };
+
+  const exportWord = async () => {
+    setExporting(true);
+    setError('');
+    try {
+      const params = buildParams();
+      params.set('format', 'docx');
+      await downloadFile('/api/reports/upcoming-hearings?' + params.toString(),
+                         'Prosexeis-Dikasimoi.docx');
+    } catch (e) {
+      setError(e.message || 'Η εξαγωγή απέτυχε');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const load = () => {
     setLoading(true);
     setError('');
-    const params = new URLSearchParams();
-    if (fromDate) params.set('from', fromDate);
-    if (toDate) params.set('to', toDate);
-    if (dikigorosId) params.set('dikigoros_id', dikigorosId);
-    const qs = params.toString();
+    const qs = buildParams().toString();
     api.get('/api/reports/upcoming-hearings' + (qs ? '?' + qs : ''))
       .then(d => {
         setItems(d?.data || []);
@@ -45,10 +72,13 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
     const t = setTimeout(load, 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line
-  }, [fromDate, toDate, dikigorosId]);
+  }, [fromDate, toDate, dikigorosId, onomasiaId, antidikosId]);
 
   useEffect(() => {
-    people.lawyers.list().then(d => setLawyers(d?.data || [])).catch(() => {});
+    const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
+    people.lawyers.list().then(d => setLawyers(unwrap(d))).catch(() => {});
+    lists.get('ypotheseis_onomasies').then(d => setCaseTypes(unwrap(d))).catch(() => {});
+    people.opponents.list().then(d => setOpponents(unwrap(d))).catch(() => {});
   }, []);
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('el-GR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
@@ -100,7 +130,41 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
             </select>
           </div>
 
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+          <div>
+            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Είδος υπόθεσης</label>
+            <select
+              value={onomasiaId}
+              onChange={e => setOnomasiaId(e.target.value)}
+              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 220 }}
+            >
+              <option value="">— Όλα —</option>
+              {caseTypes.map(t => (
+                <option key={t.aa} value={t.aa}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Αντίδικος</label>
+            <select
+              value={antidikosId}
+              onChange={e => setAntidikosId(e.target.value)}
+              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 220 }}
+            >
+              <option value="">— Όλοι —</option>
+              {opponents.map(o => (
+                <option key={o.aa} value={o.aa}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
+            <button
+              onClick={exportWord}
+              disabled={exporting || loading}
+              style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1E293B', borderRadius: 3, backgroundColor: '#1E293B', color: '#fff', fontWeight: 600 }}
+            >
+              {exporting ? 'Εξαγωγή...' : 'Εξαγωγή σε Word'}
+            </button>
             <button
               onClick={() => setPreset(7)}
               style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
@@ -142,6 +206,7 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
                   <th style={{ width: 130 }}>Πρωτόκολλο</th>
                   <th>Πελάτης</th>
                   <th>Αντίδικος</th>
+                  <th>Χειριστές</th>
                   <th>Περιγραφή</th>
                 </tr>
               </thead>
@@ -163,6 +228,7 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
                     </td>
                     <td>{r.pelatis?.trim() || '—'}</td>
                     <td>{r.antidikos || '—'}</td>
+                    <td>{r.xeiristes || r.dikigoroi_energeias || '—'}</td>
                     <td style={{ maxWidth: 250, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.perigrafi}>
                       {r.perigrafi || '—'}
                     </td>
