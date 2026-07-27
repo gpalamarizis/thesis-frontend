@@ -456,8 +456,6 @@ function CaseTab({ caseData, onSave, saving }) {
               });
             })()}
           </div>
-          </div>
-          </div>
           <small style={{ color: '#a0aec0' }}>Ο δικηγόρος αντιδίκου, ο δικαστής και ο γραμματέας ορίζονται ξεχωριστά σε κάθε δικαστική ενέργεια.</small>
         </div>
 
