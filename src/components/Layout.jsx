@@ -96,7 +96,26 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
         }}
       >
         <div className="sidebar-header">
-          <h2>Thesis</h2>
+          <div style={{
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 2,
+            marginBottom: 12,
+          }}>
+            <span style={{
+              fontFamily: 'Georgia, serif',
+              fontSize: 32,
+              color: '#F59E0B',
+              fontWeight: 400,
+              lineHeight: 1,
+            }}>§</span>
+            <span style={{
+              fontSize: 24,
+              fontWeight: 600,
+              letterSpacing: '-0.5px',
+              color: '#F8FAFC',
+            }}>Thesis</span>
+          </div>
           <div className="user">
             {(user.first_name || user.firstName || '')} {(user.last_name || user.lastName || '')}<br/>
             <small>{roleLabel[user.role] || user.role}</small>
