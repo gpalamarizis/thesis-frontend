@@ -269,14 +269,18 @@ function ProtocolSearchModal({ onClose }) {
     if (!query.trim()) { setError('Δώστε αριθμό πρωτοκόλλου.'); return; }
     setSearching(true);
     try {
-      const d = await cases.list();
-      const list = Array.isArray(d) ? d : (d?.data || []);
-      const q = query.trim().toLowerCase();
-      const matches = list.filter(c => (c.xeirokinito_id || '').toLowerCase().includes(q));
+      // Server-side search: το backend ψάχνει σε xeirokinito_id + περίληψη + όνομα πελάτη
+      const params = new URLSearchParams();
+      params.set('q', query.trim());
+      params.set('pageSize', '100');
+      const d = await cases.list(params.toString());
+      const matches = Array.isArray(d) ? d : (d?.data || []);
       setResults(matches);
       if (matches.length === 1) {
         navigate(`/cases/${matches[0].aa || matches[0].id}`);
         onClose();
+      } else if (matches.length === 0) {
+        setError('Δεν βρέθηκε υπόθεση με αυτό το πρωτόκολλο.');
       }
     } catch (e) {
       setError(e.message);
