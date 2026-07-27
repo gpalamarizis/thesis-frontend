@@ -405,7 +405,14 @@ function CaseTab({ caseData, onSave, saving }) {
                   onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  <span style={{ flex: 1, textAlign: 'left' }}>
+                  <span style={{
+                    flex: 1,
+                    textAlign: 'left',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    minWidth: 0,
+                  }}>
                     {`${l.eponymo || ''} ${l.onoma || ''}`.trim() || `#${id}`}
                   </span>
                   <input
