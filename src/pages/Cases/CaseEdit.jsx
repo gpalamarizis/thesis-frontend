@@ -381,13 +381,28 @@ function CaseTab({ caseData, onSave, saving }) {
             <label>Χειριστές δικηγόροι γραφείου ({xeiristesIds.length} επιλεγμένοι)</label>
             <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('lawyer'); }} style={{ fontSize: 12 }}>+ Νέος δικηγόρος γραφείου</a>
           </div>
-          <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 6, padding: 8 }}>
+          <div style={{ maxHeight: 200, overflowY: 'auto', overflowX: 'hidden', border: '1px solid #e2e8f0', borderRadius: 6, padding: 8 }}>
             {lawyers.length === 0 ? (
               <div style={{ color: '#a0aec0', padding: 8 }}>Δεν υπάρχουν δικηγόροι γραφείου. Πάτησε «+ Νέος δικηγόρος γραφείου» για να προσθέσεις τον πρώτο.</div>
-            ) : lawyers.map((l, idx) => {
+            ) : [...lawyers].sort((a, b) => {
+              const aId = a.aa || a.id;
+              const bId = b.aa || b.id;
+              const aChecked = xeiristesIds.includes(aId);
+              const bChecked = xeiristesIds.includes(bId);
+              // 1. checked → πρώτα
+              if (aChecked !== bChecked) return aChecked ? -1 : 1;
+              // 2. αν κανένας checked, οι Μαύροι πρώτοι
+              const aMavros = /^μα[υύ]ρ/i.test((a.eponymo || '').trim());
+              const bMavros = /^μα[υύ]ρ/i.test((b.eponymo || '').trim());
+              if (aMavros !== bMavros) return aMavros ? -1 : 1;
+              // 3. αλφαβητικά
+              const aName = `${a.eponymo || ''} ${a.onoma || ''}`.trim();
+              const bName = `${b.eponymo || ''} ${b.onoma || ''}`.trim();
+              return aName.localeCompare(bName, 'el');
+            }).map((l, idx, arr) => {
               const id = l.aa || l.id;
               const checked = xeiristesIds.includes(id);
-              const isLast = idx === lawyers.length - 1;
+              const isLast = idx === arr.length - 1;
               return (
                 <label
                   key={id}
@@ -401,14 +416,19 @@ function CaseTab({ caseData, onSave, saving }) {
                     borderRadius: 4,
                     borderBottom: isLast ? 'none' : '1px solid #f1f5f9',
                     transition: 'background 0.1s',
+                    width: '100%',
+                    boxSizing: 'border-box',
                   }}
                   onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   <span style={{
-                    flex: 1,
+                    flex: '1 1 auto',
+                    minWidth: 0,
                     textAlign: 'left',
                     whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                   }}>
                     {`${l.eponymo || ''} ${l.onoma || ''}`.trim() || `#${id}`}
                   </span>
@@ -416,11 +436,13 @@ function CaseTab({ caseData, onSave, saving }) {
                     type="checkbox"
                     checked={checked}
                     onChange={() => toggleXeiristis(id)}
-                    style={{ flexShrink: 0 }}
+                    style={{ flexShrink: 0, margin: 0 }}
                   />
                 </label>
               );
             })}
+          </div>
+          </div>
           </div>
           <small style={{ color: '#a0aec0' }}>Ο δικηγόρος αντιδίκου, ο δικαστής και ο γραμματέας ορίζονται ξεχωριστά σε κάθε δικαστική ενέργεια.</small>
         </div>
