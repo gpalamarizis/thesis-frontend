@@ -969,6 +969,8 @@ function SubActionModal({ courtActionId, initial, lawyers, energeiaOptions, onCl
 // ---------- Tab: Documents ----------
 function DocsTab({ caseId, rows, onChange }) {
   const [uploading, setUploading] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
+  const [uploadName, setUploadName] = useState('');
   const [preview, setPreview] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
   const [error, setError] = useState('');
@@ -981,16 +983,20 @@ function DocsTab({ caseId, rows, onChange }) {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
+    setUploadPct(0);
+    setUploadName(file.name);
     setError('');
     try {
       // Extract metadata (author, last modified by, etc.) client-side before upload
       const metadata = await extractFileMetadata(file);
-      await documents.upload(caseId, file, '', metadata);
+      await documents.upload(caseId, file, '', metadata, (pct) => setUploadPct(pct));
       onChange();
     } catch (err) {
       setError(err.message);
     } finally {
       setUploading(false);
+      setUploadPct(0);
+      setUploadName('');
       e.target.value = '';
     }
   };
@@ -1083,11 +1089,30 @@ function DocsTab({ caseId, rows, onChange }) {
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('docx'); setNewFileName(''); }}>📄 Νέο Word</button>
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('xlsx'); setNewFileName(''); }}>📊 Νέο Excel</button>
           <label className={`btn btn-sm ${uploading ? 'btn-disabled' : ''}`} style={{ margin: 0, cursor: 'pointer' }}>
-            {uploading ? 'Ανέβασμα...' : '📎 Ανέβασμα αρχείου'}
+            {uploading ? `Ανέβασμα ${uploadPct}%` : '📎 Ανέβασμα αρχείου'}
             <input type="file" style={{ display: 'none' }} onChange={onUpload} disabled={uploading} />
           </label>
         </div>
       </div>
+
+      {uploading && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#4a5568', marginBottom: 6 }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '70%' }}>
+              Ανέβασμα: {uploadName}
+            </span>
+            <span style={{ fontWeight: 600 }}>{uploadPct}%</span>
+          </div>
+          <div style={{ height: 8, background: '#E2E8F0', borderRadius: 4, overflow: 'hidden' }}>
+            <div style={{
+              width: `${uploadPct}%`,
+              height: '100%',
+              background: '#F59E0B',
+              transition: 'width 0.2s ease',
+            }} />
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
         <div style={{ flex: 1, minWidth: 0 }}>

@@ -49,6 +49,46 @@ async function request(endpoint, options = {}) {
   return data;
 }
 
+// --- Upload με ένδειξη προόδου ---
+// Το fetch() ΔΕΝ υποστηρίζει progress στο ανέβασμα, οπότε χρησιμοποιούμε
+// XMLHttpRequest. Το onProgress καλείται με ποσοστό 0-100.
+function uploadWithProgress(endpoint, formData, onProgress) {
+  return new Promise((resolve, reject) => {
+    const token = localStorage.getItem('token');
+    const xhr = new XMLHttpRequest();
+
+    xhr.open('POST', `${API_URL}${endpoint}`);
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && typeof onProgress === 'function') {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
+    };
+
+    xhr.onload = () => {
+      let data = null;
+      try { data = JSON.parse(xhr.responseText); } catch (_) { /* ignore */ }
+      if (xhr.status >= 200 && xhr.status < 300) {
+        if (typeof onProgress === 'function') onProgress(100);
+        return resolve(data);
+      }
+      if (xhr.status === 401 && token) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        const p = window.location.pathname;
+        if (p !== '/login' && p !== '/register') window.location.href = '/login';
+      }
+      reject(new Error((data && (data.error || data.message)) || `Σφάλμα (${xhr.status})`));
+    };
+
+    xhr.onerror = () => reject(new Error('Πρόβλημα δικτύου. Ελέγξτε τη σύνδεσή σας.'));
+    xhr.ontimeout = () => reject(new Error('Το ανέβασμα άργησε πολύ. Δοκιμάστε ξανά.'));
+
+    xhr.send(formData);
+  });
+}
+
 export const api = {
   get:    (endpoint)       => request(endpoint),
   post:   (endpoint, body) => request(endpoint, { method: 'POST',   body: body instanceof FormData ? body : JSON.stringify(body) }),
@@ -219,34 +259,16 @@ export const phonebook = {
   },
 };
 
-// v3: χτίζει query string παραλείποντας κενές τιμές.
-// Δεχτά φίλτρα: q, dikigoros_id, antidikos_id, onomasia_id, diadikasia_id,
-//               dikastirio_id, from, to, ekkremis
-function qs(params = {}) {
-  const p = new URLSearchParams();
-  Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== null && v !== '') p.set(k, v);
-  });
-  const s = p.toString();
-  return s ? `?${s}` : '';
-}
-
 export const reports = {
   summary:          ()                 => api.get('/api/reports/summary'),
-
-  // v3 FIX: δέχονταν ΜΗΔΕΝ παραμέτρους, οπότε κανένα φίλτρο δεν έφτανε ποτέ στο backend.
-  pending:          (params = {})      => api.get('/api/reports/pending' + qs(params)),
-  pendingTasks:     (params = {})      => api.get('/api/reports/pending-tasks' + qs(params)),
-
-  // Συμβατό και με τις δύο μορφές:
-  //   upcomingHearings('2026-01-01', '2026-12-31')
-  //   upcomingHearings({ from, to, dikigoros_id, antidikos_id, ... })
-  upcomingHearings: (from = '', to = '', extra = {}) => {
-    if (from && typeof from === 'object') {
-      return api.get('/api/reports/upcoming-hearings' + qs(from));
-    }
-    return api.get('/api/reports/upcoming-hearings' + qs({ from, to, ...extra }));
+  pending:          ()                 => api.get('/api/reports/pending'),
+  upcomingHearings: (from = '', to = '') => {
+    const p = [];
+    if (from) p.push(`from=${from}`);
+    if (to)   p.push(`to=${to}`);
+    return api.get('/api/reports/upcoming-hearings' + (p.length ? `?${p.join('&')}` : ''));
   },
+  pendingTasks:     ()                 => api.get('/api/reports/pending-tasks'),
 
   courtActionsCalendar: (params = {}) => {
     const p = new URLSearchParams();
@@ -276,7 +298,7 @@ export const team = {
 
 export const documents = {
   listByCase: (caseId) => api.get(`/api/documents?ypothesi_id=${caseId}`),
-  upload:     (caseId, file, description = '', metadata = {}) => {
+  upload:     (caseId, file, description = '', metadata = {}, onProgress = null) => {
     const fd = new FormData();
     fd.append('file', file);
     fd.append('ypothesi_id', String(caseId));
@@ -284,6 +306,10 @@ export const documents = {
     Object.entries(metadata || {}).forEach(([k, v]) => {
       if (v != null && v !== '') fd.append(k, String(v));
     });
+    // Αν ζητήθηκε πρόοδος, XHR. Αλλιώς το κανονικό fetch.
+    if (typeof onProgress === 'function') {
+      return uploadWithProgress('/api/documents', fd, onProgress);
+    }
     return api.post('/api/documents', fd);
   },
   downloadUrl: (id) => api.get(`/api/documents/${id}/download-url`),
@@ -291,42 +317,6 @@ export const documents = {
 };
 
 export { API_URL };
-
-// v4: Κατέβασμα αρχείου (Word export). Δεν περνάει από το request() γιατί
-// εκείνο κάνει parse σε JSON/text — εδώ θέλουμε binary blob.
-export async function downloadFile(endpoint, fallbackName = 'download.docx') {
-  const token = localStorage.getItem('token');
-  const res = await fetch(`${API_URL}${endpoint}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-  });
-
-  if (!res.ok) {
-    let msg = `Σφάλμα (${res.status})`;
-    try { const j = await res.json(); msg = j.error || msg; } catch (e) { /* όχι JSON */ }
-    throw new Error(msg);
-  }
-
-  // Όνομα αρχείου από το Content-Disposition, αλλιώς fallback
-  let name = fallbackName;
-  const cd = res.headers.get('content-disposition') || '';
-  const star  = cd.match(/filename\*=UTF-8''([^;]+)/i);
-  const plain = cd.match(/filename="?([^";]+)"?/i);
-  if (star) {
-    try { name = decodeURIComponent(star[1]); } catch (e) { /* κράτα fallback */ }
-  } else if (plain) {
-    name = plain[1];
-  }
-
-  const blob = await res.blob();
-  const url  = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 export const mydata = {
   send:   (invoiceId, invoiceType, correlatedMark) => api.post(`/api/mydata/invoices/${invoiceId}/send`, { invoiceType, correlatedMark }),
