@@ -49,6 +49,53 @@ async function request(endpoint, options = {}) {
   return data;
 }
 
+// --- Λήψη αρχείου με auth (π.χ. αναφορές σε Word) ---
+// Δέχεται είτε endpoint ('/api/reports/x?format=docx') είτε πλήρες URL.
+// Το filename είναι προαιρετικό — αν λείπει, το παίρνει από τα headers.
+export async function downloadFile(endpointOrUrl, filename) {
+  const token = localStorage.getItem('token');
+  const url = /^https?:\/\//i.test(endpointOrUrl)
+    ? endpointOrUrl
+    : `${API_URL}${endpointOrUrl}`;
+
+  let res;
+  try {
+    res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch (err) {
+    throw new Error('Πρόβλημα δικτύου. Ελέγξτε τη σύνδεσή σας.');
+  }
+
+  if (!res.ok) {
+    let msg = `Σφάλμα (${res.status})`;
+    try {
+      const j = await res.json();
+      if (j && (j.error || j.message)) msg = j.error || j.message;
+    } catch (_) { /* δεν ήταν JSON */ }
+    throw new Error(msg);
+  }
+
+  // Όνομα: από παράμετρο, αλλιώς από Content-Disposition, αλλιώς fallback
+  let name = filename;
+  if (!name) {
+    const cd = res.headers.get('content-disposition') || '';
+    const m = cd.match(/filename\*?=(?:UTF-8'')?\"?([^\";]+)/i);
+    if (m) { try { name = decodeURIComponent(m[1]); } catch (_) { name = m[1]; } }
+  }
+  if (!name) name = 'download';
+
+  const blob = await res.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = objectUrl;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+}
+
 // --- Upload με ένδειξη προόδου ---
 // Το fetch() ΔΕΝ υποστηρίζει progress στο ανέβασμα, οπότε χρησιμοποιούμε
 // XMLHttpRequest. Το onProgress καλείται με ποσοστό 0-100.
