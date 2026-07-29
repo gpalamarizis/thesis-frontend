@@ -189,7 +189,28 @@ export const people = {
   lawyers:         genericPeople('lawyers'),
   opposingLawyers: genericPeople('opposing-lawyers'),
   opponents:       genericPeople('opponents'),
-  related:         genericPeople('related'),
+  // Σχετικά πρόσωπα — επεκτεταμένο με φίλτρα και συνδεδεμένες υποθέσεις
+  related: {
+    ...genericPeople('related'),
+
+    // Λίστα με φίλτρα: { q, idiotita_id, poli }
+    // idiotita_id: 'none' -> όσοι ΔΕΝ έχουν ιδιότητα
+    list: (opts = {}) => {
+      const o = typeof opts === 'string' ? { q: opts } : (opts || {});
+      const p = new URLSearchParams();
+      if (o.q)            p.set('q', o.q);
+      if (o.idiotita_id)  p.set('idiotita_id', String(o.idiotita_id));
+      if (o.poli)         p.set('poli', o.poli);
+      const qs = p.toString();
+      return api.get('/api/people/related' + (qs ? `?${qs}` : ''));
+    },
+
+    // Οι πόλεις που υπάρχουν, για το γεωγραφικό φίλτρο
+    cities: () => api.get('/api/people/related/cities'),
+
+    // Σε ποιες υποθέσεις εμφανίζεται το πρόσωπο
+    cases: (id) => api.get(`/api/people/related/${id}/cases`),
+  },
 };
 
 function genericPeople(kind) {

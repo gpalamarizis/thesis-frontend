@@ -16,7 +16,7 @@ const menuGroups = [
       { path: '/nomika',           label: 'Νομικά πρόσωπα',       icon: '🏢' },
       { path: '/lawyers',          label: 'Δικηγόροι γραφείου',   icon: '⚖️' },
       { path: '/opposing-lawyers', label: 'Δικηγόροι αντιδίκων',  icon: '⚔️' },
-      { path: '/opponents',        label: 'Αντίδικοι',            icon: '🔷' },
+      { path: '/opponents',        label: 'Αντίδικοι / Συμβαλλόμενοι', icon: '🔷' },
       { path: '/related',          label: 'Σχετικά πρόσωπα',      icon: '🔗' },
       { path: '/phonebook',        label: 'Τηλεφωνικός κατάλογος', icon: '📞' },
   ]},

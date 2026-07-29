@@ -15,8 +15,10 @@ const EMPTY = {
   adt: '', ekdousa_arxi: '', afm: '', doy: '',
   // Επικοινωνία
   email: '', web_site: '', energos: true,
-  // Είδος σχέσης
-  eidos_sxesis_id: '',
+  // Είδος σχέσης + Ιδιότητα
+  eidos_sxesis_id: '', idiotita_id: '',
+  // Εσωτερικές παρατηρήσεις / αξιολόγηση
+  paratiriseis: '',
   // Διεύθυνση οικίας
   odos_oikias: '', arithmos_oikias: '', tk_oikias: '', poli_oikias: '', xora_oikias: '',
   // Διεύθυνση γραφείου
@@ -38,10 +40,16 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [sxeseis, setSxeseis] = useState([]);
+  const [idiotites, setIdiotites] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [fIdiotita, setFIdiotita] = useState('');
+  const [fPoli, setFPoli] = useState('');
+  const [cases, setCases] = useState(null);
+  const [casesFor, setCasesFor] = useState(null);
 
   const load = () => {
     setLoading(true);
-    people.related.list(q)
+    people.related.list({ q, idiotita_id: fIdiotita, poli: fPoli })
       .then(d => setItems(d?.data || []))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
@@ -51,12 +59,18 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
     const t = setTimeout(load, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line
-  }, [q]);
+  }, [q, fIdiotita, fPoli]);
 
-  // Load lookup: είδος σχέσης
+  // Load lookups: είδος σχέσης, ιδιότητες, πόλεις
   useEffect(() => {
     lists.get('eidos_sxesis').then(d => {
       setSxeseis(Array.isArray(d) ? d : (d?.data || []));
+    }).catch(() => {});
+    lists.get('idiotites').then(d => {
+      setIdiotites(Array.isArray(d) ? d : (d?.data || []));
+    }).catch(() => {});
+    people.related.cities().then(d => {
+      setCities(Array.isArray(d) ? d : (d?.data || []));
     }).catch(() => {});
   }, []);
 
@@ -101,6 +115,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
         if (payload[k] === '') payload[k] = null;
       });
       if (payload.eidos_sxesis_id) payload.eidos_sxesis_id = Number(payload.eidos_sxesis_id);
+      if (payload.idiotita_id)     payload.idiotita_id     = Number(payload.idiotita_id);
       if (editing) await people.related.update(editing.aa, payload);
       else         await people.related.create(payload);
       setShowModal(false);
@@ -120,6 +135,19 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
 
   const displayName = (r) => r.eponymia || `${r.eponymo || ''} ${r.onoma || ''}`.trim() || '—';
 
+  // Σε ποιες υποθέσεις εμφανίζεται το πρόσωπο
+  const openCases = async (row) => {
+    setCasesFor(row);
+    setCases(null);
+    try {
+      const d = await people.related.cases(row.aa);
+      setCases(Array.isArray(d) ? d : (d?.data || []));
+    } catch (e) {
+      setError(e.message);
+      setCases([]);
+    }
+  };
+
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Σχετικά Πρόσωπα">
       <div className="section">
@@ -128,11 +156,39 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input
               type="text"
-              placeholder="🔍 Αναζήτηση..."
+              placeholder="🔍 Αναζήτηση ονόματος..."
               value={q}
               onChange={e => setQ(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4, minWidth: 220 }}
+              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4, minWidth: 200 }}
             />
+            <select
+              value={fIdiotita}
+              onChange={e => setFIdiotita(e.target.value)}
+              title="Φίλτρο ιδιότητας"
+              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4 }}
+            >
+              <option value="">Όλες οι ιδιότητες</option>
+              {idiotites.map(i => <option key={i.aa} value={i.aa}>{i.name}</option>)}
+              <option value="none">— χωρίς ιδιότητα —</option>
+            </select>
+            <select
+              value={fPoli}
+              onChange={e => setFPoli(e.target.value)}
+              title="Φίλτρο πόλης"
+              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4 }}
+            >
+              <option value="">Όλες οι πόλεις</option>
+              {cities.map(ct => (
+                <option key={ct.poli} value={ct.poli}>{ct.poli} ({ct.plithos})</option>
+              ))}
+            </select>
+            {(fIdiotita || fPoli || q) && (
+              <button
+                className="btn btn-sm btn-secondary"
+                onClick={() => { setQ(''); setFIdiotita(''); setFPoli(''); }}
+                title="Καθαρισμός φίλτρων"
+              >✕ Καθαρισμός</button>
+            )}
             <button className="btn" onClick={openNew}>+ Νέο</button>
           </div>
         </div>
@@ -148,10 +204,11 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
             <thead>
               <tr>
                 <th>Ονομασία</th>
+                <th style={{ width: 150 }}>Ιδιότητα</th>
                 <th>ΑΦΜ</th>
-                <th>Email</th>
                 <th>Τηλέφωνο</th>
                 <th>Πόλη</th>
+                <th style={{ width: 40, textAlign: 'center' }} title="Εσωτερική παρατήρηση">📝</th>
                 <th style={{ width: 1 }}></th>
               </tr>
             </thead>
@@ -159,11 +216,23 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
               {items.map(r => (
                 <tr key={r.aa}>
                   <td><strong>{displayName(r)}</strong></td>
+                  <td>
+                    {r.idiotita_name ? (
+                      <span style={{
+                        background: '#EEF2FF', color: '#3730A3',
+                        padding: '2px 8px', borderRadius: 10, fontSize: 12, whiteSpace: 'nowrap',
+                      }}>{r.idiotita_name}</span>
+                    ) : <span style={{ color: '#CBD5E1' }}>—</span>}
+                  </td>
                   <td>{r.afm || '—'}</td>
-                  <td>{r.email || '—'}</td>
                   <td>{r.tilefono_kinito_1 || r.tilefono_grafeiou_1 || r.tilefono_oikias_1 || '—'}</td>
-                  <td>{r.poli_grafeiou || r.poli_oikias || '—'}</td>
+                  <td>{r.poli || r.poli_grafeiou || r.poli_oikias || '—'}</td>
+                  <td style={{ textAlign: 'center' }} title={r.paratiriseis || ''}>
+                    {r.paratiriseis ? '📝' : ''}
+                  </td>
                   <td style={{ whiteSpace: 'nowrap' }}>
+                    <button className="btn btn-sm btn-secondary" onClick={() => openCases(r)} title="Σε ποιες υποθέσεις εμφανίζεται">Υποθέσεις</button>
+                    {' '}
                     <button className="btn btn-sm btn-secondary" onClick={() => openEdit(r)}>Επεξ.</button>
                     {' '}
                     <button className="btn btn-sm btn-danger" onClick={() => del(r)}>×</button>
@@ -264,6 +333,16 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
               </div>
               <div className="form-row">
                 <div className="form-group">
+                  <label>Ιδιότητα</label>
+                  <select name="idiotita_id" value={form.idiotita_id || ''} onChange={c}>
+                    <option value="">— καμία —</option>
+                    {idiotites.map(i => (
+                      <option key={i.aa} value={i.aa}>{i.name}</option>
+                    ))}
+                  </select>
+                  <small style={{ color: '#94A3B8' }}>Τι <b>είναι</b> ο άνθρωπος (δικηγόρος, συμβολαιογράφος…)</small>
+                </div>
+                <div className="form-group">
                   <label>Είδος σχέσης</label>
                   <select name="eidos_sxesis_id" value={form.eidos_sxesis_id || ''} onChange={c}>
                     <option value="">— κανένα —</option>
@@ -271,13 +350,31 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                       <option key={s.aa} value={s.aa}>{s.name}</option>
                     ))}
                   </select>
+                  <small style={{ color: '#94A3B8' }}>Ο ρόλος του στην υπόθεση (μάρτυρας, αγοραστής…)</small>
                 </div>
-                <div className="form-group">
+                <div className="form-group" style={{ flex: '0 0 120px' }}>
                   <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 24 }}>
                     <input type="checkbox" name="energos" checked={!!form.energos} onChange={c} />
                     Ενεργός
                   </label>
                 </div>
+              </div>
+
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>
+                Παρατηρήσεις <span style={{ fontWeight: 400, fontSize: 13, color: '#94A3B8' }}>— εσωτερική σημείωση, δεν εμφανίζεται σε έγγραφα</span>
+              </h3>
+              <div className="form-group">
+                <textarea
+                  name="paratiriseis"
+                  value={form.paratiriseis || ''}
+                  onChange={c}
+                  rows={4}
+                  placeholder="π.χ. συνεργάσιμος, αργεί στις απαντήσεις, καλή γνώση εμπράγματου…"
+                  style={{
+                    width: '100%', padding: '10px 12px', border: '1px solid #E2E8F0',
+                    borderRadius: 8, fontFamily: 'inherit', fontSize: 14, resize: 'vertical',
+                  }}
+                />
               </div>
 
               <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>Διεύθυνση Οικίας</h3>
@@ -397,6 +494,57 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Συνδεδεμένες υποθέσεις του προσώπου */}
+      {casesFor && (
+        <div className="modal-overlay" onClick={() => setCasesFor(null)}>
+          <div className="modal" style={{ maxWidth: 780, maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Υποθέσεις — {displayName(casesFor)}</h2>
+              <button className="close-btn" onClick={() => setCasesFor(null)}>×</button>
+            </div>
+
+            {cases === null ? (
+              <div className="empty-state">Φόρτωση...</div>
+            ) : cases.length === 0 ? (
+              <div className="empty-state">Δεν συνδέεται με καμία υπόθεση.</div>
+            ) : (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th style={{ width: 130 }}>Πρωτόκολλο</th>
+                    <th>Περίληψη</th>
+                    <th style={{ width: 160 }}>Ρόλος</th>
+                    <th style={{ width: 90 }}>Κατάσταση</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cases.map(cs => (
+                    <tr key={cs.aa}>
+                      <td>
+                        <a href={`/cases/${cs.aa}`} style={{ fontWeight: 600 }}>
+                          {cs.xeirokinito_id || `#${cs.aa}`}
+                        </a>
+                      </td>
+                      <td style={{ fontSize: 13 }}>{cs.perilipsi || '—'}</td>
+                      <td style={{ fontSize: 13 }}>{cs.eidos_sxesis_name || '—'}</td>
+                      <td>
+                        {cs.ekkremis
+                          ? <span style={{ color: '#B45309', fontSize: 12 }}>Εκκρεμής</span>
+                          : <span style={{ color: '#64748B', fontSize: 12 }}>Κλειστή</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            <div style={{ marginTop: 12, textAlign: 'right' }}>
+              <button className="btn btn-secondary" onClick={() => setCasesFor(null)}>Κλείσιμο</button>
+            </div>
           </div>
         </div>
       )}
