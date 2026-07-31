@@ -46,10 +46,11 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
   const [fPoli, setFPoli] = useState('');
   const [cases, setCases] = useState(null);
   const [casesFor, setCasesFor] = useState(null);
+  const [showOpponents, setShowOpponents] = useState(false);
 
   const load = () => {
     setLoading(true);
-    people.related.list({ q, idiotita_id: fIdiotita, poli: fPoli })
+    people.related.list({ q, idiotita_id: fIdiotita, poli: fPoli, include_opponents: showOpponents })
       .then(d => setItems(d?.data || []))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
@@ -59,7 +60,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
     const t = setTimeout(load, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line
-  }, [q, fIdiotita, fPoli]);
+  }, [q, fIdiotita, fPoli, showOpponents]);
 
   // Load lookups: είδος σχέσης, ιδιότητες, πόλεις
   useEffect(() => {
@@ -182,6 +183,20 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 <option key={ct.poli} value={ct.poli}>{ct.poli} ({ct.plithos})</option>
               ))}
             </select>
+            <label
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                fontSize: 13, color: '#64748B', cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+              title="Οι αντίδικοι έχουν δικό τους πίνακα. Εδώ εμφανίζονται μόνο αν το ζητήσεις."
+            >
+              <input
+                type="checkbox"
+                checked={showOpponents}
+                onChange={e => setShowOpponents(e.target.checked)}
+              />
+              Και αντίδικοι
+            </label>
             {(fIdiotita || fPoli || q) && (
               <button
                 className="btn btn-sm btn-secondary"

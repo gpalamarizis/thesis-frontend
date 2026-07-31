@@ -267,11 +267,13 @@ function CaseTab({ caseData, onSave, saving }) {
             <input type="date" value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
           </div>
         </div>
+        {/* ΑΦΑΙΡΕΘΗΚΕ: «Ονομασία φακέλου».
+            Πεδίο του παλιού VB.NET που ΔΕΝ χρησιμοποιήθηκε ποτέ —
+            0 από 4.540 υποθέσεις σε 24 χρόνια είχαν τιμή.
+            Η κατάσταση διατηρείται και αποθηκεύεται κανονικά, ώστε
+            τυχόν υπάρχουσες τιμές να μη χαθούν και να μπορεί να
+            επανέλθει το πεδίο με μία γραμμή αν χρειαστεί. */}
         <div className="form-grid-2">
-          <div className="form-group">
-            <label>Ονομασία φακέλου</label>
-            <input type="text" value={onomasiaFakelou} onChange={e => setOnomasiaFakelou(e.target.value)} />
-          </div>
           <div className="form-group">
             <label>Αρχειοθετημένη σε</label>
             <select value={thesiArxeiothetisisId} onChange={e => setThesiArxeiothetisisId(e.target.value)}>

@@ -201,6 +201,8 @@ export const people = {
       if (o.q)            p.set('q', o.q);
       if (o.idiotita_id)  p.set('idiotita_id', String(o.idiotita_id));
       if (o.poli)         p.set('poli', o.poli);
+      // Οι αντίδικοι έχουν δικό τους πίνακα — εξ ορισμού ΔΕΝ εμφανίζονται εδώ
+      if (o.include_opponents) p.set('include_opponents', '1');
       const qs = p.toString();
       return api.get('/api/people/related' + (qs ? `?${qs}` : ''));
     },
