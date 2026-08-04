@@ -30,6 +30,18 @@ function daysBetween(d1, d2) {
 function StatusBanner({ current }) {
   if (!current) return null;
   const org = current.organization;
+  // Platform admin χωρίς γραφείο
+  if (!org) {
+    return (
+      <div style={{
+        padding: 16, background: '#EFF6FF', border: '1px solid #93C5FD',
+        borderRadius: 6, marginBottom: 20, color: '#1E40AF',
+      }}>
+        ℹ️ Ο λογαριασμός σας δεν ανήκει σε δικηγορικό γραφείο (platform admin).
+        Οι συνδρομές διαχειρίζονται από το <strong>Platform Admin</strong>.
+      </div>
+    );
+  }
 
   if (org.suspended) {
     return (
@@ -271,7 +283,9 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
     }
   };
 
-  const isOwner = user.role === 'admin' || user.role === 'owner';
+  // Ο platform admin χωρίς γραφείο δεν αγοράζει συνδρομή για τον εαυτό του
+  const hasOrg  = !!current?.organization;
+  const isOwner = hasOrg && (user.role === 'admin' || user.role === 'owner');
 
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Συνδρομή">
@@ -282,7 +296,7 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
         <>
           <StatusBanner current={current} />
 
-          {current && (
+          {current && current.organization && (
             <div className="section" style={{ marginBottom: 20 }}>
               <h2 style={{ marginBottom: 12 }}>Τρέχουσα κατάσταση</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
@@ -311,8 +325,12 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
             </div>
           )}
 
-          {!isOwner ? (
-            <div className="empty-state">Μόνο ο owner του γραφείου μπορεί να διαχειριστεί τη συνδρομή.</div>
+          {!hasOrg ? (
+            <div className="empty-state">
+              Δεν υπάρχει γραφείο συνδεδεμένο με τον λογαριασμό σας.
+            </div>
+          ) : !isOwner ? (
+            <div className="empty-state">Μόνο ο υπεύθυνος του γραφείου μπορεί να διαχειριστεί τη συνδρομή.</div>
           ) : (
             <>
               <h2 style={{ marginBottom: 16 }}>Διαθέσιμα πλάνα</h2>
