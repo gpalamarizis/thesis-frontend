@@ -1109,20 +1109,45 @@ function DocsTab({ caseId, rows, onChange }) {
                   const name = docName(d);
                   const size = docSize(d);
                   const isSelected = selected && (selected.aa || selected.id) === (d.aa || d.id);
+                  // Το αρχείο δεν βρέθηκε στον αποθηκευτικό χώρο —
+                  // δείχνουμε ένδειξη αντί να αφήσουμε τον χρήστη να πάρει σφάλμα.
+                  const missing = !!d.file_missing;
                   return (
-                    <tr key={d.aa || d.id} className={`clickable ${isSelected ? 'row-selected' : ''}`} onClick={() => setSelected(d)}>
+                    <tr
+                      key={d.aa || d.id}
+                      className={`clickable ${isSelected ? 'row-selected' : ''}`}
+                      onClick={() => setSelected(d)}
+                      style={missing ? { opacity: 0.65 } : undefined}
+                    >
                       <td>
-                        <span style={{ marginRight: 6 }}>{fileIcon(name)}</span>
-                        {name}
+                        <span style={{ marginRight: 6 }}>{missing ? '⚠️' : fileIcon(name)}</span>
+                        <span style={missing ? { textDecoration: 'line-through', color: '#94A3B8' } : undefined}>
+                          {name}
+                        </span>
+                        {missing && (
+                          <span
+                            title="Η εγγραφή υπάρχει, αλλά το αρχείο δεν βρέθηκε στον αποθηκευτικό χώρο. Πιθανόν δεν μεταφέρθηκε από το παλιό σύστημα."
+                            style={{
+                              marginLeft: 8, fontSize: 11, padding: '2px 8px', borderRadius: 10,
+                              background: '#FEF3C7', color: '#92400E', whiteSpace: 'nowrap',
+                            }}
+                          >μη διαθέσιμο</span>
+                        )}
                       </td>
                       <td>{size != null ? formatBytes(size) : '—'}</td>
                       <td>{docDate(d) ? fmtDateTime(docDate(d)) : '—'}</td>
                       <td>{docUser(d)}</td>
                       <td style={{ whiteSpace: 'nowrap' }}>
-                        <button className="btn btn-sm" onClick={(e) => { e.stopPropagation(); openDownload(d); }}>⬇ Λήψη</button>
-                        {' '}
-                        <button className="btn btn-sm btn-secondary" onClick={(e) => { e.stopPropagation(); openPreview(d); }}>Προβολή</button>
-                        {' '}
+                        {missing ? (
+                          <span style={{ fontSize: 12, color: '#94A3B8' }}>—</span>
+                        ) : (
+                          <>
+                            <button className="btn btn-sm" onClick={(e) => { e.stopPropagation(); openDownload(d); }}>⬇ Λήψη</button>
+                            {' '}
+                            <button className="btn btn-sm btn-secondary" onClick={(e) => { e.stopPropagation(); openPreview(d); }}>Προβολή</button>
+                            {' '}
+                          </>
+                        )}
                         <button className="btn btn-sm btn-danger" onClick={(e) => { e.stopPropagation(); setConfirmDel(d); }}>×</button>
                       </td>
                     </tr>
