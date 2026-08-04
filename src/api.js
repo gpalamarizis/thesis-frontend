@@ -399,8 +399,17 @@ export const mydata = {
 export const subscriptions = {
   plans:    ()                  => api.get('/api/subscriptions/plans'),
   current:  ()                  => api.get('/api/subscriptions/current'),
-  checkout: (plan_code)         => api.post('/api/subscriptions/checkout', { plan_code }),
+  checkout: (plan_code, users)  => api.post('/api/subscriptions/checkout', { plan_code, users }),
   verify:   (transaction_id, order_code) => api.post('/api/subscriptions/verify', { transaction_id, order_code }),
+
+  // Πληρωμή με τραπεζικό έμβασμα — επιστρέφει IBAN + μοναδική αιτιολογία
+  bankTransfer: (plan_code, users) => api.post('/api/subscriptions/bank-transfer', { plan_code, users }),
+
+  // Platform admin
+  pending:            () => api.get('/api/subscriptions/pending'),
+  unmatchedTransfers: () => api.get('/api/subscriptions/unmatched-transfers'),
+  activateManual:     (id, body) => api.post(`/api/subscriptions/${id}/activate-manual`, body || {}),
+  health:             () => api.get('/api/subscriptions/health'),
 };
 
 // ==================== PLATFORM ADMIN ====================
