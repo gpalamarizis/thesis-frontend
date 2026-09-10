@@ -20,14 +20,6 @@ async function request(endpoint, options = {}) {
     throw new Error('Πρόβλημα δικτύου. Ελέγξτε τη σύνδεσή σας.');
   }
 
-  // Κυλιόμενη ανανέωση συνεδρίας.
-  //
-  // Το backend στέλνει νέο token όταν έχει περάσει η μισή διάρκεια.
-  // Έτσι ο χρήστης που δουλεύει δεν αποσυνδέεται ποτέ, ενώ αυτός που
-  // σταμάτησε λήγει κανονικά μετά τις 8 ώρες.
-  const refreshed = res.headers.get('X-Token-Refresh');
-  if (refreshed) localStorage.setItem('token', refreshed);
-
   // 204 No Content → return null
   if (res.status === 204) return null;
 
