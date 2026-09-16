@@ -69,9 +69,18 @@ function App() {
         setUser(merged);
       })
       .catch(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setUser(null);
+        // ΔΕΝ σβήνουμε τη συνεδρία εδώ.
+        //
+        // Το request() έχει ήδη προσπαθήσει ανανέωση και, αν η συνεδρία ήταν
+        // όντως άκυρη, έχει κάνει ανακατεύθυνση στο /login. Αν φτάσουμε εδώ
+        // με αποθηκευμένο χρήστη, το σφάλμα ήταν δικτύου ή προσωρινό —
+        // κρατάμε τον χειριστή μέσα αντί να τον πετάξουμε έξω.
+        const cached = localStorage.getItem('user');
+        if (!cached || !localStorage.getItem('token')) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+        }
       })
       .finally(() => setLoading(false));
   }, []);

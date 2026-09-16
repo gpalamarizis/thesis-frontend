@@ -77,8 +77,46 @@ function tokenExpiryMs(t) {
   }
 }
 
-const REFRESH_WHEN_LESS_THAN = 60 * 60 * 1000;  // μία ώρα πριν τη λήξη
+// Ανανεώνουμε μόλις περάσει η μισή ζωή του token. Κάθε ανανέωση δίνει
+// καινούργιο 8ωρο, οπότε στην πράξη το token δεν πλησιάζει ποτέ τη λήξη.
+const REFRESH_WHEN_LESS_THAN = 4 * 60 * 60 * 1000;
 let refreshInFlight = false;
+
+// Μοιραζόμενη υπόσχεση: αν δέκα αιτήματα πάρουν 401 ταυτόχρονα,
+// γίνεται ΜΙΑ ανανέωση και την περιμένουν όλα.
+let refreshPromise = null;
+
+/**
+ * Προσπάθεια ανανέωσης του token.
+ * Επιστρέφει:
+ *   'ok'      — πήραμε καινούργιο token
+ *   'dead'    — ο server απέρριψε και την ανανέωση· η συνεδρία όντως τελείωσε
+ *   'unknown' — δίκτυο, προσωρινό σφάλμα, οτιδήποτε άλλο· ΔΕΝ αποσυνδέουμε
+ */
+function refreshToken() {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = (async () => {
+    const t = localStorage.getItem('token');
+    if (!t) return 'dead';
+    try {
+      const r = await fetch(`${API_URL}/api/auth/refresh`, {
+        headers: { Authorization: `Bearer ${t}` },
+      });
+      if (r.ok) {
+        const d = await r.json().catch(() => null);
+        if (d && d.token) { localStorage.setItem('token', d.token); return 'ok'; }
+        return 'unknown';
+      }
+      if (r.status === 401) return 'dead';
+      return 'unknown';
+    } catch {
+      return 'unknown';
+    } finally {
+      setTimeout(() => { refreshPromise = null; }, 0);
+    }
+  })();
+  return refreshPromise;
+}
 
 export async function ensureFreshToken() {
   const t = localStorage.getItem('token');
@@ -91,15 +129,7 @@ export async function ensureFreshToken() {
 
   refreshInFlight = true;
   try {
-    const res = await fetch(`${API_URL}/api/auth/refresh`, {
-      headers: { Authorization: `Bearer ${t}` },
-    });
-    if (res.ok) {
-      const d = await res.json().catch(() => null);
-      if (d && d.token) localStorage.setItem('token', d.token);
-    }
-  } catch {
-    // Εκτός δικτύου: ξαναδοκιμάζει στον επόμενο κύκλο.
+    await refreshToken();
   } finally {
     refreshInFlight = false;
   }
@@ -120,7 +150,7 @@ export function startSessionKeepalive() {
   };
 }
 
-async function request(endpoint, options = {}) {
+async function request(endpoint, options = {}, _retried = false) {
   const token = localStorage.getItem('token');
   const isFormData = options.body instanceof FormData;
 
@@ -157,13 +187,31 @@ async function request(endpoint, options = {}) {
   }
 
   if (!res.ok) {
-    // Auto-logout on 401
-    if (res.status === 401 && token) {
-      handleSessionExpired();
+    // ─── Χειρισμός 401 ───────────────────────────────────────────────
+    //
+    // ΚΑΝΟΝΑΣ: ο χειριστής αποσυνδέεται ΜΟΝΟ αν αποδειχθεί ότι η συνεδρία
+    // του είναι όντως άκυρη. Ένα μεμονωμένο 401 από ένα endpoint δεν αρκεί —
+    // μπορεί να είναι στιγμιαίο, σφάλμα δικαιωμάτων σε μία διαδρομή, ή
+    // επανεκκίνηση του server. Παλιότερα οποιοδήποτε 401 τον πετούσε έξω.
+    //
+    // Ροή: ζητάμε καινούργιο token. Αν το πάρουμε, ξαναστέλνουμε το αίτημα
+    // μία φορά. Μόνο αν ο server απορρίψει και την ίδια την ανανέωση
+    // θεωρούμε τη συνεδρία τελειωμένη.
+    if (res.status === 401 && token && !_retried && !endpoint.startsWith('/api/auth/')) {
+      const state = await refreshToken();
+      if (state === 'ok') {
+        return request(endpoint, options, true);
+      }
+      if (state === 'dead') {
+        handleSessionExpired();
+      }
+      // 'unknown': δίκτυο ή προσωρινό — μένουμε συνδεδεμένοι και
+      // επιστρέφουμε σφάλμα στη σελίδα, χωρίς αποσύνδεση.
     }
     const msg = (data && (data.error || data.message)) || `Σφάλμα (${res.status})`;
     throw new Error(msg);
   }
+
 
   return data;
 }
@@ -239,8 +287,10 @@ function uploadWithProgress(endpoint, formData, onProgress) {
         if (typeof onProgress === 'function') onProgress(100);
         return resolve(data);
       }
+      // Ένα 401 στο ανέβασμα ΔΕΝ αποσυνδέει. Ζητάμε σιωπηλά καινούργιο token
+      // ώστε η επόμενη προσπάθεια να πετύχει, και επιστρέφουμε σφάλμα στη σελίδα.
       if (xhr.status === 401 && token) {
-        handleSessionExpired();
+        refreshToken().then(state => { if (state === 'dead') handleSessionExpired(); });
       }
       reject(new Error((data && (data.error || data.message)) || `Σφάλμα (${xhr.status})`));
     };
