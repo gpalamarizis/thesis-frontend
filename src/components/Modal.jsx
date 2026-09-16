@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { entryKeyDown } from '../utils/formKeys';
 
 /**
  * Modal — ασφαλές παράθυρο καταχώρησης.
@@ -73,6 +74,7 @@ function Modal({ title, onClose, children, size = 'md', actions, dismissible = f
       <div
         ref={boxRef}
         className={`modal ${sizeClass}`}
+        onKeyDown={entryKeyDown}
         role="dialog"
         aria-modal="true"
         aria-label={typeof title === 'string' ? title : undefined}

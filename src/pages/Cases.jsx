@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { api } from '../api';
+import { entryKeyDown } from '../utils/formKeys';
 
 function Cases({ user, onLogout }) {
   const [cases, setCases] = useState([]);
@@ -80,7 +81,7 @@ function Cases({ user, onLogout }) {
               <button className="close-btn" onClick={() => setShowModal(false)}>×</button>
             </div>
             {error && <div className="error">{error}</div>}
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} onKeyDown={entryKeyDown}>
               <div className="form-group">
                 <label>Αριθμός Πρωτοκόλλου *</label>
                 <input type="text" value={form.xeirokinito_id} onChange={e => setForm({...form, xeirokinito_id: e.target.value})} required />

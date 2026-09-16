@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { people, lists } from '../api';
+import { entryKeyDown } from '../utils/formKeys';
 
 const EMPTY = {
   // Στοιχεία Επιχείρησης
@@ -267,7 +268,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
               <button className="close-btn" onClick={() => setShowModal(false)}>×</button>
             </div>
             {error && <div className="error">{error}</div>}
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} onKeyDown={entryKeyDown}>
 
               <h3 style={{ marginTop: 8, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>Στοιχεία Επιχείρησης (αν είναι εταιρεία)</h3>
               <div className="form-row">

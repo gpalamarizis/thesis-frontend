@@ -8,6 +8,7 @@ import Layout from '../../components/Layout';
 import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
 import { cases, fysika, nomika, lists, people, api } from '../../api';
 import { saveDraft, loadDraft, clearDraft, formatDraftTime } from '../../utils/draft';
+import { entryKeyDown } from '../../utils/formKeys';
 
 const DRAFT_KEY = 'case-new';
 
@@ -124,22 +125,6 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
     clearDraft(DRAFT_KEY);
     savedOk.current = true;
     navigate('/cases');
-  };
-
-  // Enter = επόμενο πεδίο (όπως στο Thesis desktop), ΠΟΤΕ υποβολή της φόρμας.
-  // Η υπόθεση δημιουργείται μόνο με το κουμπί «Δημιουργία Υπόθεσης».
-  const handleFormKeyDown = (e) => {
-    if (e.key !== 'Enter') return;
-    const t = e.target;
-    const tag = (t.tagName || '').toUpperCase();
-    if (tag === 'TEXTAREA') return;            // νέα γραμμή στην Περίληψη
-    if (tag === 'BUTTON' || tag === 'A') return; // ο χειριστής πάτησε κουμπί
-    e.preventDefault();
-    const form = e.currentTarget;
-    const SEL = 'input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])';
-    const items = Array.from(form.querySelectorAll(SEL)).filter(el => el.offsetParent !== null);
-    const i = items.indexOf(t);
-    if (i > -1 && i < items.length - 1) items[i + 1].focus();
   };
 
   // Load helpers
@@ -391,7 +376,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
         {/* -------- Form (main column) -------- */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown}>
+          <form onSubmit={handleSubmit} onKeyDown={entryKeyDown}>
 
             {/* -------- Ημερομηνίες φακέλου + Πρωτόκολλο -------- */}
             <div className="section">

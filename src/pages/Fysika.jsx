@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { api } from '../api';
+import { entryKeyDown } from '../utils/formKeys';
 
 function Fysika({ user, onLogout }) {
   const [items, setItems] = useState([]);
@@ -80,7 +81,7 @@ function Fysika({ user, onLogout }) {
               <button className="close-btn" onClick={() => setShowModal(false)}>×</button>
             </div>
             {error && <div className="error">{error}</div>}
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} onKeyDown={entryKeyDown}>
               <div className="form-row">
                 <div className="form-group">
                   <label>Επώνυμο *</label>

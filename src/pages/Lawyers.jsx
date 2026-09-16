@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { people } from '../api';
+import { entryKeyDown } from '../utils/formKeys';
 
 const COLUMNS = [
   { key: 'eponymo',         label: 'Επώνυμο',       type: 'text',    width: 140, required: true },
@@ -282,7 +283,7 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
               <h2>Νέος Δικηγόρος</h2>
               <button className="close-btn" onClick={() => setShowAddModal(false)}>×</button>
             </div>
-            <form onSubmit={e => { e.preventDefault(); createNew(); }}>
+            <form onSubmit={e => { e.preventDefault(); createNew(); }} onKeyDown={entryKeyDown}>
               <div className="form-row">
                 <div className="form-group">
                   <label>Επώνυμο *</label>
