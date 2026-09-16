@@ -8,16 +8,51 @@ const API_URL = 'https://api.thesislegal.gr';
 // και σημειώνουμε ότι έληξε η συνεδρία ώστε η σελίδα εισόδου να τον ενημερώσει.
 // ΠΡΟΣΟΧΗ: τα προσωρινά αντίγραφα φορμών (thesis:draft:*) ΔΕΝ διαγράφονται —
 // είναι το δίχτυ ασφαλείας για μη αποθηκευμένες καταχωρήσεις.
+// Τρέχει ΜΙΑ φορά ανά φόρτωση σελίδας: πολλές παράλληλες κλήσεις που
+// επιστρέφουν 401 μαζί δεν πρέπει να προκαλέσουν πολλαπλές ανακατευθύνσεις.
+let sessionExpiredHandled = false;
+
 function handleSessionExpired() {
+  if (sessionExpiredHandled) return;
+  sessionExpiredHandled = true;
+
   localStorage.removeItem('token');
   localStorage.removeItem('user');
   const p = window.location.pathname;
   if (p === '/login' || p === '/register') return;
+
+  // ΔΙΑΚΟΠΤΗΣ ΒΡΟΧΟΥ
+  //
+  // Η επιστροφή στη σελίδα όπου ήταν ο χειριστής είναι χρήσιμη — εκτός αν
+  // ΕΚΕΙΝΗ η σελίδα είναι που προκαλεί το 401. Τότε δημιουργείται κύκλος:
+  // 401 -> login -> ίδια σελίδα -> 401. Μετράμε τις αναπηδήσεις και μετά
+  // τη δεύτερη στο ίδιο πεντάλεπτο σταματάμε να επιστρέφουμε, ώστε ο
+  // χειριστής να προσγειώνεται στον πίνακα ελέγχου και να μπορεί να δουλέψει.
+  let bounces = 0;
+  try {
+    const raw = localStorage.getItem('thesis:authBounce');
+    const prev = raw ? JSON.parse(raw) : null;
+    const fresh = prev && (Date.now() - prev.at) < 5 * 60 * 1000;
+    bounces = fresh ? (prev.n || 0) + 1 : 1;
+    localStorage.setItem('thesis:authBounce', JSON.stringify({ n: bounces, at: Date.now(), path: p }));
+  } catch { /* ignore */ }
+
   try {
     sessionStorage.setItem('thesis:sessionExpired', '1');
-    sessionStorage.setItem('thesis:returnTo', p + window.location.search);
+    if (bounces <= 2) {
+      sessionStorage.setItem('thesis:returnTo', p + window.location.search);
+    } else {
+      sessionStorage.removeItem('thesis:returnTo');
+      sessionStorage.setItem('thesis:authLoop', '1');
+    }
   } catch { /* ignore */ }
+
   window.location.href = '/login';
+}
+
+/** Καθαρίζει τον μετρητή αναπηδήσεων — καλείται μετά από επιτυχή σύνδεση. */
+export function clearAuthBounce() {
+  try { localStorage.removeItem('thesis:authBounce'); } catch { /* ignore */ }
 }
 
 async function request(endpoint, options = {}) {

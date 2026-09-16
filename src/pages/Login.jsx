@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api } from '../api';
+import { api, clearAuthBounce } from '../api';
 
 function Login({ onLogin }) {
   const navigate = useNavigate();
@@ -21,6 +21,18 @@ function Login({ onLogin }) {
     return false;
   });
 
+  // Επαναλαμβανόμενες αποσυνδέσεις: δεν επιστρέφουμε πια στη σελίδα που τις
+  // προκαλεί, και το λέμε στον χειριστή αντί να τον αφήνουμε να απορεί.
+  const [authLoop] = useState(() => {
+    try {
+      if (sessionStorage.getItem('thesis:authLoop') === '1') {
+        sessionStorage.removeItem('thesis:authLoop');
+        return true;
+      }
+    } catch { /* ignore */ }
+    return false;
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -28,6 +40,7 @@ function Login({ onLogin }) {
     try {
       const data = await api.post('/api/auth/login', { email, password });
       onLogin(data.user, data.token);
+      clearAuthBounce();
       let back = '/dashboard';
       try {
         const r = sessionStorage.getItem('thesis:returnTo');
@@ -103,7 +116,23 @@ function Login({ onLogin }) {
             textAlign: 'center',
           }}>Συνδεθείτε στον λογαριασμό σας</p>
 
-          {expired && !error && (
+          {authLoop && !error && (
+            <div style={{
+              background: '#FFF5F5',
+              color: '#742A2A',
+              padding: '10px 14px',
+              borderRadius: 6,
+              fontSize: 14,
+              marginBottom: 16,
+              border: '1px solid #FEB2B2',
+            }}>
+              Αποσυνδεθήκατε επανειλημμένα. Μετά τη σύνδεση θα μεταφερθείτε στον
+              πίνακα ελέγχου αντί για τη σελίδα που το προκαλούσε. Αν συνεχιστεί,
+              ενημερώστε τον διαχειριστή.
+            </div>
+          )}
+
+          {expired && !authLoop && !error && (
             <div style={{
               background: '#FFFBEB',
               color: '#78350F',
