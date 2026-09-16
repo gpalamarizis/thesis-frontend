@@ -327,6 +327,14 @@ export const courtSubActions = {
   remove:            (id) => api.delete(`/api/court-sub-actions/${id}`),
 };
 
+export const clientCredentials = {
+  list:   (ownerType, ownerId) => api.get(`/api/client-credentials?owner_type=${ownerType}&owner_id=${ownerId}`),
+  reveal: (id)                 => api.get(`/api/client-credentials/${id}/reveal`),
+  create: (payload)            => api.post(`/api/client-credentials`, payload),
+  update: (id, payload)        => api.put(`/api/client-credentials/${id}`, payload),
+  remove: (id)                 => api.delete(`/api/client-credentials/${id}`),
+};
+
 export const lists = {
   get:    (listName)               => api.get(`/api/lists/${listName}`),
   create: (listName, payload)      => api.post(`/api/lists/${listName}`, payload),

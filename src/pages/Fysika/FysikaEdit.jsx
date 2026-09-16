@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
 import ClientCredentialsSection from '../../components/ClientCredentialsSection';
+import ClientAccountsPanel from '../../components/ClientAccountsPanel';
 import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { fysika } from '../../api';
 import { toDateInput } from '../../utils/format';
@@ -217,7 +218,7 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
             { label: 'Στοιχεία',    content: tabPersonal },
             { label: 'Διευθύνσεις', content: tabAddresses },
             { label: 'Τηλέφωνα',    content: tabPhones },
-            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="fysiko" /> },
+            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="fysiko" accountsPanel={<ClientAccountsPanel ownerType="fysiko" ownerId={isNew ? null : Number(id)} />} /> },
           ]}/>
         </div>
         <div className="form-actions">

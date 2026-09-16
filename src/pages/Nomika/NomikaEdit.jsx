@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
 import ClientCredentialsSection from '../../components/ClientCredentialsSection';
+import ClientAccountsPanel from '../../components/ClientAccountsPanel';
 import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { nomika } from '../../api';
 
@@ -182,7 +183,7 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
             { label: 'Εταιρεία',    content: tabCompany },
             { label: 'Έδρα',        content: tabAddress },
             { label: 'Επικοινωνία', content: tabPhones },
-            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="nomiko" /> },
+            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="nomiko" accountsPanel={<ClientAccountsPanel ownerType="nomiko" ownerId={isNew ? null : Number(id)} />} /> },
           ]}/>
         </div>
         <div className="form-actions">

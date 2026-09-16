@@ -7,8 +7,6 @@
 //   onChange(fieldName) — factory function που επιστρέφει event handler
 //   kind                — 'fysiko' | 'nomiko'  (καθορίζει ποια πεδία εμφανίζονται)
 
-import { useState } from 'react';
-
 /**
  * MultiValueField — μία γραμμή ανά τιμή, με «+ Προσθήκη» και «×».
  * Παρατήρηση Μαύρου #9: ο χειριστής δεν βλέπει ποτέ κόμματα.
@@ -61,33 +59,7 @@ function MultiValueField({ label, value, onChange, placeholder, hint }) {
   );
 }
 
-function PasswordField({ label, value, onChange, autoComplete = 'new-password' }) {
-  const [show, setShow] = useState(false);
-  return (
-    <div className="form-group">
-      <label>{label}</label>
-      <div style={{ display: 'flex', gap: 4 }}>
-        <input
-          type={show ? 'text' : 'password'}
-          value={value || ''}
-          onChange={onChange}
-          autoComplete={autoComplete}
-          style={{ flex: 1 }}
-        />
-        <button
-          type="button"
-          className="btn btn-sm btn-secondary"
-          onClick={() => setShow(s => !s)}
-          title={show ? 'Απόκρυψη' : 'Εμφάνιση'}
-        >
-          {show ? '🙈' : '👁'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ClientCredentialsSection({ form, onChange, kind }) {
+function ClientCredentialsSection({ form, onChange, kind, accountsPanel }) {
   const isFysiko = kind === 'fysiko';
   const isDeceased = isFysiko && !!form.date_thanaton;
 
@@ -144,47 +116,12 @@ function ClientCredentialsSection({ form, onChange, kind }) {
         </>
       )}
 
-      {/* TAXIS credentials — και για φυσικά και για νομικά */}
-      <h3 style={{ marginTop: 20, marginBottom: 8, fontSize: 14, color: '#2d3748' }}>TAXISnet</h3>
-      <div className="form-grid-2">
-        <div className="form-group">
-          <label>TAXIS Username</label>
-          <input
-            type="text"
-            value={form.taxis_username || ''}
-            onChange={onChange('taxis_username')}
-            autoComplete="off"
-          />
-        </div>
-        <PasswordField
-          label="TAXIS Password"
-          value={form.taxis_password}
-          onChange={onChange('taxis_password')}
-        />
-      </div>
-
-      {/* ΓΕΜΗ — μόνο για νομικά */}
-      {!isFysiko && (
-        <>
-          <h3 style={{ marginTop: 20, marginBottom: 8, fontSize: 14, color: '#2d3748' }}>ΓΕΜΗ</h3>
-          <div className="form-grid-2">
-            <div className="form-group">
-              <label>ΓΕΜΗ Username</label>
-              <input
-                type="text"
-                value={form.gemi_username || ''}
-                onChange={onChange('gemi_username')}
-                autoComplete="off"
-              />
-            </div>
-            <PasswordField
-              label="ΓΕΜΗ Password"
-              value={form.gemi_password}
-              onChange={onChange('gemi_password')}
-            />
-          </div>
-        </>
-      )}
+      {/* Παρατήρηση Μαύρου #9β: πολλαπλοί λογαριασμοί ανά πελάτη,
+          αντί για ένα ζεύγος username/password. */}
+      <h3 style={{ marginTop: 20, marginBottom: 8, fontSize: 14, color: '#2d3748' }}>
+        Λογαριασμοί (TAXISnet / ΔΕΗ / ΓΕΜΗ)
+      </h3>
+      {accountsPanel}
 
       {/* Ιδιοκτησία ακινήτου */}
       <h3 style={{ marginTop: 20, marginBottom: 8, fontSize: 14, color: '#2d3748' }}>
@@ -217,23 +154,7 @@ function ClientCredentialsSection({ form, onChange, kind }) {
             onChange={onChange('ama_akinitou')}
             placeholder="π.χ. 12345678"
           />
-          <h4 style={{ marginTop: 12, marginBottom: 8, fontSize: 13, color: '#4a5568' }}>ΔΕΗ</h4>
-          <div className="form-grid-2">
-            <div className="form-group">
-              <label>ΔΕΗ Username</label>
-              <input
-                type="text"
-                value={form.dei_username || ''}
-                onChange={onChange('dei_username')}
-                autoComplete="off"
-              />
-            </div>
-            <PasswordField
-              label="ΔΕΗ Password"
-              value={form.dei_password}
-              onChange={onChange('dei_password')}
-            />
-          </div>
+          {/* ΔΕΗ: μεταφέρθηκε στους «Λογαριασμούς» παραπάνω (#9β). */}
         </div>
       )}
 
