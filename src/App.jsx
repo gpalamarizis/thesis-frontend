@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { auth } from './api';
+import { auth, startSessionKeepalive } from './api';
 import CaseSearchModal from './components/CaseSearchModal';
 
 import Login from './pages/Login';
@@ -75,6 +75,12 @@ function App() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // Κρατά τη συνεδρία ζωντανή όσο η καρτέλα είναι ανοιχτή και ο χρήστης συνδεδεμένος.
+  useEffect(() => {
+    if (!user) return;
+    return startSessionKeepalive();
+  }, [user]);
 
   // Global keyboard shortcut: F3 = full case search
   useEffect(() => {

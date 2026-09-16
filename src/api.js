@@ -55,6 +55,71 @@ export function clearAuthBounce() {
   try { localStorage.removeItem('thesis:authBounce'); } catch { /* ignore */ }
 }
 
+// ─── Προληπτική ανανέωση συνεδρίας ──────────────────────────────────
+//
+// Το backend στέλνει νέο token με την κεφαλίδα X-Token-Refresh. Αν αυτή
+// χαθεί στη διαδρομή (proxy, CDN, ρύθμιση CORS), το token πεθαίνει σιωπηλά
+// στις 8 ώρες και ο χειριστής πετάγεται έξω στη μέση της δουλειάς.
+//
+// Εδώ δεν βασιζόμαστε σε κεφαλίδες: διαβάζουμε πότε λήγει το token και,
+// όταν πλησιάζει, ζητάμε ρητά καινούργιο. Η κλήση γίνεται με σκέτο fetch,
+// ΟΧΙ μέσω του request(), ώστε μια αποτυχία να μην προκαλέσει αποσύνδεση.
+
+function tokenExpiryMs(t) {
+  try {
+    const part = t.split('.')[1];
+    if (!part) return 0;
+    const b64 = part.replace(/-/g, '+').replace(/_/g, '/');
+    const p = JSON.parse(atob(b64 + '==='.slice((b64.length + 3) % 4)));
+    return p && p.exp ? p.exp * 1000 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+const REFRESH_WHEN_LESS_THAN = 60 * 60 * 1000;  // μία ώρα πριν τη λήξη
+let refreshInFlight = false;
+
+export async function ensureFreshToken() {
+  const t = localStorage.getItem('token');
+  if (!t || refreshInFlight) return;
+  const exp = tokenExpiryMs(t);
+  if (!exp) return;
+  const remaining = exp - Date.now();
+  if (remaining <= 0) return;                        // ήδη ληγμένο — δεν σώζεται
+  if (remaining > REFRESH_WHEN_LESS_THAN) return;    // άνετα μέσα, δεν πειράζουμε
+
+  refreshInFlight = true;
+  try {
+    const res = await fetch(`${API_URL}/api/auth/refresh`, {
+      headers: { Authorization: `Bearer ${t}` },
+    });
+    if (res.ok) {
+      const d = await res.json().catch(() => null);
+      if (d && d.token) localStorage.setItem('token', d.token);
+    }
+  } catch {
+    // Εκτός δικτύου: ξαναδοκιμάζει στον επόμενο κύκλο.
+  } finally {
+    refreshInFlight = false;
+  }
+}
+
+/** Ξεκινά τον έλεγχο ανανέωσης. Επιστρέφει συνάρτηση τερματισμού. */
+export function startSessionKeepalive() {
+  ensureFreshToken();
+  const iv = setInterval(ensureFreshToken, 5 * 60 * 1000);
+  // Μετά από αδράνεια ή ύπνωση του υπολογιστή, ο έλεγχος πρέπει να γίνει αμέσως
+  const onVisible = () => { if (document.visibilityState === 'visible') ensureFreshToken(); };
+  document.addEventListener('visibilitychange', onVisible);
+  window.addEventListener('focus', ensureFreshToken);
+  return () => {
+    clearInterval(iv);
+    document.removeEventListener('visibilitychange', onVisible);
+    window.removeEventListener('focus', ensureFreshToken);
+  };
+}
+
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('token');
   const isFormData = options.body instanceof FormData;
