@@ -530,8 +530,8 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
           <thead><tr>
             <th style={{width:110}}>Ημ/νία δικασίμου</th>
             <th style={{width:110}}>Ημ. Απόφασης</th>
-            <th>Τίτλος</th>
             <th>Δικαστήριο</th>
+            <th>Τμήμα / Πόλη</th>
             <th>Διαδικασία</th>
             <th style={{width:90}}>Κατάσταση</th>
             <th style={{width:1}}></th>
@@ -541,8 +541,8 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
               <tr key={r.aa || r.id}>
                 <td>{fmtDate(r.date)}</td>
                 <td>{r.date_apofasis ? fmtDate(r.date_apofasis) : '—'}</td>
-                <td>{r.name || '—'}</td>
                 <td>{r.dikastirio_name || courts.find(c => (c.aa||c.id) === r.dikastirio_id)?.name || '—'}</td>
+                <td>{[r.tmima_name, r.city_name].filter(Boolean).join(' / ') || '—'}</td>
                 <td>{r.diadikasia_name || '—'}</td>
                 <td>
                   <span className={`badge ${r.ekkremis !== false ? 'badge-open' : 'badge-closed'}`}>
@@ -586,17 +586,20 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
 
 function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
   const [form, setForm] = useState({
-    name:                   initial?.name || '',
     date:                   toDateInput(initial?.date) || '',
     date_apofasis:          toDateInput(initial?.date_apofasis) || '',
     ekkremis:               initial?.ekkremis !== false,
     dikastirio_id:          initial?.dikastirio_id || '',
+    tmima_id:               initial?.tmima_id || '',
+    city_id:                initial?.city_id || '',
     diadikasia_id:          initial?.diadikasia_id || '',
     antidikos_id:           initial?.antidikos_id || '',
     dikigoros_antidikou_id: initial?.dikigoros_antidikou_id || '',
     pinakio:                initial?.pinakio || '',
   });
   const [procedures, setProcedures] = useState([]);
+  const [tmimata, setTmimata] = useState([]);
+  const [cities, setCities] = useState([]);
   const [opponents, setOpponents] = useState([]);
   const [opposingLawyers, setOpposingLawyers] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -615,6 +618,12 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
   useEffect(() => {
     lists.get('diadikasies')
       .then(d => setProcedures(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+    lists.get('dikastiria_tmimata')
+      .then(d => setTmimata(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+    lists.get('cities')
+      .then(d => setCities(Array.isArray(d) ? d : (d?.data || [])))
       .catch(() => {});
     reloadPeople();
   }, []);
@@ -637,11 +646,12 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
     try {
       const payload = {
         ypothesi_id:            Number(caseId),
-        name:                   form.name || null,
         date:                   form.date,
         date_apofasis:          form.date_apofasis || null,
         ekkremis:               !!form.ekkremis,
         dikastirio_id:          form.dikastirio_id ? Number(form.dikastirio_id) : null,
+        tmima_id:               form.tmima_id ? Number(form.tmima_id) : null,
+        city_id:                form.city_id ? Number(form.city_id) : null,
         diadikasia_id:          form.diadikasia_id ? Number(form.diadikasia_id) : null,
         antidikos_id:           form.antidikos_id ? Number(form.antidikos_id) : null,
         dikigoros_antidikou_id: form.dikigoros_antidikou_id ? Number(form.dikigoros_antidikou_id) : null,
@@ -668,17 +678,12 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
       </>}
     >
       {error && <div className="error">{error}</div>}
+      {/* ΑΦΑΙΡΕΘΗΚΕ: «Τίτλος / Ονομασία» (παρατήρηση Μαύρου #5). */}
       <div className="form-grid-2">
         <div className="form-group">
           <label>Ημερομηνία δικασίμου *</label>
           <input type="date" value={form.date} onChange={c('date')} />
         </div>
-        <div className="form-group">
-          <label>Τίτλος / Ονομασία</label>
-          <input type="text" value={form.name} onChange={c('name')} />
-        </div>
-      </div>
-      <div className="form-grid-2">
         <div className="form-group">
           <label>Δικαστήριο</label>
           <select value={form.dikastirio_id} onChange={c('dikastirio_id')}>
@@ -686,12 +691,34 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
             {courts.map(co => <option key={co.aa || co.id} value={co.aa || co.id}>{co.name || co.onomasia}</option>)}
           </select>
         </div>
+      </div>
+      <div className="form-grid-2">
+        <div className="form-group">
+          <label>Τμήμα δικαστηρίου</label>
+          <select value={form.tmima_id} onChange={c('tmima_id')}>
+            <option value="">-- επιλογή --</option>
+            {tmimata.map(t => <option key={t.aa || t.id} value={t.aa || t.id}>{t.name}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Πόλη</label>
+          <select value={form.city_id} onChange={c('city_id')}>
+            <option value="">-- επιλογή --</option>
+            {cities.map(ci => <option key={ci.aa || ci.id} value={ci.aa || ci.id}>{ci.name}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="form-grid-2">
         <div className="form-group">
           <label>Διαδικασία</label>
           <select value={form.diadikasia_id} onChange={c('diadikasia_id')}>
             <option value="">-- επιλογή --</option>
             {procedures.map(p => <option key={p.aa || p.id} value={p.aa || p.id}>{p.name || p.onomasia}</option>)}
           </select>
+        </div>
+        <div className="form-group">
+          <label>Πινάκιο</label>
+          <input type="text" value={form.pinakio} onChange={c('pinakio')} />
         </div>
       </div>
       <div className="form-grid-2">
@@ -716,11 +743,6 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
           </select>
         </div>
       </div>
-      <div className="form-group">
-        <label>Πινάκιο</label>
-        <input type="text" value={form.pinakio} onChange={c('pinakio')} />
-      </div>
-
       <div className="form-grid-2">
         <div className="form-group">
           <label>Ημ. Έκδοσης Απόφασης</label>

@@ -743,6 +743,15 @@ body {
   text-overflow: ellipsis;
 }
 .cal-event:hover { background: #4c51bf; }
+.cal-event-proto { font-weight: 600; }
+.cal-event-handler {
+  display: block;
+  font-size: 9px;
+  line-height: 1.2;
+  opacity: 0.85;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .cal-event-more {
   font-size: 10px;
   color: #718096;

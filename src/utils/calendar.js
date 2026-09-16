@@ -150,17 +150,24 @@ export function eventFromCourtAction(action) {
 
   const parts = [];
   if (action.dikastirio_name) parts.push(`Δικαστήριο: ${action.dikastirio_name}`);
+  if (action.tmima_name)      parts.push(`Τμήμα: ${action.tmima_name}`);
+  if (action.city_name)       parts.push(`Πόλη: ${action.city_name}`);
   if (action.diadikasia_name) parts.push(`Διαδικασία: ${action.diadikasia_name}`);
   if (action.pinakio)         parts.push(`Πινάκιο: ${action.pinakio}`);
   if (action.xeirokinito_id)  parts.push(`Πρωτόκολλο: ${action.xeirokinito_id}`);
   if (action.pelatis)         parts.push(`Πελάτης: ${action.pelatis}`);
 
   return {
-    title: action.name || `Δικάσιμος${action.xeirokinito_id ? ' ' + action.xeirokinito_id : ''}`,
+    title: action.name
+      || [
+           'Δικάσιμος',
+           action.dikastirio_name,
+           action.xeirokinito_id && `(${action.xeirokinito_id})`,
+         ].filter(Boolean).join(' '),
     start,
     end,
     description: parts.join('\n'),
-    location: action.dikastirio_name || '',
+    location: [action.dikastirio_name, action.tmima_name, action.city_name].filter(Boolean).join(', '),
     uid: `court-action-${action.aa}@thesis-app`,
   };
 }

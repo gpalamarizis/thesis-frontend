@@ -31,7 +31,8 @@ function CasesList({ user, onLogout, onOpenCaseSearch }) {
   const columns = [
     { key: 'xeirokinito_id', label: 'Αρ. Πρωτοκόλλου', width: 130, render: r => <strong>{r.xeirokinito_id}</strong> },
     { key: 'pelatis',        label: 'Πελάτης',         render: r => r.fysiko_full_name || r.nomiko_eponymia || '—' },
-    { key: 'perilipsi',      label: 'Περιγραφή',       render: r => trunc(r.perilipsi, 70) },
+    { key: 'antidikos',      label: 'Αντίδικος / Συμβαλλόμενος', width: 180, render: r => r.antidikos_eponymo || '—' },
+    { key: 'perilipsi',      label: 'Περιγραφή',       render: r => trunc(r.perilipsi, 55) },
     { key: 'ekkremis',       label: 'Κατάσταση',       width: 110, render: r => {
         const b = caseStatusBadge(r.ekkremis);
         return <span className={`badge ${b.cls}`}>{b.label}</span>;

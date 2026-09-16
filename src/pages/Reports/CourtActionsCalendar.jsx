@@ -159,7 +159,7 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
                     <td>{e.dikastirio_name || '—'}</td>
                     <td>{e.diadikasia_name || '—'}</td>
                     <td>{e.pelatis || '—'}</td>
-                    <td>{trunc(e.perigrafi || e.name, 50)}</td>
+                    <td>{trunc(e.perigrafi || e.dikastirio_name, 50)}</td>
                     <td onClick={ev => ev.stopPropagation()}>
                       <CalendarExportButton event={eventFromCourtAction(e)} filename={`dikasimos-${e.aa || e.id}.ics`} />
                     </td>

@@ -116,7 +116,6 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
       Object.keys(payload).forEach(k => {
         if (payload[k] === '') payload[k] = null;
       });
-      if (payload.eidos_sxesis_id) payload.eidos_sxesis_id = Number(payload.eidos_sxesis_id);
       if (payload.idiotita_id)     payload.idiotita_id     = Number(payload.idiotita_id);
       if (editing) await people.related.update(editing.aa, payload);
       else         await people.related.create(payload);
@@ -358,16 +357,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                   </select>
                   <small style={{ color: '#94A3B8' }}>Τι <b>είναι</b> ο άνθρωπος (δικηγόρος, συμβολαιογράφος…)</small>
                 </div>
-                <div className="form-group">
-                  <label>Είδος σχέσης</label>
-                  <select name="eidos_sxesis_id" value={form.eidos_sxesis_id || ''} onChange={c}>
-                    <option value="">— κανένα —</option>
-                    {sxeseis.map(s => (
-                      <option key={s.aa} value={s.aa}>{s.name}</option>
-                    ))}
-                  </select>
-                  <small style={{ color: '#94A3B8' }}>Ο ρόλος του στην υπόθεση (μάρτυρας, αγοραστής…)</small>
-                </div>
+                {/* ΑΦΑΙΡΕΘΗΚΕ: «Είδος σχέσης» (παρατήρηση Μαύρου #7) — καταχωρείται ανά υπόθεση. */}
                 <div className="form-group" style={{ flex: '0 0 120px' }}>
                   <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 24 }}>
                     <input type="checkbox" name="energos" checked={!!form.energos} onChange={c} />

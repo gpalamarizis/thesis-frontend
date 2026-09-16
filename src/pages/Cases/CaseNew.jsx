@@ -491,15 +491,12 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                 </div>
               </div>
 
-              <div className="form-grid-2" style={{ marginTop: 12 }}>
-                <div className="form-group">
-                  <label>Ονομασία φακέλου</label>
-                  <input type="text" value={onomasiaFakelou} onChange={e => setOnomasiaFakelou(e.target.value)} />
-                </div>
-                <div className="form-group">
-                  <label>Παλιός Κωδικός</label>
-                  <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
-                </div>
+              {/* ΑΦΑΙΡΕΘΗΚΕ: «Ονομασία φακέλου» (παρατήρηση Μαύρου #4).
+                   Η στήλη onomasia_fakelou παραμένει στη βάση για τα παλιά δεδομένα
+                   και εξακολουθεί να εμφανίζεται στις κάρτες «Σχετικές υποθέσεις». */}
+              <div className="form-group" style={{ marginTop: 12 }}>
+                <label>Παλιός Κωδικός</label>
+                <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
               </div>
 
               <div className="form-group" style={{ marginTop: 12 }}>

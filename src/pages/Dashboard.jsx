@@ -112,6 +112,7 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
                   <th style={{ width: 110 }}>Ημ/νία</th>
                   <th>Πρωτόκολλο</th>
                   <th>Πελάτης</th>
+                  <th>Χειριστής</th>
                 </tr>
               </thead>
               <tbody>
@@ -120,6 +121,7 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
                     <td>{fmtDate(h.date)}</td>
                     <td>{h.xeirokinito_id || '—'}</td>
                     <td>{h.pelatis || '—'}</td>
+                    <td>{handlerOf(h) || '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -166,6 +168,17 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   );
 }
 
+// Χειριστής: προτεραιότητα στον δικηγόρο της ίδιας της δικασίμου, αλλιώς ο χειριστής της υπόθεσης.
+function handlerOf(e) {
+  return e.dikigoroi_energeias || e.xeiristes || '';
+}
+// Σύντομη μορφή για το πλακίδιο του ημερολογίου: μόνο επώνυμα, χωρισμένα με κόμμα
+function handlerShort(e) {
+  const full = handlerOf(e);
+  if (!full) return '';
+  return full.split(',').map(p => p.trim().split(/\s+/)[0]).filter(Boolean).join(', ');
+}
+
 function MonthCalendar({ cursor, setCursor, hearings, selectedDate, setSelectedDate }) {
   const navigate = useNavigate();
   const y = cursor.getFullYear();
@@ -207,10 +220,11 @@ function MonthCalendar({ cursor, setCursor, hearings, selectedDate, setSelectedD
           <div
             key={i}
             className="cal-event"
-            title={`${e.xeirokinito_id || ''} ${e.dikastirio_name || ''} ${e.perigrafi || ''}`.trim()}
+            title={`${e.xeirokinito_id || ''} ${e.dikastirio_name || ''} ${handlerOf(e) ? '— ' + handlerOf(e) : ''} ${e.perigrafi || ''}`.trim()}
             onClick={(ev) => { ev.stopPropagation(); if (e.ypothesi_id) navigate(`/cases/${e.ypothesi_id}`); }}
           >
-            {e.xeirokinito_id || '•'}
+            <span className="cal-event-proto">{e.xeirokinito_id || '•'}</span>
+            {handlerShort(e) && <span className="cal-event-handler">{handlerShort(e)}</span>}
           </div>
         ))}
         {events.length > 2 && <div className="cal-event-more">+{events.length - 2}</div>}
@@ -240,13 +254,14 @@ function MonthCalendar({ cursor, setCursor, hearings, selectedDate, setSelectedD
             Δικάσιμοι στις {selectedDate.toLocaleDateString('el-GR')}
           </h3>
           <table className="table" style={{ marginBottom: 0 }}>
-            <thead><tr><th>Πρωτόκολλο</th><th>Δικαστήριο</th><th>Πελάτης</th></tr></thead>
+            <thead><tr><th>Πρωτόκολλο</th><th>Δικαστήριο</th><th>Πελάτης</th><th>Χειριστής</th></tr></thead>
             <tbody>
               {selectedEvents.map((e, i) => (
                 <tr key={i} className="clickable" onClick={() => e.ypothesi_id && navigate(`/cases/${e.ypothesi_id}`)}>
                   <td>{e.xeirokinito_id || '—'}</td>
                   <td>{e.dikastirio_name || '—'}</td>
                   <td>{e.pelatis || '—'}</td>
+                  <td>{handlerOf(e) || '—'}</td>
                 </tr>
               ))}
             </tbody>

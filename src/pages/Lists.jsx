@@ -8,7 +8,7 @@ import { lists } from '../api';
 const LIST_TYPES = [
   { key: 'diadikasies',                    label: 'Διαδικασίες',            fields: [{key:'name', label:'Ονομασία'}] },
   { key: 'thesi',                          label: 'Θέσεις στην υπόθεση',    fields: [{key:'name', label:'Ονομασία'}] },
-  { key: 'ypotheseis_onomasies',           label: 'Ονομασίες υποθέσεων',    fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'ypotheseis_onomasies',           label: 'Είδος υπόθεσης',         fields: [{key:'name', label:'Ονομασία'}] },
   { key: 'theseis_arxeiothetisis',         label: 'Θέσεις αρχειοθέτησης',   fields: [{key:'name', label:'Ονομασία'}, {key:'perigrafi', label:'Περιγραφή'}] },
   { key: 'eidos_sxesis',                   label: 'Είδος σχέσης',           fields: [{key:'name', label:'Ονομασία'}] },
   { key: 'pagia_exoda',                    label: 'Πάγια έξοδα (τύποι)',    fields: [{key:'name', label:'Ονομασία'}] },
