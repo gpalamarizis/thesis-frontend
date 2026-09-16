@@ -9,6 +9,58 @@
 
 import { useState } from 'react';
 
+/**
+ * MultiValueField — μία γραμμή ανά τιμή, με «+ Προσθήκη» και «×».
+ * Παρατήρηση Μαύρου #9: ο χειριστής δεν βλέπει ποτέ κόμματα.
+ *
+ * Αποθήκευση: γράφει πίσω στην ΙΔΙΑ στήλη κειμένου, τιμές χωρισμένες με κόμμα —
+ * άρα καμία αλλαγή στη βάση και πλήρης συμβατότητα με τα παλιά δεδομένα.
+ */
+function MultiValueField({ label, value, onChange, placeholder, hint }) {
+  const items = String(value || '')
+    .split(',')
+    .map(v => v.trim())
+    .filter(Boolean);
+  const rows = items.length ? items : [''];
+
+  const push = (next) => {
+    const cleaned = next.map(v => v.trim()).filter(Boolean);
+    onChange({ target: { value: cleaned.join(', ') } });
+  };
+
+  const setAt = (i, v) => { const n = [...rows]; n[i] = v; push(n); };
+  const addRow = () => push([...rows, '\u200b']);            // κενή γραμμή προς συμπλήρωση
+  const removeAt = (i) => push(rows.filter((_, j) => j !== i));
+
+  return (
+    <div className="form-group">
+      <label>
+        {label}
+        {hint && <span style={{ fontSize: 11, color: '#718096', fontWeight: 'normal' }}> {hint}</span>}
+      </label>
+      {rows.map((v, i) => (
+        <div key={i} style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
+          <input
+            type="text"
+            value={v.replace(/\u200b/g, '')}
+            onChange={e => setAt(i, e.target.value)}
+            placeholder={placeholder}
+            style={{ flex: 1 }}
+          />
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary"
+            onClick={() => removeAt(i)}
+            disabled={rows.length === 1 && !v.replace(/\u200b/g, '')}
+            title="Αφαίρεση γραμμής"
+          >×</button>
+        </div>
+      ))}
+      <button type="button" className="btn btn-sm btn-secondary" onClick={addRow}>+ Προσθήκη</button>
+    </div>
+  );
+}
+
 function PasswordField({ label, value, onChange, autoComplete = 'new-password' }) {
   const [show, setShow] = useState(false);
   return (
@@ -151,24 +203,20 @@ function ClientCredentialsSection({ form, onChange, kind }) {
 
       {form.idioktitis_akinitou && (
         <div style={{ paddingLeft: 20, borderLeft: '3px solid #cbd5e0', marginBottom: 12 }}>
-          <div className="form-group">
-            <label>ΚΑΕΚ ιδιοκτησίας/ών <span style={{ fontSize: 11, color: '#718096' }}>(διαχώρισε με κόμμα)</span></label>
-            <textarea
-              rows="2"
-              value={form.kaek || ''}
-              onChange={onChange('kaek')}
-              placeholder="π.χ. 050441201005/0/0, 050441201005/0/1"
-            />
-          </div>
-          <div className="form-group">
-            <label>Α.Μ.Α. ακινήτου/ων <span style={{ fontSize: 11, color: '#718096' }}>(διαχώρισε με κόμμα)</span></label>
-            <input
-              type="text"
-              value={form.ama_akinitou || ''}
-              onChange={onChange('ama_akinitou')}
-              placeholder="π.χ. 12345678, 87654321"
-            />
-          </div>
+          <MultiValueField
+            label="ΚΑΕΚ ιδιοκτησίας/ών"
+            hint="(μία γραμμή ανά ακίνητο)"
+            value={form.kaek}
+            onChange={onChange('kaek')}
+            placeholder="π.χ. 050441201005/0/0"
+          />
+          <MultiValueField
+            label="Α.Μ.Α. ακινήτου/ων"
+            hint="(μία γραμμή ανά ακίνητο)"
+            value={form.ama_akinitou}
+            onChange={onChange('ama_akinitou')}
+            placeholder="π.χ. 12345678"
+          />
           <h4 style={{ marginTop: 12, marginBottom: 8, fontSize: 13, color: '#4a5568' }}>ΔΕΗ</h4>
           <div className="form-grid-2">
             <div className="form-group">
@@ -206,16 +254,13 @@ function ClientCredentialsSection({ form, onChange, kind }) {
 
       {form.idioktitis_ix && (
         <div style={{ paddingLeft: 20, borderLeft: '3px solid #cbd5e0' }}>
-          <div className="form-group">
-            <label>Πινακίδα/ες ΙΧ <span style={{ fontSize: 11, color: '#718096' }}>(διαχώρισε με κόμμα)</span></label>
-            <input
-              type="text"
-              value={form.pinakides_ix || ''}
-              onChange={onChange('pinakides_ix')}
-              placeholder="π.χ. ΑΒΓ-1234, ΔΕΖ-5678"
-              style={{ textTransform: 'uppercase' }}
-            />
-          </div>
+          <MultiValueField
+            label="Πινακίδα/ες ΙΧ"
+            hint="(μία γραμμή ανά όχημα)"
+            value={form.pinakides_ix}
+            onChange={onChange('pinakides_ix')}
+            placeholder="π.χ. ΑΒΓ-1234"
+          />
         </div>
       )}
     </div>

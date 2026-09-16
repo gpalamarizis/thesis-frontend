@@ -309,6 +309,7 @@ function CaseTab({ caseData, onSave, saving }) {
           <div className="form-group">
             <label>ΓΑΚ (Γενικός Αριθμός Κατάθεσης)</label>
             <input type="text" value={gak} onChange={e => setGak(e.target.value)} placeholder="π.χ. 12345/2026" />
+            <span style={{ fontSize: 11, color: '#a0aec0' }}>Μεταβατικό — καταχωρείται πλέον ανά δικάσιμο</span>
           </div>
           <div className="form-group">
             <label>ΕΑΚ (Ειδικός Αριθμός Κατάθεσης)</label>
@@ -532,6 +533,7 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
             <th style={{width:110}}>Ημ. Απόφασης</th>
             <th>Δικαστήριο</th>
             <th>Τμήμα / Πόλη</th>
+            <th style={{width:130}}>ΓΑΚ / ΕΑΚ</th>
             <th>Διαδικασία</th>
             <th style={{width:90}}>Κατάσταση</th>
             <th style={{width:1}}></th>
@@ -543,6 +545,7 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
                 <td>{r.date_apofasis ? fmtDate(r.date_apofasis) : '—'}</td>
                 <td>{r.dikastirio_name || courts.find(c => (c.aa||c.id) === r.dikastirio_id)?.name || '—'}</td>
                 <td>{[r.tmima_name, r.city_name].filter(Boolean).join(' / ') || '—'}</td>
+                <td>{[r.gak, r.eak].filter(Boolean).join(' / ') || '—'}</td>
                 <td>{r.diadikasia_name || '—'}</td>
                 <td>
                   <span className={`badge ${r.ekkremis !== false ? 'badge-open' : 'badge-closed'}`}>
@@ -596,6 +599,9 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
     antidikos_id:           initial?.antidikos_id || '',
     dikigoros_antidikou_id: initial?.dikigoros_antidikou_id || '',
     pinakio:                initial?.pinakio || '',
+    gak:                    initial?.gak || '',
+    eak:                    initial?.eak || '',
+    arithmos_eisagogikou:   initial?.arithmos_eisagogikou || '',
   });
   const [procedures, setProcedures] = useState([]);
   const [tmimata, setTmimata] = useState([]);
@@ -656,6 +662,9 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
         antidikos_id:           form.antidikos_id ? Number(form.antidikos_id) : null,
         dikigoros_antidikou_id: form.dikigoros_antidikou_id ? Number(form.dikigoros_antidikou_id) : null,
         pinakio:                form.pinakio || null,
+        gak:                    form.gak || null,
+        eak:                    form.eak || null,
+        arithmos_eisagogikou:   form.arithmos_eisagogikou || null,
       };
       if (initial?.aa || initial?.id) await actions.court.update(initial.aa || initial.id, payload);
       else await actions.court.create(payload);
@@ -720,6 +729,23 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
           <label>Πινάκιο</label>
           <input type="text" value={form.pinakio} onChange={c('pinakio')} />
         </div>
+      </div>
+
+      {/* Παρατήρηση Μαύρου #3: ανά δικάσιμο, γιατί η ίδια υπόθεση μπορεί
+          να δικαστεί σε περισσότερα από ένα δικαστήρια. */}
+      <div className="form-grid-2">
+        <div className="form-group">
+          <label>ΓΑΚ <span style={{ fontSize: 11, color: '#718096', fontWeight: 'normal' }}>(Γενικός Αριθμός Κατάθεσης)</span></label>
+          <input type="text" value={form.gak} onChange={c('gak')} placeholder="π.χ. 12345/2026" />
+        </div>
+        <div className="form-group">
+          <label>ΕΑΚ <span style={{ fontSize: 11, color: '#718096', fontWeight: 'normal' }}>(Ειδικός Αριθμός Κατάθεσης)</span></label>
+          <input type="text" value={form.eak} onChange={c('eak')} placeholder="π.χ. 6789/2026" />
+        </div>
+      </div>
+      <div className="form-group">
+        <label>Αριθμός εισαγωγικού εγγράφου / Κωδικός</label>
+        <input type="text" value={form.arithmos_eisagogikou} onChange={c('arithmos_eisagogikou')} />
       </div>
       <div className="form-grid-2">
         <div className="form-group">
