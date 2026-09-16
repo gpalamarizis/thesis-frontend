@@ -2,11 +2,14 @@
 // Νέα Υπόθεση — πλήρες form με όλα τα fields του VB.NET Thesis 2010
 // Sidebar «Υποθέσεις ίδιου πελάτη» εμφανίζεται μόλις επιλεγεί πελάτης (ΦΠ ή ΝΠ)
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
 import { cases, fysika, nomika, lists, people, api } from '../../api';
+import { saveDraft, loadDraft, clearDraft, formatDraftTime } from '../../utils/draft';
+
+const DRAFT_KEY = 'case-new';
 
 function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
@@ -50,6 +53,94 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   const [saving, setSaving] = useState(false);
   const [quickCreate, setQuickCreate] = useState(null); // 'fysiko' | 'nomiko' | 'opponent' | 'lawyer'
   const [showInactiveLawyers, setShowInactiveLawyers] = useState(false);
+
+  // ---- Μη αποθηκευμένη καταχώρηση: παρακολούθηση + προσωρινή φύλαξη ----
+  const snapshot = useMemo(() => ({
+    fysikoProsopoId, nomikoProsopoId, onomasiaId, thesi, diadikosId,
+    xeiristesIds, perilipsi, dateEnarxis, dateTelous, ekkremis,
+    onomasiaFakelou, thesiArxeiothetisisId, oldKod,
+  }), [fysikoProsopoId, nomikoProsopoId, onomasiaId, thesi, diadikosId,
+       xeiristesIds, perilipsi, dateEnarxis, dateTelous, ekkremis,
+       onomasiaFakelou, thesiArxeiothetisisId, oldKod]);
+
+  const initialSnapshot = useRef(JSON.stringify(snapshot));
+  const isDirty = JSON.stringify(snapshot) !== initialSnapshot.current;
+
+  const [recoverable, setRecoverable] = useState(null);
+  const savedOk = useRef(false);
+
+  // Έλεγχος για προηγούμενη μη ολοκληρωμένη καταχώρηση (μία φορά, στο άνοιγμα)
+  useEffect(() => {
+    const d = loadDraft(DRAFT_KEY);
+    if (d && d.value) setRecoverable(d);
+  }, []);
+
+  // Αυτόματη φύλαξη όσο ο χειριστής πληκτρολογεί
+  useEffect(() => {
+    if (!isDirty) return;
+    const t = setTimeout(() => saveDraft(DRAFT_KEY, snapshot), 600);
+    return () => clearTimeout(t);
+  }, [snapshot, isDirty]);
+
+  // Προειδοποίηση σε κλείσιμο καρτέλας / refresh / έξοδο από τον browser
+  useEffect(() => {
+    if (!isDirty) return;
+    const onBeforeUnload = (e) => {
+      if (savedOk.current) return;
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, [isDirty]);
+
+  const restoreDraft = () => {
+    const v = recoverable && recoverable.value;
+    if (!v) return;
+    setFysikoProsopoId(v.fysikoProsopoId || '');
+    setNomikoProsopoId(v.nomikoProsopoId || '');
+    setOnomasiaId(v.onomasiaId || '');
+    setThesi(v.thesi || '');
+    setDiadikosId(v.diadikosId || '');
+    setXeiristesIds(Array.isArray(v.xeiristesIds) ? v.xeiristesIds : []);
+    setPerilipsi(v.perilipsi || '');
+    setDateEnarxis(v.dateEnarxis || '');
+    setDateTelous(v.dateTelous || '');
+    setEkkremis(v.ekkremis !== false);
+    setOnomasiaFakelou(v.onomasiaFakelou || '');
+    setThesiArxeiothetisisId(v.thesiArxeiothetisisId || '');
+    setOldKod(v.oldKod || '');
+    setRecoverable(null);
+  };
+
+  const discardDraft = () => {
+    clearDraft(DRAFT_KEY);
+    setRecoverable(null);
+  };
+
+  const handleCancel = () => {
+    if (isDirty && !window.confirm('Υπάρχουν στοιχεία που δεν έχουν αποθηκευτεί.\n\nΘέλετε σίγουρα να ακυρώσετε την καταχώρηση;')) return;
+    clearDraft(DRAFT_KEY);
+    savedOk.current = true;
+    navigate('/cases');
+  };
+
+  // Enter = επόμενο πεδίο (όπως στο Thesis desktop), ΠΟΤΕ υποβολή της φόρμας.
+  // Η υπόθεση δημιουργείται μόνο με το κουμπί «Δημιουργία Υπόθεσης».
+  const handleFormKeyDown = (e) => {
+    if (e.key !== 'Enter') return;
+    const t = e.target;
+    const tag = (t.tagName || '').toUpperCase();
+    if (tag === 'TEXTAREA') return;            // νέα γραμμή στην Περίληψη
+    if (tag === 'BUTTON' || tag === 'A') return; // ο χειριστής πάτησε κουμπί
+    e.preventDefault();
+    const form = e.currentTarget;
+    const SEL = 'input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])';
+    const items = Array.from(form.querySelectorAll(SEL)).filter(el => el.offsetParent !== null);
+    const i = items.indexOf(t);
+    if (i > -1 && i < items.length - 1) items[i + 1].focus();
+  };
 
   // Load helpers
   const reloadFysika = () => fysika.list()
@@ -162,6 +253,8 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
       };
       const res = await cases.create(payload);
       const newId = res?.aa || res?.data?.aa || res?.id;
+      clearDraft(DRAFT_KEY);
+      savedOk.current = true;
       if (newId) navigate(`/cases/${newId}`);
       else navigate('/cases');
     } catch (err) {
@@ -278,10 +371,27 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Νέα Υπόθεση">
       {error && <div className="error">{error}</div>}
 
+      {recoverable && (
+        <div style={{
+          background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: 8,
+          padding: '12px 16px', marginBottom: 16, display: 'flex',
+          alignItems: 'center', gap: 16, flexWrap: 'wrap',
+        }}>
+          <div style={{ flex: 1, minWidth: 260, fontSize: 14, color: '#78350F' }}>
+            Βρέθηκε καταχώρηση υπόθεσης που δεν ολοκληρώθηκε
+            {recoverable.savedAt ? ` (${formatDraftTime(recoverable.savedAt)})` : ''}.
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="button" className="btn" onClick={restoreDraft}>Επαναφορά στοιχείων</button>
+            <button type="button" className="btn btn-secondary" onClick={discardDraft}>Διαγραφή</button>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
         {/* -------- Form (main column) -------- */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} onKeyDown={handleFormKeyDown}>
 
             {/* -------- Ημερομηνίες φακέλου + Πρωτόκολλο -------- */}
             <div className="section">
@@ -443,7 +553,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
             </div>
 
             <div className="form-actions">
-              <button type="button" className="btn btn-secondary" onClick={() => navigate('/cases')}>Ακύρωση</button>
+              <button type="button" className="btn btn-secondary" onClick={handleCancel}>Ακύρωση</button>
               <button type="submit" className="btn" disabled={saving || (!fysikoProsopoId && !nomikoProsopoId)}>
                 {saving ? 'Δημιουργία...' : 'Δημιουργία Υπόθεσης'}
               </button>

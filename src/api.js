@@ -3,6 +3,23 @@
 
 const API_URL = 'https://api.thesislegal.gr';
 
+// Λήξη συνεδρίας (401).
+// Κρατάμε πού βρισκόταν ο χειριστής ώστε να επιστρέψει εκεί μετά τη σύνδεση,
+// και σημειώνουμε ότι έληξε η συνεδρία ώστε η σελίδα εισόδου να τον ενημερώσει.
+// ΠΡΟΣΟΧΗ: τα προσωρινά αντίγραφα φορμών (thesis:draft:*) ΔΕΝ διαγράφονται —
+// είναι το δίχτυ ασφαλείας για μη αποθηκευμένες καταχωρήσεις.
+function handleSessionExpired() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  const p = window.location.pathname;
+  if (p === '/login' || p === '/register') return;
+  try {
+    sessionStorage.setItem('thesis:sessionExpired', '1');
+    sessionStorage.setItem('thesis:returnTo', p + window.location.search);
+  } catch { /* ignore */ }
+  window.location.href = '/login';
+}
+
 async function request(endpoint, options = {}) {
   const token = localStorage.getItem('token');
   const isFormData = options.body instanceof FormData;
@@ -42,13 +59,7 @@ async function request(endpoint, options = {}) {
   if (!res.ok) {
     // Auto-logout on 401
     if (res.status === 401 && token) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      // Redirect only if we're not already on auth pages
-      const p = window.location.pathname;
-      if (p !== '/login' && p !== '/register') {
-        window.location.href = '/login';
-      }
+      handleSessionExpired();
     }
     const msg = (data && (data.error || data.message)) || `Σφάλμα (${res.status})`;
     throw new Error(msg);
@@ -129,10 +140,7 @@ function uploadWithProgress(endpoint, formData, onProgress) {
         return resolve(data);
       }
       if (xhr.status === 401 && token) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        const p = window.location.pathname;
-        if (p !== '/login' && p !== '/register') window.location.href = '/login';
+        handleSessionExpired();
       }
       reject(new Error((data && (data.error || data.message)) || `Σφάλμα (${xhr.status})`));
     };

@@ -10,6 +10,17 @@ function Login({ onLogin }) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Ενημέρωση όταν ο χειριστής βγήκε λόγω λήξης συνεδρίας (όχι δικής του αποσύνδεσης)
+  const [expired] = useState(() => {
+    try {
+      if (sessionStorage.getItem('thesis:sessionExpired') === '1') {
+        sessionStorage.removeItem('thesis:sessionExpired');
+        return true;
+      }
+    } catch { /* ignore */ }
+    return false;
+  });
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -17,7 +28,13 @@ function Login({ onLogin }) {
     try {
       const data = await api.post('/api/auth/login', { email, password });
       onLogin(data.user, data.token);
-      navigate('/dashboard');
+      let back = '/dashboard';
+      try {
+        const r = sessionStorage.getItem('thesis:returnTo');
+        sessionStorage.removeItem('thesis:returnTo');
+        if (r && r.startsWith('/') && !r.startsWith('//')) back = r;
+      } catch { /* ignore */ }
+      navigate(back, { replace: true });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -85,6 +102,21 @@ function Login({ onLogin }) {
             margin: '0 0 28px',
             textAlign: 'center',
           }}>Συνδεθείτε στον λογαριασμό σας</p>
+
+          {expired && !error && (
+            <div style={{
+              background: '#FFFBEB',
+              color: '#78350F',
+              padding: '10px 14px',
+              borderRadius: 6,
+              fontSize: 14,
+              marginBottom: 16,
+              border: '1px solid #FCD34D',
+            }}>
+              Η συνεδρία σας έληξε. Συνδεθείτε ξανά — αν είχατε ανοιχτή καταχώρηση,
+              τα στοιχεία της φυλάχθηκαν και θα σας προταθούν για επαναφορά.
+            </div>
+          )}
 
           {error && (
             <div style={{
