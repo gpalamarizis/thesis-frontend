@@ -153,7 +153,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" role="presentation">
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 720 }}>
             <div className="modal-header">
               <h2>{editing ? 'Επεξεργασία Αντιδίκου' : 'Νέος Αντίδικος'}</h2>

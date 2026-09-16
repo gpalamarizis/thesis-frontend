@@ -260,7 +260,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" role="presentation">
           <div className="modal" style={{ maxWidth: 900, maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>{editing ? 'Επεξεργασία Σχετικού Προσώπου' : 'Νέο Σχετικό Πρόσωπο'}</h2>
@@ -515,7 +515,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
 
       {/* Συνδεδεμένες υποθέσεις του προσώπου */}
       {casesFor && (
-        <div className="modal-overlay" onClick={() => setCasesFor(null)}>
+        <div className="modal-overlay" role="presentation">
           <div className="modal" style={{ maxWidth: 780, maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Υποθέσεις — {displayName(casesFor)}</h2>

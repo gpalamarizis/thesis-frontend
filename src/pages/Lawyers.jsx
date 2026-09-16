@@ -276,7 +276,7 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
 
       {/* Add new lawyer modal */}
       {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+        <div className="modal-overlay" role="presentation">
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Νέος Δικηγόρος</h2>

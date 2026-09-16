@@ -83,7 +83,7 @@ function Actions({ user, onLogout }) {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" role="presentation">
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Νέα Δικαστική Ενέργεια</h2>
