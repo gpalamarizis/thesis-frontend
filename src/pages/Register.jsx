@@ -216,14 +216,14 @@ function Register({ onLogin }) {
                 <div style={{ marginTop: 6 }}>
                   <div style={{ display: 'flex', gap: 3, marginBottom: 4 }}>
                     {[0,1,2,3,4].map(i => (
-                      <div key={i} style={{ flex: 1, height: 4, borderRadius: 2,
+                      <div key={i} style={{ flex: 1, height: 4, borderRadius: 4,
                         background: i < strength.level ? strength.color : '#e2e8f0' }} />
                     ))}
                   </div>
-                  <small id="pw-hint" style={{ color: strength.color, fontSize: 11 }}>{strength.label}</small>
+                  <small id="pw-hint" style={{ color: strength.color, fontSize: 12 }}>{strength.label}</small>
                 </div>
               )}
-              <small style={{ color: '#718096', fontSize: 11, display: 'block', marginTop: 4 }}>
+              <small style={{ color: '#718096', fontSize: 12, display: 'block', marginTop: 4 }}>
                 💡 Ο browser σας μπορεί να προτείνει ισχυρό κωδικό — δεξί κλικ → «Suggest strong password»
               </small>
             </div>

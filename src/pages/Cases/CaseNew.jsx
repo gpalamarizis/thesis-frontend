@@ -276,7 +276,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
         boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
       }}
     >
-      <h4 style={{ margin: '0 0 12px 0', fontSize: 15, color: '#2d3748' }}>
+      <h4 style={{ margin: '0 0 12px 0', fontSize: 14, color: '#2d3748' }}>
         Υποθέσεις ίδιου πελάτη
         {sameClientCases.length > 0 && (
           <span style={{ marginLeft: 6, color: '#4a5568', fontWeight: 'normal', fontSize: 13 }}>
@@ -316,7 +316,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                 </a>
                 <span
                   className={`badge ${c.ekkremis ? 'badge-open' : 'badge-closed'}`}
-                  style={{ fontSize: 11 }}
+                  style={{ fontSize: 12 }}
                 >
                   {c.ekkremis ? 'Εκκρεμής' : 'Κλειστή'}
                 </span>
@@ -341,7 +341,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                 </div>
               )}
               {c.date_eisagogis && (
-                <div style={{ color: '#a0aec0', marginTop: 4, fontSize: 11 }}>
+                <div style={{ color: '#a0aec0', marginTop: 4, fontSize: 12 }}>
                   Εισαγωγή: {fmtDate(c.date_eisagogis)}
                 </div>
               )}

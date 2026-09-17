@@ -261,7 +261,7 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
                     gap: 8,
                     padding: '4px 6px',
                     cursor: 'pointer',
-                    borderRadius: 3,
+                    borderRadius: 4,
                     background: checked ? '#e6fffa' : 'transparent',
                   }}
                 >

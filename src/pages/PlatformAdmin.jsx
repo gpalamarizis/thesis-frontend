@@ -34,7 +34,7 @@ function statusBadge(status) {
     cancelled: { color: '#718096', bg: '#e2e8f0', label: 'Ακυρωμένη' },
   };
   const s = map[status] || { color: '#718096', bg: '#e2e8f0', label: status };
-  return <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, color: s.color, background: s.bg }}>{s.label}</span>;
+  return <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600, color: s.color, background: s.bg }}>{s.label}</span>;
 }
 
 // ==================== DASHBOARD TAB ====================
@@ -98,7 +98,7 @@ function OrganizationsTab() {
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-        <button className="btn" style={{ background: '#38a169', color: 'white' }} onClick={() => setCreateOpen(true)}>+ Νέα Εταιρεία</button>
+        <button className="btn btn-success" onClick={() => setCreateOpen(true)}>+ Νέα Εταιρεία</button>
       </div>
 
       <div className="filter-bar" style={{ marginBottom: 16 }}>
@@ -138,7 +138,7 @@ function OrganizationsTab() {
           <tbody>
             {rows.map(r => (
               <tr key={r.id} className={r.suspended ? 'row-danger' : ''}>
-                <td><strong>{r.name}</strong>{r.suspended && <div style={{ fontSize: 11, color: '#e53e3e' }}>⛔ Suspended</div>}</td>
+                <td><strong>{r.name}</strong>{r.suspended && <div style={{ fontSize: 12, color: '#e53e3e' }}>⛔ Suspended</div>}</td>
                 <td style={{ fontSize: 12 }}>{r.plan_type || '—'}</td>
                 <td>{statusBadge(r.subscription_status)}</td>
                 <td>{r.active_users}/{r.max_users || '?'}</td>
@@ -188,7 +188,7 @@ function CreateOrgModal({ onClose, onCreated }) {
   return (
     <Modal title="Νέα Εταιρεία" onClose={onClose} size="xl" actions={<>
       <button className="btn btn-secondary" onClick={onClose}>Άκυρο</button>
-      <button className="btn" style={{ background: '#38a169', color: 'white' }} onClick={submit} disabled={busy}>
+      <button className="btn btn-success" onClick={submit} disabled={busy}>
         {busy ? 'Δημιουργία...' : 'Δημιουργία'}
       </button>
     </>}>
@@ -329,7 +329,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
     <Modal title={o.name} onClose={onClose} size="xl" actions={<>
       <button className="btn btn-secondary" onClick={onClose}>Κλείσιμο</button>
       {!editing && <button className="btn btn-sm" onClick={extendTrial}>+ Trial ημέρες</button>}
-      {!editing && <button className="btn btn-sm" style={{ background: '#3182ce', color: 'white' }} onClick={extendOneYear}>+ 1 έτος</button>}
+      {!editing && <button className="btn btn-sm btn-info" onClick={extendOneYear}>+ 1 έτος</button>}
       {!editing && <button className={`btn btn-sm ${o.suspended ? '' : 'btn-danger'}`} onClick={toggleSuspend}>{o.suspended ? 'Επανενεργοποίηση' : 'Suspend'}</button>}
       {!editing && <button className="btn btn-sm btn-danger" onClick={deleteOrg}>🗑 Διαγραφή</button>}
       {editing ? <button className="btn" onClick={save}>Αποθήκευση</button> : <button className="btn" onClick={() => setEditing(true)}>Επεξεργασία</button>}
@@ -377,7 +377,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <h3 style={{ margin: 0 }}>Χρήστες ({data.users.length})</h3>
-        <button className="btn btn-sm" style={{ background: '#38a169', color: 'white' }} onClick={() => setShowAddUser(true)}>+ Νέος χρήστης</button>
+        <button className="btn btn-sm btn-success" onClick={() => setShowAddUser(true)}>+ Νέος χρήστης</button>
       </div>
       <table className="table" style={{ marginBottom: 20 }}>
         <thead><tr><th>Email</th><th>Όνομα</th><th>Ρόλος</th><th>Ενεργός</th><th>Ενέργειες</th></tr></thead>
@@ -385,7 +385,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
           <tr key={u.id}>
             <td>{u.email}</td>
             <td>{u.first_name} {u.last_name}</td>
-            <td>{u.role} {u.is_platform_admin && <span style={{ color: '#805ad5', fontSize: 11 }}>(platform)</span>}</td>
+            <td>{u.role} {u.is_platform_admin && <span style={{ color: '#805ad5', fontSize: 12 }}>(platform)</span>}</td>
             <td><input type="checkbox" checked={u.is_active} onChange={() => toggleUserActive(u)} /></td>
             <td style={{ fontSize: 12 }}>
               <button className="btn btn-sm" onClick={() => resetUserPassword(u)}>Reset PW</button>
@@ -400,7 +400,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
       <h3>Συνδρομές ({data.subscriptions.length})</h3>
       <table className="table" style={{ marginBottom: 20 }}>
         <thead><tr><th>Plan</th><th>Ποσό</th><th>Περίοδος</th><th>Κατάσταση</th><th>Viva Order</th></tr></thead>
-        <tbody>{data.subscriptions.map(s => <tr key={s.aa}><td>{s.plan_code}</td><td>{fmtCurrency(s.amount_gross)}</td><td>{fmtDate(s.period_start)} – {fmtDate(s.period_end)}</td><td>{statusBadge(s.status)}</td><td style={{ fontSize: 11 }}>{s.viva_order_code || '—'}</td></tr>)}</tbody>
+        <tbody>{data.subscriptions.map(s => <tr key={s.aa}><td>{s.plan_code}</td><td>{fmtCurrency(s.amount_gross)}</td><td>{fmtDate(s.period_start)} – {fmtDate(s.period_end)}</td><td>{statusBadge(s.status)}</td><td style={{ fontSize: 12 }}>{s.viva_order_code || '—'}</td></tr>)}</tbody>
       </table>
 
       <h3>Activity log ({data.activity_log.length})</h3>
@@ -427,7 +427,7 @@ function AddUserModal({ orgId, onClose, onAdded }) {
   return (
     <Modal title="Νέος χρήστης" onClose={onClose} actions={<>
       <button className="btn btn-secondary" onClick={onClose}>Άκυρο</button>
-      <button className="btn" style={{ background: '#38a169', color: 'white' }} onClick={submit} disabled={busy}>{busy ? 'Προσθήκη...' : 'Προσθήκη'}</button>
+      <button className="btn btn-success" onClick={submit} disabled={busy}>{busy ? 'Προσθήκη...' : 'Προσθήκη'}</button>
     </>}>
       {err && <div className="error">{err}</div>}
       <div className="form-grid-2">

@@ -188,6 +188,11 @@ body {
 .btn-secondary { background: #e2e8f0; color: #2d3748; }
 .btn-secondary:hover { background: #cbd5e0; }
 .btn-sm { padding: 6px 12px; font-size: 13px; }
+/* Παραλλαγές που γράφονταν inline ως background override. */
+.btn-success { background: #38a169; }
+.btn-success:hover { background: #2f855a; }
+.btn-info { background: #3182ce; }
+.btn-info:hover { background: #2b6cb0; }
 
 .link {
   text-align: center;
@@ -442,6 +447,23 @@ body {
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+/* Στενή οθόνη: το σταθερό padding 30px έτρωγε το μισό πλάτος και το
+   max-height: 90vh άφηνε τα κουμπιά έξω από το ορατό. */
+@media (max-width: 600px) {
+  .modal-overlay {
+    padding: 12px;
+    align-items: flex-start;
+  }
+  .modal {
+    padding: 18px;
+    border-radius: 10px;
+    max-height: calc(100vh - 24px);
+  }
+  .modal-header h2 { font-size: 17px; }
+  .modal-actions { flex-wrap: wrap; }
+  .modal-actions .btn { flex: 1; min-width: 130px; }
 }
 
 /* ===== v3 additions ===== */

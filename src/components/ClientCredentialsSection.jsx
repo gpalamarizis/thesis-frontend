@@ -34,7 +34,7 @@ function MultiValueField({ label, value, onChange, placeholder, hint }) {
     <div className="form-group">
       <label>
         {label}
-        {hint && <span style={{ fontSize: 11, color: '#718096', fontWeight: 'normal' }}> {hint}</span>}
+        {hint && <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}> {hint}</span>}
       </label>
       {rows.map((v, i) => (
         <div key={i} style={{ display: 'flex', gap: 4, marginBottom: 6 }}>
@@ -86,7 +86,7 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel }) {
                 onChange={onChange('date_thanaton')}
               />
               {isDeceased && (
-                <div style={{ fontSize: 11, color: '#742a2a', marginTop: 4 }}>
+                <div style={{ fontSize: 12, color: '#742a2a', marginTop: 4 }}>
                   Το πρόσωπο είναι αποβιώσαν — έλεγξε τη νομιμοποίηση επεξεργασίας δεδομένων.
                 </div>
               )}

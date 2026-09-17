@@ -83,19 +83,19 @@ function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
       {summary && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
           <div style={{ padding: 12, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6 }}>
-            <div style={{ fontSize: 11, color: '#718096', textTransform: 'uppercase' }}>Δικαστήρια</div>
+            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Δικαστήρια</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: '#2d3748' }}>{summary.total_courts}</div>
           </div>
           <div style={{ padding: 12, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6 }}>
-            <div style={{ fontSize: 11, color: '#718096', textTransform: 'uppercase' }}>Σύνολο ενεργειών</div>
+            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Σύνολο ενεργειών</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: '#3182ce' }}>{summary.total_actions}</div>
           </div>
           <div style={{ padding: 12, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6 }}>
-            <div style={{ fontSize: 11, color: '#718096', textTransform: 'uppercase' }}>Εκκρεμείς</div>
+            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Εκκρεμείς</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: '#dd6b20' }}>{summary.total_pending}</div>
           </div>
           <div style={{ padding: 12, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6 }}>
-            <div style={{ fontSize: 11, color: '#718096', textTransform: 'uppercase' }}>Ολοκληρωμένες</div>
+            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Ολοκληρωμένες</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: '#38a169' }}>{summary.total_closed}</div>
           </div>
         </div>

@@ -84,7 +84,7 @@ function RelatedCasesPanel({ caseId }) {
           <h3 style={{ fontSize: 13, color: '#667eea', textTransform: 'uppercase', letterSpacing: 0.5, margin: 0 }}>
             ✨ Προτεινόμενες υποθέσεις (AI)
           </h3>
-          <a href="#" onClick={e => { e.preventDefault(); loadSuggestions(); }} style={{ fontSize: 11, color: '#a0aec0' }}>
+          <a href="#" onClick={e => { e.preventDefault(); loadSuggestions(); }} style={{ fontSize: 12, color: '#a0aec0' }}>
             ↻ Ανανέωση
           </a>
         </div>

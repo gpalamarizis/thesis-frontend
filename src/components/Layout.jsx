@@ -133,7 +133,7 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
                       <a href={item.href} target="_blank" rel="noopener noreferrer">
                         <span className="menu-icon">{item.icon}</span>
                         <span className="menu-label">{item.label}</span>
-                        <span style={{ marginLeft: 'auto', opacity: 0.5, fontSize: 10 }}>↗</span>
+                        <span style={{ marginLeft: 'auto', opacity: 0.5, fontSize: 12 }}>↗</span>
                       </a>
                     ) : (
                       <NavLink to={item.path} end={item.path === '/dashboard'}>
@@ -161,7 +161,7 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
           <h1>{title}</h1>
           {onOpenCaseSearch && (
             <button className="btn btn-secondary btn-sm" onClick={onOpenCaseSearch} title="Αναζήτηση υπόθεσης (F3)">
-              🔍 Αναζήτηση υπόθεσης <span style={{ opacity: 0.6, marginLeft: 6, fontSize: 11 }}>F3</span>
+              🔍 Αναζήτηση υπόθεσης <span style={{ opacity: 0.6, marginLeft: 6, fontSize: 12 }}>F3</span>
             </button>
           )}
         </div>

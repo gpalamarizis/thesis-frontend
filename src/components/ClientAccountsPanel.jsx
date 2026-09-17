@@ -189,7 +189,7 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
               </select>
             </div>
             <div className="form-group">
-              <label>Περιγραφή <span style={{ fontSize: 11, color: '#718096', fontWeight: 'normal' }}>(π.χ. «ατομικό», «ακίνητο Χανίων»)</span></label>
+              <label>Περιγραφή <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}>(π.χ. «ατομικό», «ακίνητο Χανίων»)</span></label>
               <input
                 type="text"
                 value={editing.label || ''}
@@ -211,7 +211,7 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
               <label>
                 Κωδικός
                 {editing.aa && editing.has_password && (
-                  <span style={{ fontSize: 11, color: '#718096', fontWeight: 'normal' }}> (άφησέ το κενό για να μείνει ο υπάρχων)</span>
+                  <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}> (άφησέ το κενό για να μείνει ο υπάρχων)</span>
                 )}
               </label>
               <input

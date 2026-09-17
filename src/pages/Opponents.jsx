@@ -135,7 +135,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
                   <td>
                     <strong>{r.eponymia && r.eponymia.trim() ? r.eponymia : r.eponymo}</strong>
                     {r.eponymia && r.eponymia.trim() ? (
-                      <span style={{ marginLeft: 6, fontSize: 11, color: '#718096' }}>ΝΠ</span>
+                      <span style={{ marginLeft: 6, fontSize: 12, color: '#718096' }}>ΝΠ</span>
                     ) : null}
                   </td>
                   <td>{r.onoma || '—'}</td>

@@ -351,17 +351,20 @@ export default function BulkTemplatesImport() {
     table: { width: '100%', borderCollapse: 'collapse', fontSize: 14 },
     th: {
       padding: 8, textAlign: 'left', backgroundColor: '#f7fafc',
-      borderBottom: '2px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 1
+      borderBottom: '2px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 1,
+      // ίδια εμφάνιση με τις επικεφαλίδες όλης της εφαρμογής (.table th)
+      color: '#4a5568', fontWeight: 600, fontSize: 13,
+      textTransform: 'uppercase', letterSpacing: '0.5px', whiteSpace: 'nowrap',
     },
     td: { padding: 6, borderBottom: '1px solid #edf2f7', verticalAlign: 'middle' },
     input: {
       width: '100%', padding: 4, border: '1px solid #cbd5e0',
-      borderRadius: 3, fontSize: 13
+      borderRadius: 4, fontSize: 13
     },
     select: { width: '100%', padding: 4, fontSize: 13 },
     xbtn: {
       padding: '2px 6px', cursor: 'pointer', border: '1px solid #cbd5e0',
-      borderRadius: 3, backgroundColor: '#fff', fontSize: 12
+      borderRadius: 4, backgroundColor: '#fff', fontSize: 12
     },
     successBanner: {
       marginTop: 16, padding: 16, backgroundColor: '#c6f6d5',

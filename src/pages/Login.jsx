@@ -177,7 +177,7 @@ function Login({ onLogin }) {
                 style={{
                   width: '100%',
                   padding: '10px 14px',
-                  fontSize: 15,
+                  fontSize: 14,
                   border: '1px solid #E2E8F0',
                   borderRadius: 8,
                   outline: 'none',
@@ -206,7 +206,7 @@ function Login({ onLogin }) {
                   style={{
                     width: '100%',
                     padding: '10px 44px 10px 14px',
-                    fontSize: 15,
+                    fontSize: 14,
                     border: '1px solid #E2E8F0',
                     borderRadius: 8,
                     outline: 'none',
@@ -260,7 +260,7 @@ function Login({ onLogin }) {
               style={{
                 width: '100%',
                 padding: '12px',
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: 600,
                 color: '#fff',
                 background: loading ? '#A0AEC0' : '#1A202C',

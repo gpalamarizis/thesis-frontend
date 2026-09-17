@@ -161,25 +161,25 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
             <button
               onClick={exportWord}
               disabled={exporting || loading}
-              style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1A202C', borderRadius: 3, backgroundColor: '#1A202C', color: '#fff', fontWeight: 600 }}
+              style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1A202C', borderRadius: 4, backgroundColor: '#1A202C', color: '#fff', fontWeight: 600 }}
             >
               {exporting ? 'Εξαγωγή...' : 'Εξαγωγή σε Word'}
             </button>
             <button
               onClick={() => setPreset(7)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
               7 ημέρες
             </button>
             <button
               onClick={() => setPreset(30)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
               30 ημέρες
             </button>
             <button
               onClick={() => setPreset(90)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
               90 ημέρες
             </button>

@@ -89,14 +89,14 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
             <button
               type="button"
               onClick={selectAll}
-              style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
               Όλες
             </button>
             <button
               type="button"
               onClick={selectNone}
-              style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
               Καμία
             </button>
@@ -113,7 +113,7 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
                     gap: 6,
                     padding: '4px 10px',
                     border: `1px solid ${active ? s.color : '#cbd5e0'}`,
-                    borderRadius: 20,
+                    borderRadius: 10,
                     fontSize: 13,
                     cursor: 'pointer',
                     backgroundColor: active ? `${s.color}15` : '#fff',
@@ -161,7 +161,7 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
                 <tr key={`${r.source}-${r.id}-${idx}`}>
                   <td>
                     <span style={{
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: 'bold',
                       padding: '2px 8px',
                       borderRadius: 10,

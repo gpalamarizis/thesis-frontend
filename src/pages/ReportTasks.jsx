@@ -176,25 +176,25 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
             <button
               onClick={exportWord}
               disabled={exporting || loading}
-              style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1A202C', borderRadius: 3, backgroundColor: '#1A202C', color: '#fff', fontWeight: 600 }}
+              style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1A202C', borderRadius: 4, backgroundColor: '#1A202C', color: '#fff', fontWeight: 600 }}
             >
               {exporting ? 'Εξαγωγή...' : 'Εξαγωγή σε Word'}
             </button>
             <button
               onClick={() => setRange(null, null)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
               Όλες
             </button>
             <button
               onClick={() => setRange(0, 7)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
               Επόμενες 7 ημέρες
             </button>
             <button
               onClick={() => setRange(0, 30)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
               Επόμενες 30 ημέρες
             </button>
@@ -231,7 +231,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                           <>
                             {fmtDate(r.date_dead_line)}
                             {overdue && (
-                              <span style={{ marginLeft: 6, fontSize: 11, color: '#c53030', fontWeight: 'bold' }}>
+                              <span style={{ marginLeft: 6, fontSize: 12, color: '#c53030', fontWeight: 'bold' }}>
                                 ⚠️ ΕΚΠΡΟΘΕΣΜΗ
                               </span>
                             )}
@@ -242,11 +242,11 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                       </td>
                       <td>
                         {r.ekkremis ? (
-                          <span style={{ padding: '2px 8px', backgroundColor: '#feebc8', color: '#744210', borderRadius: 10, fontSize: 11, fontWeight: 'bold' }}>
+                          <span style={{ padding: '2px 8px', backgroundColor: '#feebc8', color: '#744210', borderRadius: 10, fontSize: 12, fontWeight: 'bold' }}>
                             Εκκρεμής
                           </span>
                         ) : (
-                          <span style={{ padding: '2px 8px', backgroundColor: '#c6f6d5', color: '#22543d', borderRadius: 10, fontSize: 11 }}>
+                          <span style={{ padding: '2px 8px', backgroundColor: '#c6f6d5', color: '#22543d', borderRadius: 10, fontSize: 12 }}>
                             Ολοκληρωμένη
                           </span>
                         )}

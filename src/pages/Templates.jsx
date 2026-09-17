@@ -250,7 +250,7 @@ function PlaceholdersHelpModal({ onClose }) {
                   style={{
                     background: '#edf2f7',
                     padding: '3px 8px',
-                    borderRadius: 3,
+                    borderRadius: 4,
                     fontSize: 12,
                     cursor: 'copy',
                     userSelect: 'all',

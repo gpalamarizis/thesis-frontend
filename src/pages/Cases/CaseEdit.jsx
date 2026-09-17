@@ -440,7 +440,7 @@ function CaseTab({ caseData, onSave, saving }) {
                         margin: 0,
                         padding: 0,
                         border: '1px solid #cbd5e0',
-                        borderRadius: 3,
+                        borderRadius: 4,
                         cursor: 'pointer',
                       }}
                     />
@@ -473,7 +473,7 @@ function CaseTab({ caseData, onSave, saving }) {
                   style={{ display: 'block', padding: '6px 8px', borderBottom: '1px solid #edf2f7', fontSize: 12, textDecoration: 'none', color: '#2d3748' }}
                 >
                   <strong>{sc.xeirokinito_id || `#${sc.aa || sc.id}`}</strong>
-                  {sc.perilipsi && <div style={{ color: '#718096', fontSize: 11, marginTop: 2 }}>{sc.perilipsi.substring(0, 60)}{sc.perilipsi.length > 60 ? '...' : ''}</div>}
+                  {sc.perilipsi && <div style={{ color: '#718096', fontSize: 12, marginTop: 2 }}>{sc.perilipsi.substring(0, 60)}{sc.perilipsi.length > 60 ? '...' : ''}</div>}
                 </a>
               ))}
             </div>
@@ -725,11 +725,11 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
           να δικαστεί σε περισσότερα από ένα δικαστήρια. */}
       <div className="form-grid-2">
         <div className="form-group">
-          <label>ΓΑΚ <span style={{ fontSize: 11, color: '#718096', fontWeight: 'normal' }}>(Γενικός Αριθμός Κατάθεσης)</span></label>
+          <label>ΓΑΚ <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}>(Γενικός Αριθμός Κατάθεσης)</span></label>
           <input type="text" value={form.gak} onChange={c('gak')} placeholder="π.χ. 12345/2026" />
         </div>
         <div className="form-group">
-          <label>ΕΑΚ <span style={{ fontSize: 11, color: '#718096', fontWeight: 'normal' }}>(Ειδικός Αριθμός Κατάθεσης)</span></label>
+          <label>ΕΑΚ <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}>(Ειδικός Αριθμός Κατάθεσης)</span></label>
           <input type="text" value={form.eak} onChange={c('eak')} placeholder="π.χ. 6789/2026" />
         </div>
       </div>
@@ -852,7 +852,7 @@ function CourtSubActionsSection({ courtAction }) {
                 <td>{fmtDate(r.date)}</td>
                 <td>
                   <div>{r.energeia_name || r.perigrafi || '—'}</div>
-                  {r.energeia_name && r.perigrafi && <div style={{ color: '#a0aec0', fontSize: 11 }}>{r.perigrafi}</div>}
+                  {r.energeia_name && r.perigrafi && <div style={{ color: '#a0aec0', fontSize: 12 }}>{r.perigrafi}</div>}
                 </td>
                 <td>{r.date_apofasis ? fmtDate(r.date_apofasis) : '—'}</td>
                 <td>{r.dikigoros_name || '—'}</td>
@@ -1166,7 +1166,7 @@ function DocsTab({ caseId, rows, onChange }) {
                           <span
                             title="Η εγγραφή υπάρχει, αλλά το αρχείο δεν βρέθηκε στον αποθηκευτικό χώρο. Πιθανόν δεν μεταφέρθηκε από το παλιό σύστημα."
                             style={{
-                              marginLeft: 8, fontSize: 11, padding: '2px 8px', borderRadius: 10,
+                              marginLeft: 8, fontSize: 12, padding: '2px 8px', borderRadius: 10,
                               background: '#FEEBC8', color: '#9C4221', whiteSpace: 'nowrap',
                             }}
                           >μη διαθέσιμο</span>
@@ -1344,7 +1344,7 @@ function TemplatePickerModal({ caseId, onClose, onCreated }) {
         <div style={{ maxHeight: 400, overflowY: 'auto' }}>
           {Object.entries(grouped).map(([category, items]) => (
             <div key={category} style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 11, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{category}</div>
+              <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{category}</div>
               {items.map(t => (
                 <label
                   key={t.aa}
