@@ -44,7 +44,6 @@ function FysikaList({ user, onLogout, onOpenCaseSearch }) {
     { key: 'onoma',             label: 'Όνομα' },
     { key: 'onoma_patros',      label: 'Πατρός' },
     { key: 'afm',               label: 'ΑΦΜ',            width: 110 },
-    { key: 'adt',               label: 'ΑΔΤ',            width: 100 },
     { key: 'tilefono_kinito_1', label: 'Κινητό',         width: 110 },
     { key: 'email',             label: 'Email' },
     { key: 'date_gennisis',     label: 'Ημ/νία γέννησης', width: 110, render: r => fmtDate(r.date_gennisis) },
