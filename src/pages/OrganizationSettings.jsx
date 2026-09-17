@@ -12,6 +12,10 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+  // Αποτέλεσμα ελέγχου myDATA: { ok, message } ή null. Μένει ορατό στη
+  // σελίδα ώστε το μήνυμα του ΑΑΔΕ να μπορεί να επιλεγεί και να σταλεί.
+  const [mydataCheck, setMydataCheck] = useState(null);
+  const [mydataChecking, setMydataChecking] = useState(false);
 
   useEffect(() => {
     orgSettings.get()
@@ -24,6 +28,20 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
     setSaved(false);
     const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     setForm(f => ({ ...f, [k]: v }));
+  };
+
+  const checkMydata = async () => {
+    setMydataChecking(true);
+    setMydataCheck(null);
+    try {
+      const { mydata } = await import('../api');
+      const r = await mydata.health();
+      setMydataCheck({ ok: !!r.ok, message: r.message || (r.ok ? 'Τα στοιχεία είναι σωστά.' : 'Άγνωστο σφάλμα.') });
+    } catch (e) {
+      setMydataCheck({ ok: false, message: e.message });
+    } finally {
+      setMydataChecking(false);
+    }
   };
 
   const save = async () => {
@@ -233,13 +251,33 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         </div>
         <div style={{ marginTop: 12, padding: 12, background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: 6 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <button type="button" className="btn btn-sm" onClick={async () => { try { const { mydata } = await import('../api'); const r = await mydata.health(); if (r.ok) { alert('OK: ' + r.message); } else { alert('FAIL: ' + r.message); } } catch (e) { alert('FAIL: ' + e.message); } }} disabled={!isAdmin}>
-              🔍 Έλεγχος myDATA credentials
+            <button type="button" className="btn btn-sm" onClick={checkMydata} disabled={!isAdmin || mydataChecking}>
+              {mydataChecking ? 'Έλεγχος...' : '🔍 Έλεγχος myDATA credentials'}
             </button>
             <span style={{ fontSize: 12, color: '#4a5568' }}>
               Κάνει ένα test call στο ΑΑΔΕ για να επιβεβαιώσει ότι User ID + Subscription Key είναι σωστά.
             </span>
           </div>
+
+          {mydataCheck && (
+            <div
+              style={{
+                marginTop: 12,
+                padding: '10px 12px',
+                borderRadius: 6,
+                border: '1px solid',
+                fontSize: 13,
+                lineHeight: 1.6,
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                background:   mydataCheck.ok ? '#c6f6d5' : '#fed7d7',
+                borderColor:  mydataCheck.ok ? '#9ae6b4' : '#feb2b2',
+                color:        mydataCheck.ok ? '#22543d' : '#742a2a',
+              }}
+            >
+              <strong>{mydataCheck.ok ? 'Επιτυχία' : 'Αποτυχία'}</strong>{'\n'}{mydataCheck.message}
+            </div>
+          )}
         </div>
       </div>
       {isAdmin && (

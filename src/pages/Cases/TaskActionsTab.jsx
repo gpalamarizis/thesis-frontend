@@ -17,14 +17,17 @@ function TaskActionsTab({ caseId, rows, onChange }) {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
+  const [error, setError] = useState('');
 
   const doDelete = async (r) => {
+    setError('');
     try { await actions.task.remove(r.aa || r.id); onChange(); }
-    catch (e) { alert(e.message); }
+    catch (e) { setError(e.message); }
   };
 
   return (
     <div>
+      {error && <div className="error">{error}</div>}
       <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
         <div style={{ color: '#4a5568' }}>Προθεσμίες, εργασίες, λοιπές ενέργειες</div>
         <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέα λοιπή ενέργεια</button>

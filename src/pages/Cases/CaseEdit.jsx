@@ -500,15 +500,19 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
   const [editing, setEditing] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
 
+  const [error, setError] = useState('');
+
   const openNew = () => { setEditing(null); setShowModal(true); };
   const openEdit = (r) => { setEditing(r); setShowModal(true); };
 
   const doDelete = async (r) => {
-    try { await actions.court.remove(r.aa || r.id); onChange(); } catch (e) { alert(e.message); }
+    setError('');
+    try { await actions.court.remove(r.aa || r.id); onChange(); } catch (e) { setError(e.message); }
   };
 
   return (
     <div>
+      {error && <div className="error">{error}</div>}
       <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
         <div style={{ color: '#4a5568' }}>Δικαστικές ενέργειες (δικάσιμοι)</div>
         <button type="button" className="btn btn-sm" onClick={openNew}>+ Νέα δικαστική ενέργεια</button>

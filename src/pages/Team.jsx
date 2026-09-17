@@ -209,7 +209,9 @@ function ResetPwModal({ user, onClose, onDone }) {
   const [err, setErr] = useState('');
   const save = async () => {
     if (pw.length < 8) { setErr('Ελάχιστο 8 χαρακτήρες'); return; }
-    try { await usersAdmin.resetPassword(user.id, pw); alert('Ο κωδικός άλλαξε.'); onDone(); }
+    // Το κλείσιμο του παραθύρου χωρίς σφάλμα είναι η επιβεβαίωση — δεν
+    // χρειάζεται δεύτερο παράθυρο από πάνω.
+    try { await usersAdmin.resetPassword(user.id, pw); onDone(); }
     catch (e) { setErr(e.message); }
   };
   return (
