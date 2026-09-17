@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import Tabs from '../components/Tabs';
 import useConfirm from '../components/useConfirm';
+import usePrompt from '../components/usePrompt';
 import Modal from '../components/Modal';
 import { platform } from '../api';
 
@@ -227,6 +228,7 @@ function CreateOrgModal({ onClose, onCreated }) {
 
 function OrgDetailModal({ orgId, onClose, onReload }) {
   const [confirmNode, ask] = useConfirm();
+  const [promptNode, askText] = usePrompt();
   const [data, setData] = useState(null);
   const [err, setErr] = useState('');
   const [editing, setEditing] = useState(false);
@@ -259,7 +261,13 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
   };
 
   const extendTrial = async () => {
-    const days = prompt('Πόσες ημέρες να επεκταθεί το trial;', '30');
+    const days = await askText({
+      title: 'Επέκταση trial',
+      label: 'Πόσες ημέρες;',
+      defaultValue: '30',
+      type: 'number',
+      confirmLabel: 'Επέκταση',
+    });
     if (!days) return;
     try {
       await platform.extendTrial(orgId, parseInt(days, 10));
@@ -272,7 +280,14 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
       if (data.organization.suspended) {
         await platform.unsuspend(orgId);
       } else {
-        const reason = prompt('Λόγος suspend;', 'Καθυστέρηση πληρωμής');
+        const reason = await askText({
+          title: 'Αναστολή λειτουργίας',
+          message: `Η εταιρεία ${data.organization.name} δεν θα μπορεί να χρησιμοποιεί την εφαρμογή.`,
+          label: 'Λόγος',
+          defaultValue: 'Καθυστέρηση πληρωμής',
+          confirmLabel: 'Αναστολή',
+          danger: true,
+        });
         if (reason == null) return;
         await platform.suspend(orgId, reason);
       }
@@ -289,7 +304,15 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
   };
 
   const deleteOrg = async () => {
-    const c = prompt(`ΔΙΑΓΡΑΦΗ εταιρείας ${data.organization.name}. Πληκτρολογήστε DELETE-${orgId} για επιβεβαίωση:`);
+    const c = await askText({
+      title: 'Οριστική διαγραφή εταιρείας',
+      message: `Διαγράφεται η «${data.organization.name}» με όλα τα δεδομένα της.\n\nΗ ενέργεια ΔΕΝ αναιρείται.`,
+      label: `Πληκτρολόγησε DELETE-${orgId} για επιβεβαίωση`,
+      placeholder: `DELETE-${orgId}`,
+      mustMatch: `DELETE-${orgId}`,
+      confirmLabel: 'Οριστική διαγραφή',
+      danger: true,
+    });
     if (c !== `DELETE-${orgId}`) return;
     try {
       await platform.deleteOrg(orgId);
@@ -316,11 +339,23 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
   };
 
   const resetUserPassword = async (u) => {
-    const pwd = prompt(`Νέο password για ${u.email} (min 8):`);
+    const pwd = await askText({
+      title: 'Νέο password',
+      message: `Ορίζεται νέο password για τον χρήστη ${u.email}.`,
+      label: 'Password (τουλάχιστον 8 χαρακτήρες)',
+      type: 'password',
+      minLength: 8,
+      confirmLabel: 'Αλλαγή',
+    });
     if (!pwd || pwd.length < 8) return;
     try {
       await platform.updateUser(u.id, { password: pwd });
-      alert('Το password άλλαξε');
+      await ask({
+        title: 'Έγινε',
+        message: 'Το password άλλαξε.',
+        hideConfirm: true,
+        cancelLabel: 'Κλείσιμο',
+      });
     } catch (e) { setErr(e.message); }
   };
 
@@ -410,6 +445,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
         {data.activity_log.map(a => <div key={a.aa}>{fmtDateTime(a.created_at)} — <strong>{a.action}</strong> από {a.admin_email}</div>)}
       </div>
       {confirmNode}
+      {promptNode}
     </Modal>
   );
 }
@@ -577,13 +613,20 @@ function SubscriptionsTab() {
 // ==================== CO-ADMINS TAB ====================
 function AdminsTab() {
   const [confirmNode, ask] = useConfirm();
+  const [promptNode, askText] = usePrompt();
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState('');
   const load = () => platform.admins().then(d => setRows(d.data || [])).catch(e => setErr(e.message));
   useEffect(load, []);
 
   const grant = async () => {
-    const email = prompt('Email του χρήστη που θα γίνει co-admin:');
+    const email = await askText({
+      title: 'Νέος co-admin',
+      label: 'Email του χρήστη',
+      type: 'email',
+      placeholder: 'name@example.gr',
+      confirmLabel: 'Απόδοση δικαιώματος',
+    });
     if (!email) return;
     try { await platform.grantAdmin(email); load(); }
     catch (e) { setErr(e.message); }
@@ -617,6 +660,7 @@ function AdminsTab() {
         </tbody>
       </table>
       {confirmNode}
+      {promptNode}
     </div>
   );
 }
