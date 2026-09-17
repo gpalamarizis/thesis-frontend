@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
+import useConfirm from '../components/useConfirm';
 import { gdpr } from '../api';
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('el-GR') : '—'; }
@@ -11,6 +12,7 @@ function daysBetween(d1, d2) {
 }
 
 function GdprSettings({ user, onLogout, onOpenCaseSearch }) {
+  const [confirmNode, ask] = useConfirm();
   const [deleteStatus, setDeleteStatus] = useState(null);
   const [err, setErr] = useState('');
   const [exporting, setExporting] = useState(false);
@@ -44,7 +46,11 @@ function GdprSettings({ user, onLogout, onOpenCaseSearch }) {
       setErr('Πληκτρολογήστε το email σας ακριβώς για επιβεβαίωση.');
       return;
     }
-    if (!confirm('Είστε βέβαιοι; Το αίτημα διαγραφής θα εκτελεστεί σε 30 ημέρες. Μέσα σε αυτό το διάστημα μπορείτε να το ακυρώσετε.')) return;
+    if (!await ask({
+      title: 'Αίτημα διαγραφής δεδομένων',
+      message: 'Το αίτημα θα εκτελεστεί σε 30 ημέρες.\n\nΜέσα σε αυτό το διάστημα μπορείτε να το ακυρώσετε. Μετά την εκτέλεση, η ενέργεια δεν αναιρείται.',
+      confirmLabel: 'Υποβολή αιτήματος',
+    })) return;
     try {
       await gdpr.requestDelete(deleteForm.reason, deleteForm.confirm_email);
       setShowDelete(false);
@@ -53,7 +59,7 @@ function GdprSettings({ user, onLogout, onOpenCaseSearch }) {
   };
 
   const cancelDelete = async () => {
-    if (!confirm('Ακύρωση του αιτήματος διαγραφής;')) return;
+    if (!await ask({ title: 'Ακύρωση αιτήματος', message: 'Ακύρωση του αιτήματος διαγραφής;', confirmLabel: 'Ακύρωση αιτήματος', cancelLabel: 'Όχι', danger: false })) return;
     try { await gdpr.cancelDelete(); loadStatus(); }
     catch (e) { setErr(e.message); }
   };
@@ -126,6 +132,7 @@ function GdprSettings({ user, onLogout, onOpenCaseSearch }) {
           </>
         )}
       </div>
+      {confirmNode}
     </Layout>
   );
 }

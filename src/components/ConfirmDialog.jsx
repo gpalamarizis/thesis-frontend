@@ -14,7 +14,7 @@ function ConfirmDialog({ title = 'Επιβεβαίωση', message, confirmLabel
         </>
       }
     >
-      <p style={{ color: '#4a5568', lineHeight: 1.6 }}>{message}</p>
+      <p style={{ color: '#4a5568', lineHeight: 1.6, whiteSpace: 'pre-line' }}>{message}</p>
     </Modal>
   );
 }

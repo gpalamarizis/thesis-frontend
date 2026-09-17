@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import useConfirm from '../../components/useConfirm';
 import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
 import { cases, fysika, nomika, lists, people, api } from '../../api';
 import { saveDraft, loadDraft, clearDraft, formatDraftTime } from '../../utils/draft';
@@ -13,6 +14,7 @@ import { entryKeyDown } from '../../utils/formKeys';
 const DRAFT_KEY = 'case-new';
 
 function CaseNew({ user, onLogout, onOpenCaseSearch }) {
+  const [confirmNode, ask] = useConfirm();
   const navigate = useNavigate();
 
   // Client (ΦΠ ή ΝΠ - user picks one)
@@ -120,8 +122,13 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
     setRecoverable(null);
   };
 
-  const handleCancel = () => {
-    if (isDirty && !window.confirm('Υπάρχουν στοιχεία που δεν έχουν αποθηκευτεί.\n\nΘέλετε σίγουρα να ακυρώσετε την καταχώρηση;')) return;
+  const handleCancel = async () => {
+    if (isDirty && !await ask({
+      title: 'Ακύρωση καταχώρησης',
+      message: 'Υπάρχουν στοιχεία που δεν έχουν αποθηκευτεί.\n\nΘέλετε σίγουρα να ακυρώσετε την καταχώρηση;',
+      confirmLabel: 'Ναι, ακύρωση',
+      cancelLabel: 'Συνέχεια επεξεργασίας',
+    })) return;
     clearDraft(DRAFT_KEY);
     savedOk.current = true;
     navigate('/cases');
@@ -554,6 +561,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
           onCreated={(rec) => handleQuickCreated(quickCreate, rec)}
         />
       )}
+      {confirmNode}
     </Layout>
   );
 }

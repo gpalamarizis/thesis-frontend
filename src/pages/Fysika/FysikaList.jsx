@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import TruncationWarning from '../../components/TruncationWarning';
 import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { fysika } from '../../api';
 import { fmtDate } from '../../utils/format';
 
 function FysikaList({ user, onLogout, onOpenCaseSearch }) {
+  const [meta, setMeta] = useState(null);
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,7 @@ function FysikaList({ user, onLogout, onOpenCaseSearch }) {
       .then(d => {
         const list = Array.isArray(d) ? d : (d?.data || []);
         setItems(list);
+        setMeta(d);
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
@@ -49,6 +52,7 @@ function FysikaList({ user, onLogout, onOpenCaseSearch }) {
 
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Φυσικά Πρόσωπα">
+      <TruncationWarning meta={meta} />
       {error && <div className="error">{error}</div>}
 
       <div className="section">

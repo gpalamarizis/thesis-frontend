@@ -8,9 +8,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
+import useConfirm from '../components/useConfirm';
 import { caseAccess, cases } from '../api';
 
 function CaseAccess({ user, onLogout, onOpenCaseSearch }) {
+  const [confirmNode, ask] = useConfirm();
   const { id } = useParams();
   const navigate = useNavigate();
   const [caseInfo, setCaseInfo] = useState(null);
@@ -45,7 +47,7 @@ function CaseAccess({ user, onLogout, onOpenCaseSearch }) {
   };
 
   const revoke = async (userId) => {
-    if (!confirm('Αφαίρεση πρόσβασης;')) return;
+    if (!await ask({ title: 'Αφαίρεση πρόσβασης', message: 'Αφαίρεση της πρόσβασης αυτού του χρήστη στην υπόθεση;', confirmLabel: 'Αφαίρεση' })) return;
     try {
       await caseAccess.revoke(id, userId);
       load();
@@ -116,6 +118,7 @@ function CaseAccess({ user, onLogout, onOpenCaseSearch }) {
           {availableUsers.length === 0 && <div style={{ fontSize: 12, color: '#718096', marginTop: 8 }}>Δεν υπάρχουν άλλοι διαθέσιμοι χρήστες.</div>}
         </>
       )}
+      {confirmNode}
     </Layout>
   );
 }

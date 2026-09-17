@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
+import TruncationWarning from '../components/TruncationWarning';
 import { people } from '../api';
 import { entryKeyDown } from '../utils/formKeys';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -11,6 +12,7 @@ import DataTable from '../components/DataTable';
 const EMPTY = { eponymo: '', onoma: '', email: '', tilefono: '', syllogos: '' };
 
 function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
+  const [meta, setMeta] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -27,7 +29,7 @@ function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
   const load = () => {
     setLoading(true);
     people.opposingLawyers.list()
-      .then(d => setItems(d?.data || []))
+      .then(d => { setItems(d?.data || []); setMeta(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
@@ -104,6 +106,7 @@ function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
           <button className="btn" onClick={openNew}>+ Νέος</button>
         </div>
 
+        <TruncationWarning meta={meta} />
         {error && <div className="error">{error}</div>}
 
         {loading ? (

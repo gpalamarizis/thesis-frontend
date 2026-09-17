@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import Tabs from '../components/Tabs';
+import useConfirm from '../components/useConfirm';
 import Modal from '../components/Modal';
 import { platform } from '../api';
 
@@ -68,7 +69,7 @@ function DashboardTab() {
         {cards.map((c, i) => (
           <div key={i} style={{ padding: 16, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8 }}>
             <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>{c.label}</div>
-            <div style={{ fontSize: 26, fontWeight: 700, color: c.color }}>{c.value ?? 0}</div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: c.color }}>{c.value ?? 0}</div>
           </div>
         ))}
       </div>
@@ -225,6 +226,7 @@ function CreateOrgModal({ onClose, onCreated }) {
 }
 
 function OrgDetailModal({ orgId, onClose, onReload }) {
+  const [confirmNode, ask] = useConfirm();
   const [data, setData] = useState(null);
   const [err, setErr] = useState('');
   const [editing, setEditing] = useState(false);
@@ -279,7 +281,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
   };
 
   const extendOneYear = async () => {
-    if (!window.confirm('Παράταση συνδρομής κατά 1 έτος;')) return;
+    if (!await ask({ title: 'Παράταση συνδρομής', message: 'Παράταση της συνδρομής κατά 1 έτος;', confirmLabel: 'Παράταση', danger: false })) return;
     try {
       await platform.extendYears(orgId, 1);
       load(); onReload && onReload();
@@ -299,7 +301,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
   const [showAddUser, setShowAddUser] = useState(false);
 
   const deleteUser = async (userId, email) => {
-    if (!window.confirm(`Διαγραφή χρήστη ${email};`)) return;
+    if (!await ask({ title: 'Διαγραφή χρήστη', message: `Διαγραφή του χρήστη ${email}; Η ενέργεια δεν αναιρείται.`, confirmLabel: 'Διαγραφή' })) return;
     try {
       await platform.deleteUser(userId);
       load();
@@ -407,6 +409,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
       <div style={{ maxHeight: 200, overflow: 'auto', background: '#f7fafc', padding: 8, borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }}>
         {data.activity_log.map(a => <div key={a.aa}>{fmtDateTime(a.created_at)} — <strong>{a.action}</strong> από {a.admin_email}</div>)}
       </div>
+      {confirmNode}
     </Modal>
   );
 }
@@ -525,6 +528,7 @@ function NewPartnerModal({ onClose, onCreated }) {
 
 // ==================== SUBSCRIPTIONS TAB ====================
 function SubscriptionsTab() {
+  const [confirmNode, ask] = useConfirm();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
@@ -536,7 +540,7 @@ function SubscriptionsTab() {
   useEffect(load, []);
 
   const markPaid = async (id) => {
-    if (!confirm('Επιβεβαίωση: το commission καταβλήθηκε στον partner;')) return;
+    if (!await ask({ title: 'Καταβολή commission', message: 'Επιβεβαιώνεις ότι το commission καταβλήθηκε στον partner;', confirmLabel: 'Ναι, καταβλήθηκε', danger: false })) return;
     try { await platform.markCommissionPaid(id); load(); }
     catch (e) { setErr(e.message); }
   };
@@ -565,12 +569,14 @@ function SubscriptionsTab() {
           </tbody>
         </table>
       )}
+      {confirmNode}
     </div>
   );
 }
 
 // ==================== CO-ADMINS TAB ====================
 function AdminsTab() {
+  const [confirmNode, ask] = useConfirm();
   const [rows, setRows] = useState([]);
   const [err, setErr] = useState('');
   const load = () => platform.admins().then(d => setRows(d.data || [])).catch(e => setErr(e.message));
@@ -584,7 +590,7 @@ function AdminsTab() {
   };
 
   const revoke = async (userId, email) => {
-    if (!confirm(`Αφαίρεση δικαιώματος co-admin από ${email};`)) return;
+    if (!await ask({ title: 'Αφαίρεση co-admin', message: `Αφαίρεση του δικαιώματος co-admin από ${email};`, confirmLabel: 'Αφαίρεση' })) return;
     try { await platform.revokeAdmin(userId); load(); }
     catch (e) { setErr(e.message); }
   };
@@ -610,6 +616,7 @@ function AdminsTab() {
           ))}
         </tbody>
       </table>
+      {confirmNode}
     </div>
   );
 }

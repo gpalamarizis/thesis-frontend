@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../components/Layout';
+import useConfirm from '../components/useConfirm';
 import Modal from '../components/Modal';
 import { subscriptions } from '../api';
 
@@ -114,7 +115,7 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
     }}>
       <h3 style={{ margin: 0 }}>{plan.name}</h3>
 
-      <div style={{ fontSize: 26, fontWeight: 700, color: '#2d3748' }}>
+      <div style={{ fontSize: 22, fontWeight: 700, color: '#2d3748' }}>
         {fmtCurrency(perUser)}
         <span style={{ fontSize: 13, fontWeight: 400, color: '#718096' }}> / χρήστη / έτος</span>
       </div>
@@ -211,6 +212,7 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
 }
 
 function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
+  const [confirmNode, ask] = useConfirm();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [current, setCurrent] = useState(null);
@@ -251,7 +253,7 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
     const msg = `Πλάνο ${plan.name} — ${users} ${users === 1 ? 'χρήστης' : 'χρήστες'}\n` +
                 `Πληρωτέο: ${fmtCurrency(gross)} (με ΦΠΑ)\n\n` +
                 `Θα μεταφερθείτε στη σελίδα πληρωμής.`;
-    if (!confirm(msg)) return;
+    if (!await ask({ title: 'Επιλογή πλάνου', message: msg, confirmLabel: 'Συνέχεια στην πληρωμή', danger: false })) return;
     setCheckoutBusy(true);
     setErr('');
     try {
@@ -270,7 +272,7 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
                 `Πληρωτέο: ${fmtCurrency(gross)} (με ΦΠΑ)\n\n` +
                 `Θα λάβετε email με τα στοιχεία του λογαριασμού και μοναδική αιτιολογία.\n` +
                 `Η συνδρομή ενεργοποιείται μόλις εμφανιστούν τα χρήματα.`;
-    if (!confirm(msg)) return;
+    if (!await ask({ title: 'Πληρωμή με τραπεζική κατάθεση', message: msg, confirmLabel: 'Συνέχεια', danger: false })) return;
     setCheckoutBusy(true);
     setErr('');
     try {
@@ -435,6 +437,7 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
           </p>
         </Modal>
       )}
+      {confirmNode}
     </Layout>
   );
 }

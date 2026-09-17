@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
+import TruncationWarning from '../components/TruncationWarning';
 import { people, lists } from '../api';
 import { entryKeyDown } from '../utils/formKeys';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -34,6 +35,7 @@ const EMPTY = {
 };
 
 function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
+  const [meta, setMeta] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,7 +60,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
   const load = () => {
     setLoading(true);
     people.related.list({ idiotita_id: fIdiotita, poli: fPoli, include_opponents: showOpponents })
-      .then(d => setItems(d?.data || []))
+      .then(d => { setItems(d?.data || []); setMeta(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
@@ -240,6 +242,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
           )}
         </div>
 
+        <TruncationWarning meta={meta} />
         {error && <div className="error">{error}</div>}
 
         {loading ? (

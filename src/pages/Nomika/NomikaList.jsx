@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
+import TruncationWarning from '../../components/TruncationWarning';
 import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { nomika } from '../../api';
 
 function NomikaList({ user, onLogout, onOpenCaseSearch }) {
+  const [meta, setMeta] = useState(null);
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +17,7 @@ function NomikaList({ user, onLogout, onOpenCaseSearch }) {
   const load = () => {
     setLoading(true);
     nomika.list()
-      .then(d => setItems(Array.isArray(d) ? d : (d?.data || [])))
+      .then(d => { setItems(Array.isArray(d) ? d : (d?.data || [])); setMeta(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
@@ -39,6 +41,7 @@ function NomikaList({ user, onLogout, onOpenCaseSearch }) {
 
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Νομικά Πρόσωπα">
+      <TruncationWarning meta={meta} />
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">

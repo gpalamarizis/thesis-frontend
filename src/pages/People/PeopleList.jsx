@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
+import TruncationWarning from '../../components/TruncationWarning';
 import DataTable from '../../components/DataTable';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
@@ -95,6 +96,7 @@ const KIND_CONFIG = {
 };
 
 function PeopleList({ user, onLogout, onOpenCaseSearch, kind, title }) {
+  const [meta, setMeta] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -110,7 +112,7 @@ function PeopleList({ user, onLogout, onOpenCaseSearch, kind, title }) {
   const load = () => {
     setLoading(true);
     helper.list()
-      .then(d => setItems(Array.isArray(d) ? d : (d?.data || [])))
+      .then(d => { setItems(Array.isArray(d) ? d : (d?.data || [])); setMeta(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
@@ -128,6 +130,7 @@ function PeopleList({ user, onLogout, onOpenCaseSearch, kind, title }) {
 
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={title}>
+      <TruncationWarning meta={meta} />
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">

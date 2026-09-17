@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
+import TruncationWarning from '../components/TruncationWarning';
 import { people } from '../api';
 import { entryKeyDown } from '../utils/formKeys';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -20,6 +21,7 @@ const EMPTY = {
 };
 
 function Opponents({ user, onLogout, onOpenCaseSearch }) {
+  const [meta, setMeta] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -36,7 +38,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
   const load = () => {
     setLoading(true);
     people.opponents.list()
-      .then(d => setItems(d?.data || []))
+      .then(d => { setItems(d?.data || []); setMeta(d); })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
@@ -141,6 +143,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
           <button className="btn" onClick={openNew}>+ Νέος</button>
         </div>
 
+        <TruncationWarning meta={meta} />
         {error && <div className="error">{error}</div>}
 
         {loading ? (
