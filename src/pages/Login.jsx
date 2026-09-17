@@ -58,7 +58,7 @@ function Login({ onLogin }) {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#1E293B',
+      background: '#1A202C',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -90,7 +90,7 @@ function Login({ onLogin }) {
             fontSize: 48,
             fontWeight: 600,
             letterSpacing: '-1.5px',
-            color: '#F8FAFC',
+            color: '#F7FAFC',
           }}>Thesis</span>
         </div>
 
@@ -105,13 +105,13 @@ function Login({ onLogin }) {
           <h1 style={{
             fontSize: 22,
             fontWeight: 600,
-            color: '#0F172A',
+            color: '#1A202C',
             margin: '0 0 6px',
             textAlign: 'center',
           }}>Καλωσορίσατε</h1>
           <p style={{
             fontSize: 14,
-            color: '#64748B',
+            color: '#718096',
             margin: '0 0 28px',
             textAlign: 'center',
           }}>Συνδεθείτε στον λογαριασμό σας</p>
@@ -134,13 +134,13 @@ function Login({ onLogin }) {
 
           {expired && !authLoop && !error && (
             <div style={{
-              background: '#FFFBEB',
-              color: '#78350F',
+              background: '#FFFAF0',
+              color: '#7B341E',
               padding: '10px 14px',
               borderRadius: 6,
               fontSize: 14,
               marginBottom: 16,
-              border: '1px solid #FCD34D',
+              border: '1px solid #ECC94B',
             }}>
               Η συνεδρία σας έληξε. Συνδεθείτε ξανά — αν είχατε ανοιχτή καταχώρηση,
               τα στοιχεία της φυλάχθηκαν και θα σας προταθούν για επαναφορά.
@@ -149,13 +149,13 @@ function Login({ onLogin }) {
 
           {error && (
             <div style={{
-              background: '#FEE2E2',
-              color: '#991B1B',
+              background: '#FED7D7',
+              color: '#9B2C2C',
               padding: '10px 14px',
               borderRadius: 6,
               fontSize: 14,
               marginBottom: 16,
-              border: '1px solid #FCA5A5',
+              border: '1px solid #FEB2B2',
             }}>{error}</div>
           )}
 
@@ -165,7 +165,7 @@ function Login({ onLogin }) {
                 display: 'block',
                 fontSize: 13,
                 fontWeight: 500,
-                color: '#334155',
+                color: '#2d3748',
                 marginBottom: 6,
               }}>Email</label>
               <input
@@ -194,7 +194,7 @@ function Login({ onLogin }) {
                 display: 'block',
                 fontSize: 13,
                 fontWeight: 500,
-                color: '#334155',
+                color: '#2d3748',
                 marginBottom: 6,
               }}>Κωδικός</label>
               <div style={{ position: 'relative' }}>
@@ -234,7 +234,7 @@ function Login({ onLogin }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#64748B',
+                    color: '#718096',
                   }}
                 >
                   {showPassword ? (
@@ -263,15 +263,15 @@ function Login({ onLogin }) {
                 fontSize: 15,
                 fontWeight: 600,
                 color: '#fff',
-                background: loading ? '#94A3B8' : '#0F172A',
+                background: loading ? '#A0AEC0' : '#1A202C',
                 border: 'none',
                 borderRadius: 8,
                 cursor: loading ? 'not-allowed' : 'pointer',
                 transition: 'background 0.15s',
                 fontFamily: 'inherit',
               }}
-              onMouseEnter={e => !loading && (e.target.style.background = '#F59E0B') && (e.target.style.color = '#0F172A')}
-              onMouseLeave={e => !loading && (e.target.style.background = '#0F172A') && (e.target.style.color = '#fff')}
+              onMouseEnter={e => !loading && (e.target.style.background = '#F59E0B') && (e.target.style.color = '#1A202C')}
+              onMouseLeave={e => !loading && (e.target.style.background = '#1A202C') && (e.target.style.color = '#fff')}
             >
               {loading ? 'Σύνδεση...' : 'Είσοδος'}
             </button>
@@ -279,7 +279,7 @@ function Login({ onLogin }) {
             <div style={{ marginTop: 16, textAlign: 'center' }}>
               <Link to="/forgot-password" style={{
                 fontSize: 13,
-                color: '#64748B',
+                color: '#718096',
                 textDecoration: 'none',
               }}>
                 Ξέχασα τον κωδικό μου
@@ -290,13 +290,13 @@ function Login({ onLogin }) {
           <div style={{
             marginTop: 24,
             paddingTop: 20,
-            borderTop: '1px solid #F1F5F9',
+            borderTop: '1px solid #EDF2F7',
             fontSize: 14,
-            color: '#64748B',
+            color: '#718096',
             textAlign: 'center',
           }}>
             Δεν έχετε λογαριασμό; <Link to="/register" style={{
-              color: '#0F172A',
+              color: '#1A202C',
               fontWeight: 500,
               textDecoration: 'none',
             }}>Εγγραφή εδώ</Link>
@@ -307,9 +307,9 @@ function Login({ onLogin }) {
         <p style={{
           marginTop: 24,
           fontSize: 12,
-          color: '#94A3B8',
+          color: '#A0AEC0',
         }}>
-          Νομικό λογισμικό δικηγορικών γραφείων · <a href="https://www.thesislegal.gr" target="_blank" rel="noopener" style={{ color: '#94A3B8' }}>thesislegal.gr</a>
+          Νομικό λογισμικό δικηγορικών γραφείων · <a href="https://www.thesislegal.gr" target="_blank" rel="noopener" style={{ color: '#A0AEC0' }}>thesislegal.gr</a>
         </p>
       </div>
     </div>

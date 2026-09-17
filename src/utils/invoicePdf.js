@@ -98,7 +98,7 @@ function buildHtml(invoice, orgData) {
     .badge { display: inline-block; padding: 1mm 3mm; border-radius: 3mm; font-size: 9pt; font-weight: bold; }
     .badge.issued    { background: #c6f6d5; color: #22543d; }
     .badge.cancelled { background: #fed7d7; color: #742a2a; }
-    .badge.draft     { background: #feebc8; color: #7c2d12; }
+    .badge.draft     { background: #feebc8; color: #7b341e; }
     .header .date { text-align: right; }
     .header .date .lbl { font-size: 9pt; color: #718096; }
     code { background: #edf2f7; padding: 0 2mm; border-radius: 2px; font-family: 'Menlo', 'Consolas', monospace; font-size: 8.5pt; }
@@ -122,7 +122,7 @@ function buildHtml(invoice, orgData) {
     .footer-info { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; margin-top: 6mm; font-size: 9pt; }
     .footer-info .box { padding: 3mm; background: #f7fafc; border-left: 3px solid #cbd5e0; border-radius: 2mm; }
     .footer-info .box h4 { margin: 0 0 2mm 0; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #4a5568; }
-    .mydata-block { display: flex; gap: 5mm; align-items: center; margin-top: 6mm; padding: 4mm; background: #edf9f0; border: 1px solid #9ae6b4; border-radius: 3mm; }
+    .mydata-block { display: flex; gap: 5mm; align-items: center; margin-top: 6mm; padding: 4mm; background: #f0fff4; border: 1px solid #9ae6b4; border-radius: 3mm; }
     .mydata-block .qr { flex: 0 0 30mm; }
     .mydata-block .qr svg { width: 30mm; height: 30mm; display: block; }
     .mydata-block .info { flex: 1; font-size: 8.5pt; color: #22543d; }

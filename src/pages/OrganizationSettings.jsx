@@ -56,7 +56,7 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
       {error && <div className="error">{error}</div>}
       {saved && <div className="success">✓ Οι αλλαγές αποθηκεύτηκαν.</div>}
       {!isAdmin && (
-        <div style={{ background: '#fff3cd', border: '1px solid #ffc107', borderRadius: 6, padding: 12, marginBottom: 20, color: '#856404' }}>
+        <div style={{ background: '#feebc8', border: '1px solid #d69e2e', borderRadius: 6, padding: 12, marginBottom: 20, color: '#744210' }}>
           ⚠ Μόνο διαχειριστές μπορούν να επεξεργαστούν αυτά τα στοιχεία.
         </div>
       )}

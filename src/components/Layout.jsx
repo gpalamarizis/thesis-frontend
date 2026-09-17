@@ -113,7 +113,7 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
               fontSize: 24,
               fontWeight: 600,
               letterSpacing: '-0.5px',
-              color: '#F8FAFC',
+              color: '#F7FAFC',
             }}>Thesis</span>
           </div>
           <div className="user">

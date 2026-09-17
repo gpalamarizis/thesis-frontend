@@ -358,11 +358,11 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
 
       {recoverable && (
         <div style={{
-          background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: 8,
+          background: '#FFFAF0', border: '1px solid #ECC94B', borderRadius: 8,
           padding: '12px 16px', marginBottom: 16, display: 'flex',
           alignItems: 'center', gap: 16, flexWrap: 'wrap',
         }}>
-          <div style={{ flex: 1, minWidth: 260, fontSize: 14, color: '#78350F' }}>
+          <div style={{ flex: 1, minWidth: 260, fontSize: 14, color: '#7B341E' }}>
             Βρέθηκε καταχώρηση υπόθεσης που δεν ολοκληρώθηκε
             {recoverable.savedAt ? ` (${formatDraftTime(recoverable.savedAt)})` : ''}.
           </div>

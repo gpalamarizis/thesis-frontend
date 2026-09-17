@@ -98,7 +98,7 @@ function OrganizationsTab() {
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-        <button className="btn" style={{ background: '#059669', color: 'white' }} onClick={() => setCreateOpen(true)}>+ Νέα Εταιρεία</button>
+        <button className="btn" style={{ background: '#38a169', color: 'white' }} onClick={() => setCreateOpen(true)}>+ Νέα Εταιρεία</button>
       </div>
 
       <div className="filter-bar" style={{ marginBottom: 16 }}>
@@ -188,7 +188,7 @@ function CreateOrgModal({ onClose, onCreated }) {
   return (
     <Modal title="Νέα Εταιρεία" onClose={onClose} size="xl" actions={<>
       <button className="btn btn-secondary" onClick={onClose}>Άκυρο</button>
-      <button className="btn" style={{ background: '#059669', color: 'white' }} onClick={submit} disabled={busy}>
+      <button className="btn" style={{ background: '#38a169', color: 'white' }} onClick={submit} disabled={busy}>
         {busy ? 'Δημιουργία...' : 'Δημιουργία'}
       </button>
     </>}>
@@ -329,7 +329,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
     <Modal title={o.name} onClose={onClose} size="xl" actions={<>
       <button className="btn btn-secondary" onClick={onClose}>Κλείσιμο</button>
       {!editing && <button className="btn btn-sm" onClick={extendTrial}>+ Trial ημέρες</button>}
-      {!editing && <button className="btn btn-sm" style={{ background: '#2563eb', color: 'white' }} onClick={extendOneYear}>+ 1 έτος</button>}
+      {!editing && <button className="btn btn-sm" style={{ background: '#3182ce', color: 'white' }} onClick={extendOneYear}>+ 1 έτος</button>}
       {!editing && <button className={`btn btn-sm ${o.suspended ? '' : 'btn-danger'}`} onClick={toggleSuspend}>{o.suspended ? 'Επανενεργοποίηση' : 'Suspend'}</button>}
       {!editing && <button className="btn btn-sm btn-danger" onClick={deleteOrg}>🗑 Διαγραφή</button>}
       {editing ? <button className="btn" onClick={save}>Αποθήκευση</button> : <button className="btn" onClick={() => setEditing(true)}>Επεξεργασία</button>}
@@ -377,7 +377,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <h3 style={{ margin: 0 }}>Χρήστες ({data.users.length})</h3>
-        <button className="btn btn-sm" style={{ background: '#059669', color: 'white' }} onClick={() => setShowAddUser(true)}>+ Νέος χρήστης</button>
+        <button className="btn btn-sm" style={{ background: '#38a169', color: 'white' }} onClick={() => setShowAddUser(true)}>+ Νέος χρήστης</button>
       </div>
       <table className="table" style={{ marginBottom: 20 }}>
         <thead><tr><th>Email</th><th>Όνομα</th><th>Ρόλος</th><th>Ενεργός</th><th>Ενέργειες</th></tr></thead>
@@ -385,7 +385,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
           <tr key={u.id}>
             <td>{u.email}</td>
             <td>{u.first_name} {u.last_name}</td>
-            <td>{u.role} {u.is_platform_admin && <span style={{ color: '#9333ea', fontSize: 11 }}>(platform)</span>}</td>
+            <td>{u.role} {u.is_platform_admin && <span style={{ color: '#805ad5', fontSize: 11 }}>(platform)</span>}</td>
             <td><input type="checkbox" checked={u.is_active} onChange={() => toggleUserActive(u)} /></td>
             <td style={{ fontSize: 12 }}>
               <button className="btn btn-sm" onClick={() => resetUserPassword(u)}>Reset PW</button>
@@ -427,7 +427,7 @@ function AddUserModal({ orgId, onClose, onAdded }) {
   return (
     <Modal title="Νέος χρήστης" onClose={onClose} actions={<>
       <button className="btn btn-secondary" onClick={onClose}>Άκυρο</button>
-      <button className="btn" style={{ background: '#059669', color: 'white' }} onClick={submit} disabled={busy}>{busy ? 'Προσθήκη...' : 'Προσθήκη'}</button>
+      <button className="btn" style={{ background: '#38a169', color: 'white' }} onClick={submit} disabled={busy}>{busy ? 'Προσθήκη...' : 'Προσθήκη'}</button>
     </>}>
       {err && <div className="error">{err}</div>}
       <div className="form-grid-2">

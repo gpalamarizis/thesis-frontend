@@ -34,8 +34,8 @@ function StatusBanner({ current }) {
   if (!org) {
     return (
       <div style={{
-        padding: 16, background: '#EFF6FF', border: '1px solid #93C5FD',
-        borderRadius: 6, marginBottom: 20, color: '#1E40AF',
+        padding: 16, background: '#EBF4FF', border: '1px solid #90CDF4',
+        borderRadius: 6, marginBottom: 20, color: '#2B6CB0',
       }}>
         ℹ️ Ο λογαριασμός σας δεν ανήκει σε δικηγορικό γραφείο (platform admin).
         Οι συνδρομές διαχειρίζονται από το <strong>Platform Admin</strong>.
@@ -157,19 +157,19 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
 
       {!isCurrent && !tooFewForOrg && (
         <div style={{
-          marginTop: 10, padding: 12, background: '#F8FAFC',
+          marginTop: 10, padding: 12, background: '#F7FAFC',
           border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 13,
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748B' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#718096' }}>
             <span>{users} × {fmtCurrency(perUser)}</span>
             <span>{fmtCurrency(net)}</span>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748B', marginTop: 4 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#718096', marginTop: 4 }}>
             <span>ΦΠΑ {vatRate}%</span>
             <span>{fmtCurrency(vat)}</span>
           </div>
           <hr style={{ margin: '8px 0', border: 'none', borderTop: '1px solid #E2E8F0' }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 16, color: '#1E293B' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 16, color: '#1A202C' }}>
             <span>Σύνολο</span>
             <span>{fmtCurrency(gross)}</span>
           </div>
@@ -178,8 +178,8 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
 
       {tooFewForOrg && (
         <div style={{
-          marginTop: 10, padding: 10, background: '#FEF3C7',
-          borderRadius: 6, fontSize: 12, color: '#92400E',
+          marginTop: 10, padding: 10, background: '#FEEBC8',
+          borderRadius: 6, fontSize: 12, color: '#9C4221',
         }}>
           Έχετε {minUsers} ενεργούς χρήστες — αυτό το πλάνο καλύπτει έως {max}.
         </div>
@@ -378,30 +378,30 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <tbody>
               <tr>
-                <td style={{ padding: '8px 0', color: '#64748B' }}>Δικαιούχος</td>
+                <td style={{ padding: '8px 0', color: '#718096' }}>Δικαιούχος</td>
                 <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: 600 }}>{bankInfo.beneficiary}</td>
               </tr>
               {bankInfo.bank_name && (
                 <tr>
-                  <td style={{ padding: '8px 0', color: '#64748B' }}>Τράπεζα</td>
+                  <td style={{ padding: '8px 0', color: '#718096' }}>Τράπεζα</td>
                   <td style={{ padding: '8px 0', textAlign: 'right' }}>{bankInfo.bank_name}</td>
                 </tr>
               )}
               <tr>
-                <td style={{ padding: '8px 0', color: '#64748B' }}>IBAN</td>
+                <td style={{ padding: '8px 0', color: '#718096' }}>IBAN</td>
                 <td style={{ padding: '8px 0', textAlign: 'right' }}>
                   <code style={{ fontSize: 14, fontWeight: 600, letterSpacing: 0.5 }}>{bankInfo.iban || '—'}</code>
                 </td>
               </tr>
               <tr><td colSpan={2}><hr style={{ border: 'none', borderTop: '1px solid #E2E8F0', margin: '6px 0' }} /></td></tr>
               <tr>
-                <td style={{ padding: '6px 0', color: '#64748B' }}>
+                <td style={{ padding: '6px 0', color: '#718096' }}>
                   {bankInfo.plan_name} — {bankInfo.users} {bankInfo.users === 1 ? 'χρήστης' : 'χρήστες'}
                 </td>
                 <td style={{ padding: '6px 0', textAlign: 'right' }}>{fmtCurrency(bankInfo.amount_net)}</td>
               </tr>
               <tr>
-                <td style={{ padding: '6px 0', color: '#64748B' }}>ΦΠΑ {bankInfo.vat_rate}%</td>
+                <td style={{ padding: '6px 0', color: '#718096' }}>ΦΠΑ {bankInfo.vat_rate}%</td>
                 <td style={{ padding: '6px 0', textAlign: 'right' }}>{fmtCurrency(bankInfo.vat_amount)}</td>
               </tr>
               <tr>
@@ -414,10 +414,10 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
           </table>
 
           <div style={{
-            marginTop: 16, padding: 14, background: '#FEF3C7',
-            border: '1px solid #FCD34D', borderRadius: 8,
+            marginTop: 16, padding: 14, background: '#FEEBC8',
+            border: '1px solid #ECC94B', borderRadius: 8,
           }}>
-            <div style={{ fontSize: 13, color: '#92400E', marginBottom: 6 }}>
+            <div style={{ fontSize: 13, color: '#9C4221', marginBottom: 6 }}>
               <strong>Σημαντικό:</strong> γράψτε την παρακάτω αιτιολογία στην κατάθεση,
               ώστε να ενεργοποιηθεί αυτόματα η συνδρομή σας.
             </div>
@@ -430,7 +430,7 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
             </div>
           </div>
 
-          <p style={{ fontSize: 12, color: '#94A3B8', marginBottom: 0 }}>
+          <p style={{ fontSize: 12, color: '#A0AEC0', marginBottom: 0 }}>
             Σας στείλαμε και email με τα ίδια στοιχεία.
           </p>
         </Modal>

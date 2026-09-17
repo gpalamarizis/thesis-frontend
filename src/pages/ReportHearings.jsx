@@ -97,31 +97,31 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
 
         <div style={{
           margin: '0 0 16px 0', padding: 12,
-          backgroundColor: '#f8f9fa', border: '1px solid #e9ecef',
+          backgroundColor: '#f7fafc', border: '1px solid #edf2f7',
           borderRadius: 6, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center'
         }}>
           <div>
-            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Από</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Από</label>
             <input
               type="date" value={fromDate}
               onChange={e => setFromDate(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4 }}
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }}
             />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Έως</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Έως</label>
             <input
               type="date" value={toDate}
               onChange={e => setToDate(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4 }}
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }}
             />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Δικηγόρος</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Δικηγόρος</label>
             <select
               value={dikigorosId}
               onChange={e => setDikigorosId(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4 }}
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }}
             >
               <option value="">— Όλοι —</option>
               {lawyers.map(l => (
@@ -131,11 +131,11 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
           </div>
 
           <div>
-            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Είδος υπόθεσης</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Είδος υπόθεσης</label>
             <select
               value={onomasiaId}
               onChange={e => setOnomasiaId(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 220 }}
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 220 }}
             >
               <option value="">— Όλα —</option>
               {caseTypes.map(t => (
@@ -144,11 +144,11 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
             </select>
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Αντίδικος</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Αντίδικος</label>
             <select
               value={antidikosId}
               onChange={e => setAntidikosId(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 220 }}
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 220 }}
             >
               <option value="">— Όλοι —</option>
               {opponents.map(o => (
@@ -161,25 +161,25 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
             <button
               onClick={exportWord}
               disabled={exporting || loading}
-              style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1E293B', borderRadius: 3, backgroundColor: '#1E293B', color: '#fff', fontWeight: 600 }}
+              style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1A202C', borderRadius: 3, backgroundColor: '#1A202C', color: '#fff', fontWeight: 600 }}
             >
               {exporting ? 'Εξαγωγή...' : 'Εξαγωγή σε Word'}
             </button>
             <button
               onClick={() => setPreset(7)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
             >
               7 ημέρες
             </button>
             <button
               onClick={() => setPreset(30)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
             >
               30 ημέρες
             </button>
             <button
               onClick={() => setPreset(90)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
             >
               90 ημέρες
             </button>
@@ -193,7 +193,7 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
         ) : items.length === 0 ? (
           <div className="empty-state">Δεν βρέθηκαν δικάσιμοι στο διάστημα.</div>
         ) : (
-          <div style={{ overflowX: 'auto', border: '1px solid #ddd', borderRadius: 4 }}>
+          <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 4 }}>
             <table className="table" style={{ fontSize: 13 }}>
               <thead>
                 <tr>
@@ -221,7 +221,7 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
                     <td>{r.city_name || '—'}</td>
                     <td>
                       {r.ypothesi_id ? (
-                        <Link to={`/cases/${r.ypothesi_id}`} style={{ fontWeight: 'bold', color: '#0066cc' }}>
+                        <Link to={`/cases/${r.ypothesi_id}`} style={{ fontWeight: 'bold', color: '#3182ce' }}>
                           {r.xeirokinito_id || `#${r.ypothesi_id}`}
                         </Link>
                       ) : '—'}

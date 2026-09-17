@@ -160,13 +160,13 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
               placeholder="🔍 Αναζήτηση ονόματος..."
               value={q}
               onChange={e => setQ(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4, minWidth: 200 }}
+              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, minWidth: 200 }}
             />
             <select
               value={fIdiotita}
               onChange={e => setFIdiotita(e.target.value)}
               title="Φίλτρο ιδιότητας"
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4 }}
+              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4 }}
             >
               <option value="">Όλες οι ιδιότητες</option>
               {idiotites.map(i => <option key={i.aa} value={i.aa}>{i.name}</option>)}
@@ -176,7 +176,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
               value={fPoli}
               onChange={e => setFPoli(e.target.value)}
               title="Φίλτρο πόλης"
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4 }}
+              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4 }}
             >
               <option value="">Όλες οι πόλεις</option>
               {cities.map(ct => (
@@ -186,7 +186,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
             <label
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontSize: 13, color: '#64748B', cursor: 'pointer', whiteSpace: 'nowrap',
+                fontSize: 13, color: '#718096', cursor: 'pointer', whiteSpace: 'nowrap',
               }}
               title="Οι αντίδικοι έχουν δικό τους πίνακα. Εδώ εμφανίζονται μόνο αν το ζητήσεις."
             >
@@ -234,10 +234,10 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                   <td>
                     {r.idiotita_name ? (
                       <span style={{
-                        background: '#EEF2FF', color: '#3730A3',
+                        background: '#EBF4FF', color: '#4C51BF',
                         padding: '2px 8px', borderRadius: 10, fontSize: 12, whiteSpace: 'nowrap',
                       }}>{r.idiotita_name}</span>
-                    ) : <span style={{ color: '#CBD5E1' }}>—</span>}
+                    ) : <span style={{ color: '#CBD5E0' }}>—</span>}
                   </td>
                   <td>{r.afm || '—'}</td>
                   <td>{r.tilefono_kinito_1 || r.tilefono_grafeiou_1 || r.tilefono_oikias_1 || '—'}</td>
@@ -269,7 +269,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
             {error && <div className="error">{error}</div>}
             <form onSubmit={handleSubmit} onKeyDown={entryKeyDown}>
 
-              <h3 style={{ marginTop: 8, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>Στοιχεία Επιχείρησης (αν είναι εταιρεία)</h3>
+              <h3 style={{ marginTop: 8, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Στοιχεία Επιχείρησης (αν είναι εταιρεία)</h3>
               <div className="form-row">
                 <div className="form-group">
                   <label>Επωνυμία</label>
@@ -281,7 +281,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>Στοιχεία Φυσικού Προσώπου</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Στοιχεία Φυσικού Προσώπου</h3>
               <div className="form-row">
                 <div className="form-group">
                   <label>Επώνυμο</label>
@@ -313,7 +313,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>Ταυτότητα & ΑΦΜ</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Ταυτότητα & ΑΦΜ</h3>
               <div className="form-row">
                 <div className="form-group">
                   <label>Α.Δ.Τ.</label>
@@ -335,7 +335,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>Επικοινωνία & Σχέση</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Επικοινωνία & Σχέση</h3>
               <div className="form-row">
                 <div className="form-group">
                   <label>Email</label>
@@ -355,7 +355,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                       <option key={i.aa} value={i.aa}>{i.name}</option>
                     ))}
                   </select>
-                  <small style={{ color: '#94A3B8' }}>Τι <b>είναι</b> ο άνθρωπος (δικηγόρος, συμβολαιογράφος…)</small>
+                  <small style={{ color: '#A0AEC0' }}>Τι <b>είναι</b> ο άνθρωπος (δικηγόρος, συμβολαιογράφος…)</small>
                 </div>
                 {/* ΑΦΑΙΡΕΘΗΚΕ: «Είδος σχέσης» (παρατήρηση Μαύρου #7) — καταχωρείται ανά υπόθεση. */}
                 <div className="form-group" style={{ flex: '0 0 120px' }}>
@@ -366,8 +366,8 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>
-                Παρατηρήσεις <span style={{ fontWeight: 400, fontSize: 13, color: '#94A3B8' }}>— εσωτερική σημείωση, δεν εμφανίζεται σε έγγραφα</span>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
+                Παρατηρήσεις <span style={{ fontWeight: 400, fontSize: 13, color: '#A0AEC0' }}>— εσωτερική σημείωση, δεν εμφανίζεται σε έγγραφα</span>
               </h3>
               <div className="form-group">
                 <textarea
@@ -383,7 +383,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 />
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>Διεύθυνση Οικίας</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Διεύθυνση Οικίας</h3>
               <div className="form-row">
                 <div className="form-group" style={{ flex: 3 }}>
                   <label>Οδός</label>
@@ -409,7 +409,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>Διεύθυνση Γραφείου</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Διεύθυνση Γραφείου</h3>
               <div className="form-row">
                 <div className="form-group" style={{ flex: 3 }}>
                   <label>Οδός</label>
@@ -435,7 +435,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #ddd', paddingBottom: 4 }}>Τηλέφωνα</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Τηλέφωνα</h3>
               <div className="form-row">
                 <div className="form-group">
                   <label>Οικίας 1</label>
@@ -539,8 +539,8 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                       <td style={{ fontSize: 13 }}>{cs.eidos_sxesis_name || '—'}</td>
                       <td>
                         {cs.ekkremis
-                          ? <span style={{ color: '#B45309', fontSize: 12 }}>Εκκρεμής</span>
-                          : <span style={{ color: '#64748B', fontSize: 12 }}>Κλειστή</span>}
+                          ? <span style={{ color: '#C05621', fontSize: 12 }}>Εκκρεμής</span>
+                          : <span style={{ color: '#718096', fontSize: 12 }}>Κλειστή</span>}
                       </td>
                     </tr>
                   ))}

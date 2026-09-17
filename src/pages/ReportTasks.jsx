@@ -103,23 +103,23 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
 
         <div style={{
           margin: '0 0 16px 0', padding: 12,
-          backgroundColor: '#f8f9fa', border: '1px solid #e9ecef',
+          backgroundColor: '#f7fafc', border: '1px solid #edf2f7',
           borderRadius: 6, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center'
         }}>
           <div>
-            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Από (προθεσμία)</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Από (προθεσμία)</label>
             <input
               type="date" value={fromDate}
               onChange={e => setFromDate(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4 }}
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }}
             />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Έως</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Έως</label>
             <input
               type="date" value={toDate}
               onChange={e => setToDate(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4 }}
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }}
             />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', marginTop: 18 }}>
@@ -133,11 +133,11 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
           </div>
 
           <div>
-            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Δικηγόρος</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Δικηγόρος</label>
             <select
               value={dikigorosId}
               onChange={e => setDikigorosId(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 200 }}
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 200 }}
             >
               <option value="">— Όλοι —</option>
               {lawyers.map(l => (
@@ -146,11 +146,11 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
             </select>
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Είδος υπόθεσης</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Είδος υπόθεσης</label>
             <select
               value={onomasiaId}
               onChange={e => setOnomasiaId(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 200 }}
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 200 }}
             >
               <option value="">— Όλα —</option>
               {caseTypes.map(t => (
@@ -159,11 +159,11 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
             </select>
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#666', display: 'block', marginBottom: 2 }}>Αντίδικος</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Αντίδικος</label>
             <select
               value={antidikosId}
               onChange={e => setAntidikosId(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 200 }}
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 200 }}
             >
               <option value="">— Όλοι —</option>
               {opponents.map(o => (
@@ -176,25 +176,25 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
             <button
               onClick={exportWord}
               disabled={exporting || loading}
-              style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1E293B', borderRadius: 3, backgroundColor: '#1E293B', color: '#fff', fontWeight: 600 }}
+              style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1A202C', borderRadius: 3, backgroundColor: '#1A202C', color: '#fff', fontWeight: 600 }}
             >
               {exporting ? 'Εξαγωγή...' : 'Εξαγωγή σε Word'}
             </button>
             <button
               onClick={() => setRange(null, null)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
             >
               Όλες
             </button>
             <button
               onClick={() => setRange(0, 7)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
             >
               Επόμενες 7 ημέρες
             </button>
             <button
               onClick={() => setRange(0, 30)}
-              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
             >
               Επόμενες 30 ημέρες
             </button>
@@ -208,7 +208,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
         ) : items.length === 0 ? (
           <div className="empty-state">Δεν βρέθηκαν λοιπές ενέργειες.</div>
         ) : (
-          <div style={{ overflowX: 'auto', border: '1px solid #ddd', borderRadius: 4 }}>
+          <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 4 }}>
             <table className="table" style={{ fontSize: 13 }}>
               <thead>
                 <tr>
@@ -225,28 +225,28 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                 {items.map(r => {
                   const overdue = r.ekkremis && isPast(r.date_dead_line);
                   return (
-                    <tr key={r.aa} style={overdue ? { backgroundColor: '#fff3cd' } : {}}>
+                    <tr key={r.aa} style={overdue ? { backgroundColor: '#feebc8' } : {}}>
                       <td style={{ fontWeight: 500 }}>
                         {r.date_dead_line ? (
                           <>
                             {fmtDate(r.date_dead_line)}
                             {overdue && (
-                              <span style={{ marginLeft: 6, fontSize: 11, color: '#c00', fontWeight: 'bold' }}>
+                              <span style={{ marginLeft: 6, fontSize: 11, color: '#c53030', fontWeight: 'bold' }}>
                                 ⚠️ ΕΚΠΡΟΘΕΣΜΗ
                               </span>
                             )}
                           </>
                         ) : (
-                          <span style={{ color: '#888' }}>— χωρίς προθεσμία —</span>
+                          <span style={{ color: '#718096' }}>— χωρίς προθεσμία —</span>
                         )}
                       </td>
                       <td>
                         {r.ekkremis ? (
-                          <span style={{ padding: '2px 8px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: 10, fontSize: 11, fontWeight: 'bold' }}>
+                          <span style={{ padding: '2px 8px', backgroundColor: '#feebc8', color: '#744210', borderRadius: 10, fontSize: 11, fontWeight: 'bold' }}>
                             Εκκρεμής
                           </span>
                         ) : (
-                          <span style={{ padding: '2px 8px', backgroundColor: '#d4edda', color: '#155724', borderRadius: 10, fontSize: 11 }}>
+                          <span style={{ padding: '2px 8px', backgroundColor: '#c6f6d5', color: '#22543d', borderRadius: 10, fontSize: 11 }}>
                             Ολοκληρωμένη
                           </span>
                         )}
@@ -254,7 +254,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                       <td>{r.perigrafi_energias || '—'}</td>
                       <td>
                         {r.ypothesi_id ? (
-                          <Link to={`/cases/${r.ypothesi_id}`} style={{ fontWeight: 'bold', color: '#0066cc' }}>
+                          <Link to={`/cases/${r.ypothesi_id}`} style={{ fontWeight: 'bold', color: '#3182ce' }}>
                             {r.xeirokinito_id || `#${r.ypothesi_id}`}
                           </Link>
                         ) : '—'}

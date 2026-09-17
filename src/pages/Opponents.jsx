@@ -88,7 +88,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
 
   const sectionTitle = {
     margin: '18px 0 6px', fontSize: 13, fontWeight: 600,
-    color: '#1F3864', borderBottom: '1px solid #e3e8ef', paddingBottom: 4,
+    color: '#2A4365', borderBottom: '1px solid #e2e8f0', paddingBottom: 4,
   };
 
   return (
@@ -102,7 +102,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
               placeholder="🔍 Αναζήτηση..."
               value={q}
               onChange={e => setQ(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4, minWidth: 220 }}
+              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, minWidth: 220 }}
             />
             <button className="btn" onClick={openNew}>+ Νέος</button>
           </div>
@@ -133,7 +133,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
                   <td>
                     <strong>{r.eponymia && r.eponymia.trim() ? r.eponymia : r.eponymo}</strong>
                     {r.eponymia && r.eponymia.trim() ? (
-                      <span style={{ marginLeft: 6, fontSize: 11, color: '#888' }}>ΝΠ</span>
+                      <span style={{ marginLeft: 6, fontSize: 11, color: '#718096' }}>ΝΠ</span>
                     ) : null}
                   </td>
                   <td>{r.onoma || '—'}</td>

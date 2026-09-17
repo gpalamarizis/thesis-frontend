@@ -412,11 +412,11 @@ function CaseTab({ caseData, onSave, saving }) {
                       padding: '8px 10px',
                       cursor: 'pointer',
                       borderRadius: 4,
-                      borderBottom: isLast ? 'none' : '1px solid #f1f5f9',
+                      borderBottom: isLast ? 'none' : '1px solid #edf2f7',
                       transition: 'background 0.1s',
                       boxSizing: 'border-box',
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                    onMouseEnter={e => e.currentTarget.style.background = '#f7fafc'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
                     <span style={{
@@ -470,7 +470,7 @@ function CaseTab({ caseData, onSave, saving }) {
                 <a
                   key={sc.aa || sc.id}
                   href={`/cases/${sc.aa || sc.id}`}
-                  style={{ display: 'block', padding: '6px 8px', borderBottom: '1px solid #f0f0f0', fontSize: 12, textDecoration: 'none', color: '#2d3748' }}
+                  style={{ display: 'block', padding: '6px 8px', borderBottom: '1px solid #edf2f7', fontSize: 12, textDecoration: 'none', color: '#2d3748' }}
                 >
                   <strong>{sc.xeirokinito_id || `#${sc.aa || sc.id}`}</strong>
                   {sc.perilipsi && <div style={{ color: '#718096', fontSize: 11, marginTop: 2 }}>{sc.perilipsi.substring(0, 60)}{sc.perilipsi.length > 60 ? '...' : ''}</div>}
@@ -1159,7 +1159,7 @@ function DocsTab({ caseId, rows, onChange }) {
                     >
                       <td>
                         <span style={{ marginRight: 6 }}>{missing ? '⚠️' : fileIcon(name)}</span>
-                        <span style={missing ? { textDecoration: 'line-through', color: '#94A3B8' } : undefined}>
+                        <span style={missing ? { textDecoration: 'line-through', color: '#A0AEC0' } : undefined}>
                           {name}
                         </span>
                         {missing && (
@@ -1167,7 +1167,7 @@ function DocsTab({ caseId, rows, onChange }) {
                             title="Η εγγραφή υπάρχει, αλλά το αρχείο δεν βρέθηκε στον αποθηκευτικό χώρο. Πιθανόν δεν μεταφέρθηκε από το παλιό σύστημα."
                             style={{
                               marginLeft: 8, fontSize: 11, padding: '2px 8px', borderRadius: 10,
-                              background: '#FEF3C7', color: '#92400E', whiteSpace: 'nowrap',
+                              background: '#FEEBC8', color: '#9C4221', whiteSpace: 'nowrap',
                             }}
                           >μη διαθέσιμο</span>
                         )}
@@ -1177,7 +1177,7 @@ function DocsTab({ caseId, rows, onChange }) {
                       <td>{docUser(d)}</td>
                       <td style={{ whiteSpace: 'nowrap' }}>
                         {missing ? (
-                          <span style={{ fontSize: 12, color: '#94A3B8' }}>—</span>
+                          <span style={{ fontSize: 12, color: '#A0AEC0' }}>—</span>
                         ) : (
                           <>
                             <button className="btn btn-sm" onClick={(e) => { e.stopPropagation(); openDownload(d); }}>⬇ Λήψη</button>

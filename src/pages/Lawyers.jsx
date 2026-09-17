@@ -137,9 +137,9 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
   };
 
   const rowStyle = (aa) => {
-    if (savedFlash[aa])    return { backgroundColor: '#d4edda' };
-    if (rowError[aa])      return { backgroundColor: '#f8d7da' };
-    if (dirty[aa])         return { backgroundColor: '#fff3cd' };
+    if (savedFlash[aa])    return { backgroundColor: '#c6f6d5' };
+    if (rowError[aa])      return { backgroundColor: '#fed7d7' };
+    if (dirty[aa])         return { backgroundColor: '#feebc8' };
     return {};
   };
 
@@ -156,7 +156,7 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
     boxSizing: 'border-box',
   };
 
-  const cellInputFocus = (e) => { e.target.style.border = '1px solid #0066cc'; e.target.style.backgroundColor = '#fff'; };
+  const cellInputFocus = (e) => { e.target.style.border = '1px solid #3182ce'; e.target.style.backgroundColor = '#fff'; };
   const cellInputBlur  = (e) => { e.target.style.border = '1px solid transparent'; e.target.style.backgroundColor = 'transparent'; };
 
   return (
@@ -170,7 +170,7 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
               placeholder="🔍 Αναζήτηση..."
               value={q}
               onChange={e => setQ(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4, minWidth: 220 }}
+              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, minWidth: 220 }}
             />
             <button className="btn" onClick={() => setShowAddModal(true)}>+ Νέος</button>
           </div>
@@ -178,8 +178,8 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
 
         {error && <div className="error">{error}</div>}
 
-        <div style={{ fontSize: 13, color: '#666', marginBottom: 12 }}>
-          💡 Click σε οποιοδήποτε πεδίο για επεξεργασία. Η γραμμή γίνεται <span style={{backgroundColor:'#fff3cd', padding:'0 4px', borderRadius:2}}>κίτρινη</span> — πάτα 💾 για αποθήκευση. Επιτυχία = <span style={{backgroundColor:'#d4edda', padding:'0 4px', borderRadius:2}}>πράσινη</span>. Σφάλμα = <span style={{backgroundColor:'#f8d7da', padding:'0 4px', borderRadius:2}}>κόκκινη</span>.
+        <div style={{ fontSize: 13, color: '#4a5568', marginBottom: 12 }}>
+          💡 Click σε οποιοδήποτε πεδίο για επεξεργασία. Η γραμμή γίνεται <span style={{backgroundColor:'#feebc8', padding:'0 4px', borderRadius:2}}>κίτρινη</span> — πάτα 💾 για αποθήκευση. Επιτυχία = <span style={{backgroundColor:'#c6f6d5', padding:'0 4px', borderRadius:2}}>πράσινη</span>. Σφάλμα = <span style={{backgroundColor:'#fed7d7', padding:'0 4px', borderRadius:2}}>κόκκινη</span>.
         </div>
 
         {loading ? (
@@ -187,10 +187,10 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
         ) : items.length === 0 ? (
           <div className="empty-state">Δεν υπάρχουν εγγραφές.</div>
         ) : (
-          <div style={{ overflowX: 'auto', border: '1px solid #ddd', borderRadius: 4 }}>
+          <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 4 }}>
             <table style={{ minWidth: totalMinWidth, borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr style={{ backgroundColor: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+                <tr style={{ backgroundColor: '#f7fafc', borderBottom: '2px solid #e2e8f0' }}>
                   {COLUMNS.map(col => (
                     <th key={col.key} style={{
                       padding: '8px 6px', width: col.width, minWidth: col.width,
@@ -204,7 +204,7 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
               </thead>
               <tbody>
                 {items.map(r => (
-                  <tr key={r.aa} style={{ ...rowStyle(r.aa), borderBottom: '1px solid #eee' }}>
+                  <tr key={r.aa} style={{ ...rowStyle(r.aa), borderBottom: '1px solid #edf2f7' }}>
                     {COLUMNS.map(col => (
                       <td key={col.key} style={{ padding: '2px 4px', verticalAlign: 'middle' }}>
                         {col.type === 'boolean' ? (
@@ -236,7 +236,7 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
                           style={{
                             padding: '4px 10px', fontSize: 13, cursor: 'pointer',
                             border: 'none', borderRadius: 3,
-                            backgroundColor: '#0066cc', color: 'white',
+                            backgroundColor: '#3182ce', color: 'white',
                             marginRight: 4,
                           }}
                           title="Αποθήκευση γραμμής"
@@ -245,12 +245,12 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
                         </button>
                       )}
                       {savedFlash[r.aa] && !dirty[r.aa] && (
-                        <span style={{ fontSize: 14, color: '#28a745', fontWeight: 'bold', marginRight: 6 }}>✓</span>
+                        <span style={{ fontSize: 14, color: '#38a169', fontWeight: 'bold', marginRight: 6 }}>✓</span>
                       )}
                       {rowError[r.aa] && (
                         <span
                           title={rowError[r.aa]}
-                          style={{ fontSize: 14, color: '#c00', cursor: 'help', marginRight: 6 }}
+                          style={{ fontSize: 14, color: '#c53030', cursor: 'help', marginRight: 6 }}
                         >
                           ⚠️
                         </span>
@@ -259,8 +259,8 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
                         onClick={() => deleteRow(r)}
                         style={{
                           padding: '3px 8px', fontSize: 13, cursor: 'pointer',
-                          border: '1px solid #ccc', borderRadius: 3,
-                          backgroundColor: 'white', color: '#c00',
+                          border: '1px solid #cbd5e0', borderRadius: 3,
+                          backgroundColor: 'white', color: '#c53030',
                         }}
                         title="Διαγραφή"
                       >
@@ -334,7 +334,7 @@ function Lawyers({ user, onLogout, onOpenCaseSearch }) {
                   />
                 </div>
               </div>
-              <p style={{ fontSize: 12, color: '#666', marginTop: 12 }}>
+              <p style={{ fontSize: 12, color: '#4a5568', marginTop: 12 }}>
                 💡 Θα μπορείς να συμπληρώσεις όλα τα υπόλοιπα πεδία με inline edit στη λίστα (κινητό, διευθύνσεις, ημ. εγγραφής, κ.λπ.).
               </p>
               <div className="modal-actions">

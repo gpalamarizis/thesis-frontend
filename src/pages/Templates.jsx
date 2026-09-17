@@ -55,7 +55,7 @@ function TemplatesPage({ user, onLogout, onOpenCaseSearch }) {
             <button className="btn btn-sm btn-secondary" onClick={() => setShowHelp(true)}>📖 Placeholders</button>
             {isAdmin && (
               <>
-        <button className="btn" onClick={() => { window.location.href = '/settings/templates/bulk'; }} style={{ marginRight: 8, background: '#f0f0f0', color: '#333' }}>📁 Μαζική εισαγωγή</button>
+        <button className="btn" onClick={() => { window.location.href = '/settings/templates/bulk'; }} style={{ marginRight: 8, background: '#edf2f7', color: '#2d3748' }}>📁 Μαζική εισαγωγή</button>
         <button className="btn" onClick={() => setShowUpload(true)}>+ Ανέβασμα υποδείγματος</button>
       </>
             )}
@@ -211,7 +211,7 @@ function UploadModal({ onClose, onSaved }) {
         <label>Περιγραφή</label>
         <textarea rows="3" value={description} onChange={e => setDescription(e.target.value)} placeholder="Σύντομη περιγραφή του υποδείγματος" />
       </div>
-      <div style={{ background: '#fef5e7', padding: 10, borderRadius: 4, fontSize: 12, color: '#7c2d12' }}>
+      <div style={{ background: '#fffaf0', padding: 10, borderRadius: 4, fontSize: 12, color: '#7b341e' }}>
         💡 Στο .docx μπορείς να χρησιμοποιήσεις placeholders όπως <code>{'{{PELATIS_EPONYMO}}'}</code>, <code>{'{{XEIROKINITO_ID}}'}</code>, <code>{'{{DATE_TODAY_GREEK}}'}</code> κτλ. Δες όλα τα διαθέσιμα placeholders από το κουμπί «📖 Placeholders».
       </div>
     </Modal>

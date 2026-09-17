@@ -86,7 +86,7 @@ function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
               placeholder="🔍 Αναζήτηση..."
               value={q}
               onChange={e => setQ(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4, minWidth: 220 }}
+              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, minWidth: 220 }}
             />
             <button className="btn" onClick={openNew}>+ Νέος</button>
           </div>

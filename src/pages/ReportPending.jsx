@@ -84,12 +84,12 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
               placeholder="🔍 Πρωτόκολλο, πελάτης, αντίδικος..."
               value={q}
               onChange={e => setQ(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4, minWidth: 260 }}
+              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, minWidth: 260 }}
             />
             <select
               value={dikigorosId}
               onChange={e => setDikigorosId(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4 }}
+              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4 }}
             >
               <option value="">— Όλοι οι δικηγόροι —</option>
               {lawyers.map(l => (
@@ -101,7 +101,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
             <select
               value={onomasiaId}
               onChange={e => setOnomasiaId(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 220 }}
+              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 220 }}
             >
               <option value="">— Όλα τα είδη υπόθεσης —</option>
               {caseTypes.map(t => (
@@ -111,7 +111,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
             <select
               value={antidikosId}
               onChange={e => setAntidikosId(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #ccc', borderRadius: 4, maxWidth: 220 }}
+              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 220 }}
             >
               <option value="">— Όλοι οι αντίδικοι —</option>
               {opponents.map(o => (
@@ -121,7 +121,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
             <button
               onClick={exportWord}
               disabled={exporting || loading}
-              style={{ padding: '6px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1E293B', borderRadius: 4, backgroundColor: '#1E293B', color: '#fff', fontWeight: 600 }}
+              style={{ padding: '6px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1A202C', borderRadius: 4, backgroundColor: '#1A202C', color: '#fff', fontWeight: 600 }}
             >
               {exporting ? 'Εξαγωγή...' : 'Εξαγωγή σε Word'}
             </button>
@@ -135,7 +135,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
         ) : items.length === 0 ? (
           <div className="empty-state">Δεν βρέθηκαν εκκρεμείς υποθέσεις.</div>
         ) : (
-          <div style={{ overflowX: 'auto', border: '1px solid #ddd', borderRadius: 4 }}>
+          <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 4 }}>
             <table className="table" style={{ fontSize: 13 }}>
               <thead>
                 <tr>
@@ -152,7 +152,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
                 {items.map(r => (
                   <tr key={r.aa}>
                     <td>
-                      <Link to={`/cases/${r.aa}`} style={{ fontWeight: 'bold', color: '#0066cc' }}>
+                      <Link to={`/cases/${r.aa}`} style={{ fontWeight: 'bold', color: '#3182ce' }}>
                         {r.xeirokinito_id || `#${r.aa}`}
                       </Link>
                     </td>

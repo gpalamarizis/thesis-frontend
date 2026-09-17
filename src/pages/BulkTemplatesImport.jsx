@@ -273,49 +273,49 @@ export default function BulkTemplatesImport() {
     headerRow: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 },
     backBtn: {
       padding: '6px 14px', fontSize: 14, cursor: 'pointer',
-      backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: 4, color: '#333',
+      backgroundColor: '#fff', border: '1px solid #cbd5e0', borderRadius: 4, color: '#2d3748',
     },
     h1: { margin: 0, flex: 1 },
-    subtitle: { color: '#666', marginBottom: 24, fontSize: 14 },
+    subtitle: { color: '#4a5568', marginBottom: 24, fontSize: 14 },
     dropzone: {
-      border: '2px dashed #999', padding: '60px 20px', textAlign: 'center',
-      borderRadius: 8, backgroundColor: '#fafafa'
+      border: '2px dashed #a0aec0', padding: '60px 20px', textAlign: 'center',
+      borderRadius: 8, backgroundColor: '#f7fafc'
     },
     dropzoneText: { fontSize: 18, marginBottom: 20 },
-    dropzoneSep: { marginBottom: 20, color: '#999' },
+    dropzoneSep: { marginBottom: 20, color: '#a0aec0' },
     btn: {
       padding: '8px 16px', fontSize: 14, cursor: 'pointer',
-      border: '1px solid #ccc', borderRadius: 4, backgroundColor: '#fff',
+      border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff',
     },
     btnPrimary: {
       padding: '10px 20px', fontSize: 16, cursor: 'pointer',
-      backgroundColor: '#0066cc', color: '#fff', border: 'none', borderRadius: 4,
+      backgroundColor: '#3182ce', color: '#fff', border: 'none', borderRadius: 4,
     },
     btnDisabled: {
       padding: '10px 20px', fontSize: 16, cursor: 'not-allowed',
-      backgroundColor: '#ccc', color: '#fff', border: 'none', borderRadius: 4,
+      backgroundColor: '#cbd5e0', color: '#fff', border: 'none', borderRadius: 4,
     },
     btnDanger: {
       padding: '10px 20px', fontSize: 16, cursor: 'pointer',
-      backgroundColor: '#cc0000', color: '#fff', border: 'none', borderRadius: 4,
+      backgroundColor: '#c53030', color: '#fff', border: 'none', borderRadius: 4,
     },
     btnSuccess: {
       padding: '10px 20px', fontSize: 16, cursor: 'pointer',
-      backgroundColor: '#28a745', color: '#fff', border: 'none', borderRadius: 4,
+      backgroundColor: '#38a169', color: '#fff', border: 'none', borderRadius: 4,
     },
     btnWarning: {
       padding: '6px 12px', fontSize: 13, cursor: 'pointer',
-      backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffeeba', borderRadius: 4,
+      backgroundColor: '#feebc8', color: '#744210', border: '1px solid #fbd38d', borderRadius: 4,
     },
-    hint: { marginTop: 20, fontSize: 13, color: '#666' },
+    hint: { marginTop: 20, fontSize: 13, color: '#4a5568' },
     checkingBanner: {
-      padding: 16, backgroundColor: '#e7f3fe', border: '1px solid #b8daff',
-      borderRadius: 4, marginBottom: 12, color: '#004085'
+      padding: 16, backgroundColor: '#ebf8ff', border: '1px solid #bee3f8',
+      borderRadius: 4, marginBottom: 12, color: '#2a4365'
     },
     dupWarnBar: {
-      padding: '10px 14px', backgroundColor: '#fff3cd', border: '1px solid #ffeeba',
+      padding: '10px 14px', backgroundColor: '#feebc8', border: '1px solid #fbd38d',
       borderRadius: 4, marginBottom: 12, display: 'flex', alignItems: 'center',
-      gap: 12, flexWrap: 'wrap', fontSize: 14, color: '#856404'
+      gap: 12, flexWrap: 'wrap', fontSize: 14, color: '#744210'
     },
     toolbar: {
       margin: '16px 0 12px 0', display: 'flex', gap: 10,
@@ -326,11 +326,11 @@ export default function BulkTemplatesImport() {
     },
     counter: { display: 'inline-flex', gap: 4, alignItems: 'center' },
     progressWrap: {
-      marginBottom: 8, background: '#eee', height: 16, borderRadius: 8,
-      overflow: 'hidden', position: 'relative', border: '1px solid #ddd'
+      marginBottom: 8, background: '#edf2f7', height: 16, borderRadius: 8,
+      overflow: 'hidden', position: 'relative', border: '1px solid #e2e8f0'
     },
     progressBar: {
-      height: '100%', backgroundColor: '#0066cc',
+      height: '100%', backgroundColor: '#3182ce',
       transition: 'width 0.3s ease',
       backgroundImage: 'linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent)',
       backgroundSize: '20px 20px',
@@ -341,44 +341,44 @@ export default function BulkTemplatesImport() {
       textShadow: '0 0 3px rgba(0,0,0,0.5)'
     },
     timerRow: {
-      display: 'flex', gap: 20, fontSize: 13, color: '#555',
+      display: 'flex', gap: 20, fontSize: 13, color: '#4a5568',
       marginBottom: 12, flexWrap: 'wrap'
     },
     tableWrap: {
       maxHeight: '55vh', overflowY: 'auto',
-      border: '1px solid #ddd', borderRadius: 4
+      border: '1px solid #e2e8f0', borderRadius: 4
     },
     table: { width: '100%', borderCollapse: 'collapse', fontSize: 14 },
     th: {
-      padding: 8, textAlign: 'left', backgroundColor: '#f5f5f5',
-      borderBottom: '2px solid #ddd', position: 'sticky', top: 0, zIndex: 1
+      padding: 8, textAlign: 'left', backgroundColor: '#f7fafc',
+      borderBottom: '2px solid #e2e8f0', position: 'sticky', top: 0, zIndex: 1
     },
-    td: { padding: 6, borderBottom: '1px solid #eee', verticalAlign: 'middle' },
+    td: { padding: 6, borderBottom: '1px solid #edf2f7', verticalAlign: 'middle' },
     input: {
-      width: '100%', padding: 4, border: '1px solid #ccc',
+      width: '100%', padding: 4, border: '1px solid #cbd5e0',
       borderRadius: 3, fontSize: 13
     },
     select: { width: '100%', padding: 4, fontSize: 13 },
     xbtn: {
-      padding: '2px 6px', cursor: 'pointer', border: '1px solid #ccc',
+      padding: '2px 6px', cursor: 'pointer', border: '1px solid #cbd5e0',
       borderRadius: 3, backgroundColor: '#fff', fontSize: 12
     },
     successBanner: {
-      marginTop: 16, padding: 16, backgroundColor: '#d4edda',
-      border: '1px solid #c3e6cb', borderRadius: 6,
+      marginTop: 16, padding: 16, backgroundColor: '#c6f6d5',
+      border: '1px solid #9ae6b4', borderRadius: 6,
       display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap'
     },
     summaryBanner: {
-      marginTop: 16, padding: 12, backgroundColor: '#f0f8ff', borderRadius: 4
+      marginTop: 16, padding: 12, backgroundColor: '#ebf8ff', borderRadius: 4
     },
   };
 
   const rowStyle = (it) => {
-    if (it.status === 'uploading') return { backgroundColor: '#fff8e1' };
-    if (it.status === 'ok')        return { backgroundColor: '#e8f5e9' };
-    if (it.status === 'error')     return { backgroundColor: '#ffebee' };
-    if (it.status === 'skipped')   return { backgroundColor: '#f0f0f0', color: '#888' };
-    if (it.isDuplicate)            return { backgroundColor: '#fffdf5' };
+    if (it.status === 'uploading') return { backgroundColor: '#fffaf0' };
+    if (it.status === 'ok')        return { backgroundColor: '#f0fff4' };
+    if (it.status === 'error')     return { backgroundColor: '#fff5f5' };
+    if (it.status === 'skipped')   return { backgroundColor: '#edf2f7', color: '#718096' };
+    if (it.isDuplicate)            return { backgroundColor: '#fffaf0' };
     return {};
   };
 
@@ -474,12 +474,12 @@ export default function BulkTemplatesImport() {
             </button>
 
             <div style={S.counters}>
-              <span style={{ ...S.counter, color: '#080' }}>✅ {okCount}</span>
-              <span style={{ ...S.counter, color: '#0066cc' }}>⬆️ {uploadingCount}</span>
-              <span style={{ ...S.counter, color: '#888' }}>⏸️ {skippedCount}</span>
-              <span style={{ ...S.counter, color: '#888' }}>⏳ {pendingCount}</span>
-              <span style={{ ...S.counter, color: '#c00' }}>❌ {failCount}</span>
-              <span style={{ ...S.counter, color: '#333', fontWeight: 'bold' }}>
+              <span style={{ ...S.counter, color: '#2f855a' }}>✅ {okCount}</span>
+              <span style={{ ...S.counter, color: '#3182ce' }}>⬆️ {uploadingCount}</span>
+              <span style={{ ...S.counter, color: '#718096' }}>⏸️ {skippedCount}</span>
+              <span style={{ ...S.counter, color: '#718096' }}>⏳ {pendingCount}</span>
+              <span style={{ ...S.counter, color: '#c53030' }}>❌ {failCount}</span>
+              <span style={{ ...S.counter, color: '#2d3748', fontWeight: 'bold' }}>
                 / {items.length}
               </span>
             </div>
@@ -502,7 +502,7 @@ export default function BulkTemplatesImport() {
                 <span>🚀 Ρυθμός: <b>{rate.toFixed(2)}/sec</b></span>
               )}
               {uploading && (
-                <span style={{ color: '#0066cc' }}>
+                <span style={{ color: '#3182ce' }}>
                   🔄 {uploadingCount} ενεργά upload{uploadingCount !== 1 ? 's' : ''}
                 </span>
               )}
@@ -514,7 +514,7 @@ export default function BulkTemplatesImport() {
               <span style={{ fontSize: 16 }}>
                 ✅ Ολοκληρώθηκαν {okCount} νέα, {skippedCount} παραλείφθηκαν σε {formatTime(elapsedSec)}.
               </span>
-              <span style={{ color: '#155724' }}>
+              <span style={{ color: '#22543d' }}>
                 Επιστροφή στα υποδείγματα σε <b>{redirectIn}s</b>...
               </span>
               <button onClick={cancelRedirect} style={S.btn}>
@@ -541,11 +541,11 @@ export default function BulkTemplatesImport() {
               <tbody>
                 {items.map((it, idx) => (
                   <tr key={idx} style={rowStyle(it)}>
-                    <td style={{ ...S.td, color: '#888' }}>{idx + 1}</td>
+                    <td style={{ ...S.td, color: '#718096' }}>{idx + 1}</td>
                     <td style={S.td}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {it.isDuplicate && (
-                          <span title="Υπάρχει ήδη υπόδειγμα με ίδιο όνομα + κατηγορία" style={{ color: '#f0ad4e', fontSize: 16 }}>⚠️</span>
+                          <span title="Υπάρχει ήδη υπόδειγμα με ίδιο όνομα + κατηγορία" style={{ color: '#f6ad55', fontSize: 16 }}>⚠️</span>
                         )}
                         <input
                           type="text" value={it.name}
@@ -573,7 +573,7 @@ export default function BulkTemplatesImport() {
                           disabled={uploading || it.status === 'ok' || it.status === 'skipped'}
                           style={{
                             ...S.select,
-                            backgroundColor: it.action === 'skip' ? '#f8d7da' : '#fff3cd',
+                            backgroundColor: it.action === 'skip' ? '#fed7d7' : '#feebc8',
                             fontWeight: 'bold'
                           }}
                         >
@@ -581,16 +581,16 @@ export default function BulkTemplatesImport() {
                           <option value="skip">⏸️ Παράλειψη</option>
                         </select>
                       ) : (
-                        <span style={{ color: '#888', fontSize: 12, fontStyle: 'italic' }}>— Νέο —</span>
+                        <span style={{ color: '#718096', fontSize: 12, fontStyle: 'italic' }}>— Νέο —</span>
                       )}
                     </td>
                     <td style={{ ...S.td, textAlign: 'center', fontSize: 13 }}>
-                      {it.status === 'pending'   && <span style={{ color: '#888' }}>⏳ Αναμονή</span>}
-                      {it.status === 'uploading' && <span style={{ color: '#0066cc', fontWeight: 'bold' }}>⬆️ Ανεβαίνει...</span>}
-                      {it.status === 'ok'        && <span style={{ color: '#080', fontWeight: 'bold' }}>✅ OK</span>}
-                      {it.status === 'skipped'   && <span style={{ color: '#666' }}>⏸️ Παραλείφθηκε</span>}
+                      {it.status === 'pending'   && <span style={{ color: '#718096' }}>⏳ Αναμονή</span>}
+                      {it.status === 'uploading' && <span style={{ color: '#3182ce', fontWeight: 'bold' }}>⬆️ Ανεβαίνει...</span>}
+                      {it.status === 'ok'        && <span style={{ color: '#2f855a', fontWeight: 'bold' }}>✅ OK</span>}
+                      {it.status === 'skipped'   && <span style={{ color: '#4a5568' }}>⏸️ Παραλείφθηκε</span>}
                       {it.status === 'error'     && (
-                        <span style={{ color: '#c00', fontWeight: 'bold', cursor: 'help' }} title={it.error}>
+                        <span style={{ color: '#c53030', fontWeight: 'bold', cursor: 'help' }} title={it.error}>
                           ❌ {(it.error || '').substring(0, 25)}
                         </span>
                       )}

@@ -6,12 +6,12 @@ import Layout from '../components/Layout';
 import { phonebook } from '../api';
 
 const SOURCES = [
-  { key: 'fysika',              label: 'Φυσικά Πρόσωπα (πελάτες)',        color: '#0066cc' },
-  { key: 'nomika',              label: 'Νομικά Πρόσωπα (πελάτες)',        color: '#0055aa' },
-  { key: 'sxetika',             label: 'Σχετικά Πρόσωπα',                 color: '#28a745' },
-  { key: 'dikigoroi_grafeiou',  label: 'Δικηγόροι Γραφείου',              color: '#6f42c1' },
-  { key: 'dikigoroi_antidikon', label: 'Δικηγόροι Αντιδίκων',             color: '#e83e8c' },
-  { key: 'antidikoi',           label: 'Αντίδικοι',                       color: '#dc3545' },
+  { key: 'fysika',              label: 'Φυσικά Πρόσωπα (πελάτες)',        color: '#3182ce' },
+  { key: 'nomika',              label: 'Νομικά Πρόσωπα (πελάτες)',        color: '#2b6cb0' },
+  { key: 'sxetika',             label: 'Σχετικά Πρόσωπα',                 color: '#38a169' },
+  { key: 'dikigoroi_grafeiou',  label: 'Δικηγόροι Γραφείου',              color: '#6b46c1' },
+  { key: 'dikigoroi_antidikon', label: 'Δικηγόροι Αντιδίκων',             color: '#d53f8c' },
+  { key: 'antidikoi',           label: 'Αντίδικοι',                       color: '#e53e3e' },
 ];
 
 const SOURCE_LABEL = Object.fromEntries(SOURCES.map(s => [s.key, s.label]));
@@ -67,7 +67,7 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
             onChange={e => setQ(e.target.value)}
             style={{
               padding: '8px 12px',
-              border: '1px solid #ccc',
+              border: '1px solid #cbd5e0',
               borderRadius: 4,
               minWidth: 320,
               fontSize: 14,
@@ -80,8 +80,8 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
         <div style={{
           margin: '12px 0 20px 0',
           padding: 12,
-          backgroundColor: '#f8f9fa',
-          border: '1px solid #e9ecef',
+          backgroundColor: '#f7fafc',
+          border: '1px solid #edf2f7',
           borderRadius: 6,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
@@ -89,14 +89,14 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
             <button
               type="button"
               onClick={selectAll}
-              style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
             >
               Όλες
             </button>
             <button
               type="button"
               onClick={selectNone}
-              style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #ccc', borderRadius: 3, backgroundColor: '#fff' }}
+              style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 3, backgroundColor: '#fff' }}
             >
               Καμία
             </button>
@@ -112,12 +112,12 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
                     alignItems: 'center',
                     gap: 6,
                     padding: '4px 10px',
-                    border: `1px solid ${active ? s.color : '#ccc'}`,
+                    border: `1px solid ${active ? s.color : '#cbd5e0'}`,
                     borderRadius: 20,
                     fontSize: 13,
                     cursor: 'pointer',
                     backgroundColor: active ? `${s.color}15` : '#fff',
-                    color: active ? s.color : '#666',
+                    color: active ? s.color : '#4a5568',
                     fontWeight: active ? 'bold' : 'normal',
                     userSelect: 'none',
                   }}
@@ -165,8 +165,8 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
                       fontWeight: 'bold',
                       padding: '2px 8px',
                       borderRadius: 10,
-                      backgroundColor: `${SOURCE_COLOR[r.source] || '#888'}20`,
-                      color: SOURCE_COLOR[r.source] || '#666',
+                      backgroundColor: `${SOURCE_COLOR[r.source] || '#718096'}20`,
+                      color: SOURCE_COLOR[r.source] || '#4a5568',
                     }}>
                       {SOURCE_LABEL[r.source] || r.source}
                     </span>
