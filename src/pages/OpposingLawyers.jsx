@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { people } from '../api';
 import { entryKeyDown } from '../utils/formKeys';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const EMPTY = { eponymo: '', onoma: '', email: '', tilefono: '', syllogos: '' };
 
@@ -17,6 +18,7 @@ function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(null); // { row, usage, loading }
 
   const load = () => {
     setLoading(true);
@@ -67,8 +69,19 @@ function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
     finally { setSaving(false); }
   };
 
+  // Πριν τη διαγραφή ρωτάμε τον server πού χρησιμοποιείται η εγγραφή,
+  // ώστε ο χρήστης να δει ελληνικό μήνυμα αντί για σφάλμα της βάσης.
+  const askDelete = async (row) => {
+    setConfirmDel({ row, usage: null, loading: true });
+    try {
+      const u = await people.opposingLawyers.usage(row.aa);
+      setConfirmDel({ row, usage: u, loading: false });
+    } catch {
+      setConfirmDel({ row, usage: null, loading: false });
+    }
+  };
+
   const del = async (row) => {
-    if (!confirm(`Διαγραφή του "${row.eponymo}";`)) return;
     try {
       await people.opposingLawyers.remove(row.aa);
       load();
@@ -114,16 +127,14 @@ function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
             </thead>
             <tbody>
               {items.map(r => (
-                <tr key={r.aa}>
+                <tr key={r.aa} className="clickable" onClick={() => openEdit(r)}>
                   <td><strong>{r.eponymo}</strong></td>
                   <td>{r.onoma || '—'}</td>
                   <td>{r.email || '—'}</td>
                   <td>{r.tilefono || '—'}</td>
                   <td>{r.syllogos || '—'}</td>
-                  <td style={{ whiteSpace: 'nowrap' }}>
-                    <button className="btn btn-sm btn-secondary" onClick={() => openEdit(r)}>Επεξ.</button>
-                    {' '}
-                    <button className="btn btn-sm btn-danger" onClick={() => del(r)}>×</button>
+                  <td style={{ whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}>
+                    <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>Διαγραφή</button>
                   </td>
                 </tr>
               ))}
@@ -175,6 +186,31 @@ function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
           </div>
         </div>
       )}
+      {confirmDel && (() => {
+        const r = confirmDel.row;
+        const onoma = `${r.eponymo || ''} ${r.onoma || ''}`.trim();
+        const linked = !!(confirmDel.usage && confirmDel.usage.total > 0);
+        const perigrafi = linked
+          ? confirmDel.usage.links.map(l => `${l.count} ${l.label}`).join(' και ')
+          : '';
+        return (
+          <ConfirmDialog
+            title={linked ? 'Δεν διαγράφεται' : 'Διαγραφή'}
+            message={
+              confirmDel.loading
+                ? 'Έλεγχος συνδέσεων...'
+                : linked
+                  ? `«${onoma}» συνδέεται με ${perigrafi}. Αφαίρεσε πρώτα τις συνδέσεις και ξαναπροσπάθησε.`
+                  : `Διαγραφή «${onoma}»; Η ενέργεια δεν αναιρείται.`
+            }
+            hideConfirm={confirmDel.loading || linked}
+            cancelLabel={linked ? 'Κλείσιμο' : 'Ακύρωση'}
+            confirmLabel="Διαγραφή"
+            onConfirm={() => del(r)}
+            onClose={() => setConfirmDel(null)}
+          />
+        );
+      })()}
     </Layout>
   );
 }

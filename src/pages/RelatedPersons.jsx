@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { people, lists } from '../api';
 import { entryKeyDown } from '../utils/formKeys';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 const EMPTY = {
   // Στοιχεία Επιχείρησης
@@ -40,6 +41,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(null); // { row, usage, loading }
   const [sxeseis, setSxeseis] = useState([]);
   const [idiotites, setIdiotites] = useState([]);
   const [cities, setCities] = useState([]);
@@ -125,9 +127,20 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
     finally { setSaving(false); }
   };
 
+  // Στα σχετικά πρόσωπα δεν υπάρχει foreign key από το case_related_persons,
+  // άρα η διαγραφή περνούσε και άφηνε ορφανή τη σύνδεση με την υπόθεση.
+  // Ο έλεγχος γίνεται τώρα και στον server, εδώ μόνο τον δείχνουμε.
+  const askDelete = async (row) => {
+    setConfirmDel({ row, usage: null, loading: true });
+    try {
+      const u = await people.related.usage(row.aa);
+      setConfirmDel({ row, usage: u, loading: false });
+    } catch {
+      setConfirmDel({ row, usage: null, loading: false });
+    }
+  };
+
   const del = async (row) => {
-    const label = row.eponymia || row.eponymo || `#${row.aa}`;
-    if (!confirm(`Διαγραφή του "${label}";`)) return;
     try {
       await people.related.remove(row.aa);
       load();
@@ -228,7 +241,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
             </thead>
             <tbody>
               {items.map(r => (
-                <tr key={r.aa}>
+                <tr key={r.aa} className="clickable" onClick={() => openEdit(r)}>
                   <td><strong>{displayName(r)}</strong></td>
                   <td>
                     {r.idiotita_name ? (
@@ -244,12 +257,10 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                   <td style={{ textAlign: 'center' }} title={r.paratiriseis || ''}>
                     {r.paratiriseis ? '📝' : ''}
                   </td>
-                  <td style={{ whiteSpace: 'nowrap' }}>
+                  <td style={{ whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}>
                     <button className="btn btn-sm btn-secondary" onClick={() => openCases(r)} title="Σε ποιες υποθέσεις εμφανίζεται">Υποθέσεις</button>
                     {' '}
-                    <button className="btn btn-sm btn-secondary" onClick={() => openEdit(r)}>Επεξ.</button>
-                    {' '}
-                    <button className="btn btn-sm btn-danger" onClick={() => del(r)}>×</button>
+                    <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>Διαγραφή</button>
                   </td>
                 </tr>
               ))}
@@ -553,6 +564,31 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
           </div>
         </div>
       )}
+      {confirmDel && (() => {
+        const r = confirmDel.row;
+        const onoma = `${r.eponymo || r.eponymia || ''} ${r.onoma || ''}`.trim();
+        const linked = !!(confirmDel.usage && confirmDel.usage.total > 0);
+        const perigrafi = linked
+          ? confirmDel.usage.links.map(l => `${l.count} ${l.label}`).join(' και ')
+          : '';
+        return (
+          <ConfirmDialog
+            title={linked ? 'Δεν διαγράφεται' : 'Διαγραφή'}
+            message={
+              confirmDel.loading
+                ? 'Έλεγχος συνδέσεων...'
+                : linked
+                  ? `«${onoma}» συνδέεται με ${perigrafi}. Αφαίρεσε πρώτα τις συνδέσεις και ξαναπροσπάθησε.`
+                  : `Διαγραφή «${onoma}»; Η ενέργεια δεν αναιρείται.`
+            }
+            hideConfirm={confirmDel.loading || linked}
+            cancelLabel={linked ? 'Κλείσιμο' : 'Ακύρωση'}
+            confirmLabel="Διαγραφή"
+            onConfirm={() => del(r)}
+            onClose={() => setConfirmDel(null)}
+          />
+        );
+      })()}
     </Layout>
   );
 }

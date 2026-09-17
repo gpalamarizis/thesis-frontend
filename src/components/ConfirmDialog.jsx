@@ -1,6 +1,6 @@
 import Modal from './Modal';
 
-function ConfirmDialog({ title = 'Επιβεβαίωση', message, confirmLabel = 'Ναι', cancelLabel = 'Ακύρωση', danger = true, onConfirm, onClose }) {
+function ConfirmDialog({ title = 'Επιβεβαίωση', message, confirmLabel = 'Ναι', cancelLabel = 'Ακύρωση', danger = true, hideConfirm = false, onConfirm, onClose }) {
   return (
     <Modal
       title={title}
@@ -8,7 +8,9 @@ function ConfirmDialog({ title = 'Επιβεβαίωση', message, confirmLabel
       actions={
         <>
           <button type="button" className="btn btn-secondary" onClick={onClose}>{cancelLabel}</button>
-          <button type="button" className={`btn ${danger ? 'btn-danger' : ''}`} onClick={() => { onConfirm(); onClose(); }}>{confirmLabel}</button>
+          {!hideConfirm && (
+            <button type="button" className={`btn ${danger ? 'btn-danger' : ''}`} onClick={() => { onConfirm(); onClose(); }}>{confirmLabel}</button>
+          )}
         </>
       }
     >

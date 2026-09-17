@@ -385,6 +385,8 @@ function genericPeople(kind) {
   return {
     list:   (q = '')     => api.get(`/api/people/${kind}` + (q ? `?q=${encodeURIComponent(q)}` : '')),
     get:    (id)         => api.get(`/api/people/${kind}/${id}`),
+    // Πού χρησιμοποιείται η εγγραφή — για τον έλεγχο πριν τη διαγραφή
+    usage:  (id)         => api.get(`/api/people/${kind}/${id}/usage`),
     create: (payload)    => api.post(`/api/people/${kind}`, payload),
     update: (id, payload) => api.put(`/api/people/${kind}/${id}`, payload),
     remove: (id)         => api.delete(`/api/people/${kind}/${id}`),
