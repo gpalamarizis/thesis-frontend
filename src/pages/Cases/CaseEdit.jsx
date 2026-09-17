@@ -273,6 +273,7 @@ function CaseTab({ caseData, onSave, saving }) {
             Η κατάσταση διατηρείται και αποθηκεύεται κανονικά, ώστε
             τυχόν υπάρχουσες τιμές να μη χαθούν και να μπορεί να
             επανέλθει το πεδίο με μία γραμμή αν χρειαστεί. */}
+        {/* Δύο μονά πεδία σε μία γραμμή, αντί για δύο μισοάδειες σειρές. */}
         <div className="form-grid-2">
           <div className="form-group">
             <label>Αρχειοθετημένη σε</label>
@@ -281,13 +282,10 @@ function CaseTab({ caseData, onSave, saving }) {
               {archiveOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name || '—'}</option>)}
             </select>
           </div>
-        </div>
-        <div className="form-grid-2">
           <div className="form-group">
             <label>Παλιός Κωδικός</label>
             <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
           </div>
-          <div />
         </div>
         <div className="form-grid-2">
           <div className="form-group">

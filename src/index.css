@@ -65,6 +65,36 @@ body {
   font-family: inherit;
 }
 
+/* ΔΙΟΡΘΩΣΗ ΣΤΟΙΧΙΣΗΣ — checkbox και radio.
+   Ο κανόνας «.form-group input { width: 100% }» παραπάνω ίσχυε και για τα
+   checkbox: τεντώνονταν σε όλο το πλάτος της γραμμής, με αποτέλεσμα το
+   τετραγωνάκι να κάθεται στη μέση και το κείμενο της ετικέτας να
+   σπρώχνεται στο δεξί άκρο. Τα επαναφέρουμε στο φυσικό τους μέγεθος. */
+.form-group input[type="checkbox"],
+.form-group input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  flex: 0 0 16px;
+  padding: 0;
+  margin: 0;
+  vertical-align: middle;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+/* Ετικέτα που περιέχει checkbox: στη σειρά, κατακόρυφα κεντραρισμένη,
+   και χωρίς το κάτω περιθώριο που έχουν οι ετικέτες πεδίων. */
+.form-group label:has(input[type="checkbox"]),
+.form-group label:has(input[type="radio"]) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0;
+  cursor: pointer;
+  font-weight: 400;
+}
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
