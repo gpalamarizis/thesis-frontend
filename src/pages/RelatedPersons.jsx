@@ -6,6 +6,7 @@ import Layout from '../components/Layout';
 import { people, lists } from '../api';
 import { entryKeyDown } from '../utils/formKeys';
 import ConfirmDialog from '../components/ConfirmDialog';
+import DataTable from '../components/DataTable';
 
 const EMPTY = {
   // Στοιχεία Επιχείρησης
@@ -34,7 +35,6 @@ const EMPTY = {
 
 function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
   const [items, setItems] = useState([]);
-  const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -51,19 +51,19 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
   const [casesFor, setCasesFor] = useState(null);
   const [showOpponents, setShowOpponents] = useState(false);
 
+  // Τα τρία φίλτρα (ιδιότητα, πόλη, «και αντίδικοι») μένουν στον server:
+  // είναι SQL με JOIN και δεν έχει νόημα να ξαναγραφτούν στον browser.
+  // Η αναζήτηση κειμένου, η ταξινόμηση και η σελιδοποίηση περνούν στο
+  // DataTable, οπότε ψάχνεις πια και σε ΑΦΜ, τηλέφωνο και ιδιότητα.
   const load = () => {
     setLoading(true);
-    people.related.list({ q, idiotita_id: fIdiotita, poli: fPoli, include_opponents: showOpponents })
+    people.related.list({ idiotita_id: fIdiotita, poli: fPoli, include_opponents: showOpponents })
       .then(d => setItems(d?.data || []))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    const t = setTimeout(load, 300);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line
-  }, [q, fIdiotita, fPoli, showOpponents]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [fIdiotita, fPoli, showOpponents]);
 
   // Load lookups: είδος σχέσης, ιδιότητες, πόλεις
   useEffect(() => {
@@ -80,22 +80,29 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
 
   const openNew = () => { setEditing(null); setForm(EMPTY); setError(''); setShowModal(true); };
 
-  const openEdit = (row) => {
-    setEditing(row);
+  // Η λίστα φέρνει μόνο τις στήλες που δείχνει — τρεις διευθύνσεις, εννιά
+  // τηλέφωνα και τα fax δεν ταξιδεύουν πια σε κάθε φόρτωση. Η πλήρης
+  // εγγραφή έρχεται εδώ, όταν ανοίγει η επεξεργασία.
+  const openEdit = async (row) => {
+    setError('');
+    let full;
+    try { full = await people.related.get(row.aa); }
+    catch (err) { setError(err.message); return; }
+    setEditing(full);
     const merged = { ...EMPTY };
     Object.keys(EMPTY).forEach(k => {
-      if (row[k] != null) {
-        if (k === 'date_gennisis' && row[k]) {
-          merged[k] = row[k].substring(0, 10);
+      if (full[k] != null) {
+        if (k === 'date_gennisis' && full[k]) {
+          merged[k] = full[k].substring(0, 10);
         } else if (k === 'energos') {
-          merged[k] = !!row[k];
+          merged[k] = !!full[k];
         } else {
-          merged[k] = row[k];
+          merged[k] = full[k];
         }
       }
     });
     setForm(merged);
-    setError(''); setShowModal(true);
+    setShowModal(true);
   };
 
   const c = (e) => {
@@ -149,6 +156,27 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
 
   const displayName = (r) => r.eponymia || `${r.eponymo || ''} ${r.onoma || ''}`.trim() || '—';
 
+  const COLUMNS = [
+    { key: 'onomasia', label: 'Ονομασία',
+      value: displayName, render: r => <strong>{displayName(r)}</strong> },
+    { key: 'idiotita_name', label: 'Ιδιότητα', width: 150,
+      render: r => r.idiotita_name
+        ? <span style={{
+            background: '#EBF4FF', color: '#4C51BF',
+            padding: '2px 8px', borderRadius: 10, fontSize: 12, whiteSpace: 'nowrap',
+          }}>{r.idiotita_name}</span>
+        : <span style={{ color: '#CBD5E0' }}>—</span> },
+    { key: 'afm', label: 'ΑΦΜ', width: 120, render: r => r.afm || '—' },
+    { key: 'tilefono', label: 'Τηλέφωνο', width: 140,
+      value: r => r.tilefono_kinito_1 || r.tilefono_grafeiou_1 || r.tilefono_oikias_1 || '',
+      render: r => r.tilefono_kinito_1 || r.tilefono_grafeiou_1 || r.tilefono_oikias_1 || '—' },
+    { key: 'poli', label: 'Πόλη', width: 140,
+      value: r => r.poli || r.poli_grafeiou || r.poli_oikias || '',
+      render: r => r.poli || r.poli_grafeiou || r.poli_oikias || '—' },
+    { key: 'paratiriseis', label: '📝', width: 40, sortable: false,
+      render: r => <span title={r.paratiriseis || ''}>{r.paratiriseis ? '📝' : ''}</span> },
+  ];
+
   // Σε ποιες υποθέσεις εμφανίζεται το πρόσωπο
   const openCases = async (row) => {
     setCasesFor(row);
@@ -171,13 +199,6 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
         </div>
 
         <div className="data-table-header">
-          <input
-            type="search"
-            className="search-input"
-            placeholder="🔍 Αναζήτηση ονόματος..."
-            value={q}
-            onChange={e => setQ(e.target.value)}
-          />
           <select
             value={fIdiotita}
             onChange={e => setFIdiotita(e.target.value)}
@@ -210,62 +231,34 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
             />
             Και αντίδικοι
           </label>
-          {(fIdiotita || fPoli || q) && (
+          {(fIdiotita || fPoli) && (
             <button
               className="btn btn-sm btn-secondary"
-              onClick={() => { setQ(''); setFIdiotita(''); setFPoli(''); }}
+              onClick={() => { setFIdiotita(''); setFPoli(''); }}
               title="Καθαρισμός φίλτρων"
             >✕ Καθαρισμός</button>
           )}
-          <div className="data-table-count">{items.length} εγγραφές</div>
         </div>
 
         {error && <div className="error">{error}</div>}
 
         {loading ? (
           <div className="empty-state">Φόρτωση...</div>
-        ) : items.length === 0 ? (
-          <div className="empty-state">Δεν υπάρχουν εγγραφές.</div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Ονομασία</th>
-                <th style={{ width: 150 }}>Ιδιότητα</th>
-                <th>ΑΦΜ</th>
-                <th>Τηλέφωνο</th>
-                <th>Πόλη</th>
-                <th style={{ width: 40, textAlign: 'center' }} title="Εσωτερική παρατήρηση">📝</th>
-                <th style={{ width: 1 }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(r => (
-                <tr key={r.aa} className="clickable" onClick={() => openEdit(r)}>
-                  <td><strong>{displayName(r)}</strong></td>
-                  <td>
-                    {r.idiotita_name ? (
-                      <span style={{
-                        background: '#EBF4FF', color: '#4C51BF',
-                        padding: '2px 8px', borderRadius: 10, fontSize: 12, whiteSpace: 'nowrap',
-                      }}>{r.idiotita_name}</span>
-                    ) : <span style={{ color: '#CBD5E0' }}>—</span>}
-                  </td>
-                  <td>{r.afm || '—'}</td>
-                  <td>{r.tilefono_kinito_1 || r.tilefono_grafeiou_1 || r.tilefono_oikias_1 || '—'}</td>
-                  <td>{r.poli || r.poli_grafeiou || r.poli_oikias || '—'}</td>
-                  <td style={{ textAlign: 'center' }} title={r.paratiriseis || ''}>
-                    {r.paratiriseis ? '📝' : ''}
-                  </td>
-                  <td style={{ whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}>
-                    <button className="btn btn-sm btn-secondary" onClick={() => openCases(r)} title="Σε ποιες υποθέσεις εμφανίζεται">Υποθέσεις</button>
-                    {' '}
-                    <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>Διαγραφή</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={COLUMNS}
+            rows={items}
+            rowKey={r => r.aa}
+            onRowClick={openEdit}
+            emptyMessage="Δεν υπάρχουν εγγραφές."
+            actions={r => (
+              <span style={{ whiteSpace: 'nowrap' }}>
+                <button className="btn btn-sm btn-secondary" onClick={() => openCases(r)} title="Σε ποιες υποθέσεις εμφανίζεται">Υποθέσεις</button>
+                {' '}
+                <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>Διαγραφή</button>
+              </span>
+            )}
+          />
         )}
       </div>
 

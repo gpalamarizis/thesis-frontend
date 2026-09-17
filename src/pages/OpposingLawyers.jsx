@@ -6,12 +6,12 @@ import Layout from '../components/Layout';
 import { people } from '../api';
 import { entryKeyDown } from '../utils/formKeys';
 import ConfirmDialog from '../components/ConfirmDialog';
+import DataTable from '../components/DataTable';
 
 const EMPTY = { eponymo: '', onoma: '', email: '', tilefono: '', syllogos: '' };
 
 function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
   const [items, setItems] = useState([]);
-  const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -20,19 +20,27 @@ function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
   const [saving, setSaving] = useState(false);
   const [confirmDel, setConfirmDel] = useState(null); // { row, usage, loading }
 
+  // Φορτώνονται όλες οι εγγραφές μία φορά. Η αναζήτηση, η ταξινόμηση και η
+  // σελιδοποίηση γίνονται στον browser από το DataTable — όπως ήδη στα
+  // Φυσικά και Νομικά πρόσωπα. Έτσι ψάχνεις και σε στήλες που το SQL
+  // ILIKE του server δεν κάλυπτε (τηλέφωνο, σύλλογος).
   const load = () => {
     setLoading(true);
-    people.opposingLawyers.list(q)
+    people.opposingLawyers.list()
       .then(d => setItems(d?.data || []))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    const t = setTimeout(load, 300);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line
-  }, [q]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+
+  const COLUMNS = [
+    { key: 'eponymo',  label: 'Επώνυμο',   render: r => <strong>{r.eponymo}</strong> },
+    { key: 'onoma',    label: 'Όνομα',     render: r => r.onoma || '—' },
+    { key: 'email',    label: 'Email',     render: r => r.email || '—' },
+    { key: 'tilefono', label: 'Τηλέφωνο',  width: 140, render: r => r.tilefono || '—' },
+    { key: 'syllogos', label: 'Σύλλογος',  width: 120, render: r => r.syllogos || '—' },
+  ];
 
   const openNew = () => {
     setEditing(null); setForm(EMPTY); setError(''); setShowModal(true);
@@ -96,50 +104,19 @@ function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
           <button className="btn" onClick={openNew}>+ Νέος</button>
         </div>
 
-        <div className="data-table-header">
-          <input
-            type="search"
-            className="search-input"
-            placeholder="🔍 Αναζήτηση..."
-            value={q}
-            onChange={e => setQ(e.target.value)}
-          />
-          <div className="data-table-count">{items.length} εγγραφές</div>
-        </div>
-
         {error && <div className="error">{error}</div>}
 
         {loading ? (
           <div className="empty-state">Φόρτωση...</div>
-        ) : items.length === 0 ? (
-          <div className="empty-state">Δεν υπάρχουν εγγραφές.</div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Επώνυμο</th>
-                <th>Όνομα</th>
-                <th>Email</th>
-                <th>Τηλέφωνο</th>
-                <th>Σύλλογος</th>
-                <th style={{ width: 1 }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(r => (
-                <tr key={r.aa} className="clickable" onClick={() => openEdit(r)}>
-                  <td><strong>{r.eponymo}</strong></td>
-                  <td>{r.onoma || '—'}</td>
-                  <td>{r.email || '—'}</td>
-                  <td>{r.tilefono || '—'}</td>
-                  <td>{r.syllogos || '—'}</td>
-                  <td style={{ whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}>
-                    <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>Διαγραφή</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={COLUMNS}
+            rows={items}
+            rowKey={r => r.aa}
+            onRowClick={openEdit}
+            emptyMessage="Δεν υπάρχουν εγγραφές."
+            actions={r => <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>Διαγραφή</button>}
+          />
         )}
       </div>
 

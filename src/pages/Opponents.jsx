@@ -7,6 +7,7 @@ import Layout from '../components/Layout';
 import { people } from '../api';
 import { entryKeyDown } from '../utils/formKeys';
 import ConfirmDialog from '../components/ConfirmDialog';
+import DataTable from '../components/DataTable';
 
 const EMPTY = {
   morfi: 'φυσικό',
@@ -20,7 +21,6 @@ const EMPTY = {
 
 function Opponents({ user, onLogout, onOpenCaseSearch }) {
   const [items, setItems] = useState([]);
-  const [q, setQ] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -29,30 +29,59 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
   const [saving, setSaving] = useState(false);
   const [confirmDel, setConfirmDel] = useState(null); // { row, usage, loading }
 
+  // Όλες οι εγγραφές μία φορά· αναζήτηση, ταξινόμηση και σελιδοποίηση στον
+  // browser. Πριν, οι 1.154 αντίδικοι ζωγραφίζονταν όλοι ταυτόχρονα σε έναν
+  // πίνακα χωρίς σελιδοποίηση — τώρα 25 τη φορά. Και η αναζήτηση καλύπτει
+  // ΑΦΜ και τηλέφωνο, που το ILIKE του server δεν έψαχνε.
   const load = () => {
     setLoading(true);
-    people.opponents.list(q)
+    people.opponents.list()
       .then(d => setItems(d?.data || []))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    const t = setTimeout(load, 300);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line
-  }, [q]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+
+  const COLUMNS = [
+    {
+      key: 'eponymo',
+      label: 'Επώνυμο / Επωνυμία',
+      value: r => (r.eponymia && r.eponymia.trim()) ? r.eponymia : (r.eponymo || ''),
+      render: r => {
+        const np = !!(r.eponymia && r.eponymia.trim());
+        return (
+          <>
+            <strong>{np ? r.eponymia : r.eponymo}</strong>
+            {np && <span style={{ marginLeft: 6, fontSize: 12, color: '#718096' }}>ΝΠ</span>}
+          </>
+        );
+      },
+    },
+    { key: 'onoma',    label: 'Όνομα',     render: r => r.onoma || '—' },
+    { key: 'afm',      label: 'ΑΦΜ',       width: 120, render: r => r.afm || '—' },
+    { key: 'poli',     label: 'Πόλη',      width: 140, render: r => r.poli || '—' },
+    { key: 'telefono', label: 'Τηλέφωνο',  width: 140,
+      value: r => r.telefono || r.kinito || '', render: r => r.telefono || r.kinito || '—' },
+    { key: 'email',    label: 'Email',     render: r => r.email || '—' },
+  ];
 
   const openNew = () => { setEditing(null); setForm(EMPTY); setError(''); setShowModal(true); };
 
-  const openEdit = (row) => {
-    setEditing(row);
-    const next = { ...EMPTY };
-    for (const k of Object.keys(EMPTY)) next[k] = row[k] || '';
-    // Αν δεν έχει οριστεί μορφή, την συμπεραίνουμε από την ύπαρξη επωνυμίας
-    if (!row.morfi) next.morfi = (row.eponymia && row.eponymia.trim()) ? 'νομικό' : 'φυσικό';
-    setForm(next);
-    setError(''); setShowModal(true);
+  // Η λίστα φέρνει μόνο τις στήλες που δείχνει. Την πλήρη εγγραφή
+  // (διεύθυνση, ΔΟΥ, ΑΔΤ, σημειώσεις) τη ζητάμε όταν χρειαστεί.
+  const openEdit = async (row) => {
+    setError('');
+    try {
+      const full = await people.opponents.get(row.aa);
+      setEditing(full);
+      const next = { ...EMPTY };
+      for (const k of Object.keys(EMPTY)) next[k] = full[k] || '';
+      // Αν δεν έχει οριστεί μορφή, την συμπεραίνουμε από την ύπαρξη επωνυμίας
+      if (!full.morfi) next.morfi = (full.eponymia && full.eponymia.trim()) ? 'νομικό' : 'φυσικό';
+      setForm(next);
+      setShowModal(true);
+    } catch (err) { setError(err.message); }
   };
 
   const c = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -112,57 +141,19 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
           <button className="btn" onClick={openNew}>+ Νέος</button>
         </div>
 
-        <div className="data-table-header">
-          <input
-            type="search"
-            className="search-input"
-            placeholder="🔍 Αναζήτηση..."
-            value={q}
-            onChange={e => setQ(e.target.value)}
-          />
-          <div className="data-table-count">{items.length} εγγραφές</div>
-        </div>
-
         {error && <div className="error">{error}</div>}
 
         {loading ? (
           <div className="empty-state">Φόρτωση...</div>
-        ) : items.length === 0 ? (
-          <div className="empty-state">Δεν υπάρχουν εγγραφές.</div>
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Επώνυμο / Επωνυμία</th>
-                <th>Όνομα</th>
-                <th>ΑΦΜ</th>
-                <th>Πόλη</th>
-                <th>Τηλέφωνο</th>
-                <th>Email</th>
-                <th style={{ width: 1 }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map(r => (
-                <tr key={r.aa} className="clickable" onClick={() => openEdit(r)}>
-                  <td>
-                    <strong>{r.eponymia && r.eponymia.trim() ? r.eponymia : r.eponymo}</strong>
-                    {r.eponymia && r.eponymia.trim() ? (
-                      <span style={{ marginLeft: 6, fontSize: 12, color: '#718096' }}>ΝΠ</span>
-                    ) : null}
-                  </td>
-                  <td>{r.onoma || '—'}</td>
-                  <td>{r.afm || '—'}</td>
-                  <td>{r.poli || '—'}</td>
-                  <td>{r.telefono || r.kinito || '—'}</td>
-                  <td>{r.email || '—'}</td>
-                  <td style={{ whiteSpace: 'nowrap' }} onClick={e => e.stopPropagation()}>
-                    <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>Διαγραφή</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <DataTable
+            columns={COLUMNS}
+            rows={items}
+            rowKey={r => r.aa}
+            onRowClick={openEdit}
+            emptyMessage="Δεν υπάρχουν εγγραφές."
+            actions={r => <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>Διαγραφή</button>}
+          />
         )}
       </div>
 
