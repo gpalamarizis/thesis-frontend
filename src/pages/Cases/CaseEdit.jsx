@@ -305,21 +305,13 @@ function CaseTab({ caseData, onSave, saving }) {
             </select>
           </div>
         </div>
-        <div className="form-grid-3">
-          <div className="form-group">
-            <label>ΓΑΚ (Γενικός Αριθμός Κατάθεσης)</label>
-            <input type="text" value={gak} onChange={e => setGak(e.target.value)} placeholder="π.χ. 12345/2026" />
-            <span style={{ fontSize: 11, color: '#a0aec0' }}>Μεταβατικό — καταχωρείται πλέον ανά δικάσιμο</span>
-          </div>
-          <div className="form-group">
-            <label>ΕΑΚ (Ειδικός Αριθμός Κατάθεσης)</label>
-            <input type="text" value={eak} onChange={e => setEak(e.target.value)} placeholder="π.χ. 6789/2026" />
-          </div>
-          <div className="form-group">
-            <label>Αριθμός εισαγωγικού εγγράφου / Κωδικός</label>
-            <input type="text" value={arithmosEisagogikou} onChange={e => setArithmosEisagogikou(e.target.value)} />
-          </div>
-        </div>
+        {/* ΑΦΑΙΡΕΘΗΚΑΝ ΓΑΚ / ΕΑΚ / Αρ. εισαγωγικού από την καρτέλα της υπόθεσης
+            (παρατήρηση Μαύρου, 17/09/2026). Καταχωρούνται πλέον ΜΟΝΟ ανά
+            δικαστική ενέργεια.
+
+            Οι στήλες παραμένουν στον πίνακα ypotheseis και οι τιμές τους
+            εξακολουθούν να στέλνονται αυτούσιες στην αποθήκευση, ώστε τα
+            παλιά δεδομένα να μη σβηστούν από μια απλή επεξεργασία. */}
         <div className="form-group">
           <label>Περίληψη / Περιγραφή</label>
           <textarea rows="6" value={perilipsi} onChange={e => setPerilipsi(e.target.value)} />
