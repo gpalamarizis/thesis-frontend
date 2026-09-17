@@ -172,11 +172,29 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
 function handlerOf(e) {
   return e.dikigoroi_energeias || e.xeiristes || '';
 }
-// Σύντομη μορφή για το πλακίδιο του ημερολογίου: μόνο επώνυμα, χωρισμένα με κόμμα
+// Σύντομη μορφή για το πλακίδιο του ημερολογίου: «Επώνυμο Α.»
+//
+// Το backend στέλνει «Επώνυμο Όνομα», χωρισμένα με κόμμα. Σκέτο το επώνυμο
+// δεν αρκεί όταν στο γραφείο υπάρχουν περισσότεροι από ένας με το ίδιο,
+// οπότε κρατάμε και το αρχικό του μικρού ονόματος.
 function handlerShort(e) {
   const full = handlerOf(e);
   if (!full) return '';
-  return full.split(',').map(p => p.trim().split(/\s+/)[0]).filter(Boolean).join(', ');
+  return full
+    .split(',')
+    .map(p => {
+      const parts = p.trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return '';
+      const eponymo = parts[0];
+      const onoma = parts[1] || '';
+      // Το αρχικό με κεφαλαίο, χωρίς τόνο (Ά -> Α), όπως γράφεται στις συντομογραφίες
+      const arxiko = onoma
+        ? onoma.charAt(0).toLocaleUpperCase('el-GR').normalize('NFD').replace(/[\u0300-\u036f]/g, '') + '.'
+        : '';
+      return arxiko ? `${eponymo} ${arxiko}` : eponymo;
+    })
+    .filter(Boolean)
+    .join(', ');
 }
 
 function MonthCalendar({ cursor, setCursor, hearings, selectedDate, setSelectedDate }) {
