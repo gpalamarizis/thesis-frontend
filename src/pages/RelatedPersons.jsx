@@ -153,59 +153,58 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Σχετικά Πρόσωπα">
       <div className="section">
         <div className="section-header">
-          <h2>Λίστα ({items.length})</h2>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <h2>Σχετικά Πρόσωπα</h2>
+          <button className="btn" onClick={openNew}>+ Νέο</button>
+        </div>
+
+        <div className="data-table-header">
+          <input
+            type="search"
+            className="search-input"
+            placeholder="🔍 Αναζήτηση ονόματος..."
+            value={q}
+            onChange={e => setQ(e.target.value)}
+          />
+          <select
+            value={fIdiotita}
+            onChange={e => setFIdiotita(e.target.value)}
+            title="Φίλτρο ιδιότητας"
+            className="filter-select"
+          >
+            <option value="">Όλες οι ιδιότητες</option>
+            {idiotites.map(i => <option key={i.aa} value={i.aa}>{i.name}</option>)}
+            <option value="none">— χωρίς ιδιότητα —</option>
+          </select>
+          <select
+            value={fPoli}
+            onChange={e => setFPoli(e.target.value)}
+            title="Φίλτρο πόλης"
+            className="filter-select"
+          >
+            <option value="">Όλες οι πόλεις</option>
+            {cities.map(ct => (
+              <option key={ct.poli} value={ct.poli}>{ct.poli} ({ct.plithos})</option>
+            ))}
+          </select>
+          <label
+            className="filter-check"
+            title="Οι αντίδικοι έχουν δικό τους πίνακα. Εδώ εμφανίζονται μόνο αν το ζητήσεις."
+          >
             <input
-              type="text"
-              placeholder="🔍 Αναζήτηση ονόματος..."
-              value={q}
-              onChange={e => setQ(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, minWidth: 200 }}
+              type="checkbox"
+              checked={showOpponents}
+              onChange={e => setShowOpponents(e.target.checked)}
             />
-            <select
-              value={fIdiotita}
-              onChange={e => setFIdiotita(e.target.value)}
-              title="Φίλτρο ιδιότητας"
-              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4 }}
-            >
-              <option value="">Όλες οι ιδιότητες</option>
-              {idiotites.map(i => <option key={i.aa} value={i.aa}>{i.name}</option>)}
-              <option value="none">— χωρίς ιδιότητα —</option>
-            </select>
-            <select
-              value={fPoli}
-              onChange={e => setFPoli(e.target.value)}
-              title="Φίλτρο πόλης"
-              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4 }}
-            >
-              <option value="">Όλες οι πόλεις</option>
-              {cities.map(ct => (
-                <option key={ct.poli} value={ct.poli}>{ct.poli} ({ct.plithos})</option>
-              ))}
-            </select>
-            <label
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontSize: 13, color: '#718096', cursor: 'pointer', whiteSpace: 'nowrap',
-              }}
-              title="Οι αντίδικοι έχουν δικό τους πίνακα. Εδώ εμφανίζονται μόνο αν το ζητήσεις."
-            >
-              <input
-                type="checkbox"
-                checked={showOpponents}
-                onChange={e => setShowOpponents(e.target.checked)}
-              />
-              Και αντίδικοι
-            </label>
-            {(fIdiotita || fPoli || q) && (
-              <button
-                className="btn btn-sm btn-secondary"
-                onClick={() => { setQ(''); setFIdiotita(''); setFPoli(''); }}
-                title="Καθαρισμός φίλτρων"
-              >✕ Καθαρισμός</button>
-            )}
-            <button className="btn" onClick={openNew}>+ Νέο</button>
-          </div>
+            Και αντίδικοι
+          </label>
+          {(fIdiotita || fPoli || q) && (
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => { setQ(''); setFIdiotita(''); setFPoli(''); }}
+              title="Καθαρισμός φίλτρων"
+            >✕ Καθαρισμός</button>
+          )}
+          <div className="data-table-count">{items.length} εγγραφές</div>
         </div>
 
         {error && <div className="error">{error}</div>}

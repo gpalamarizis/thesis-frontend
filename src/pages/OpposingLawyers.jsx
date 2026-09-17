@@ -79,17 +79,19 @@ function OpposingLawyers({ user, onLogout, onOpenCaseSearch }) {
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Δικηγόροι Αντιδίκων">
       <div className="section">
         <div className="section-header">
-          <h2>Λίστα ({items.length})</h2>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input
-              type="text"
-              placeholder="🔍 Αναζήτηση..."
-              value={q}
-              onChange={e => setQ(e.target.value)}
-              style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, minWidth: 220 }}
-            />
-            <button className="btn" onClick={openNew}>+ Νέος</button>
-          </div>
+          <h2>Δικηγόροι Αντιδίκων</h2>
+          <button className="btn" onClick={openNew}>+ Νέος</button>
+        </div>
+
+        <div className="data-table-header">
+          <input
+            type="search"
+            className="search-input"
+            placeholder="🔍 Αναζήτηση..."
+            value={q}
+            onChange={e => setQ(e.target.value)}
+          />
+          <div className="data-table-count">{items.length} εγγραφές</div>
         </div>
 
         {error && <div className="error">{error}</div>}

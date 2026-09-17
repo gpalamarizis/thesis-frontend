@@ -175,6 +175,9 @@ body {
   cursor: pointer;
   transition: background 0.2s;
   font-family: inherit;
+  /* Τα ελληνικά κείμενα είναι μακριά. Χωρίς αυτό, ένα «Αποθήκευση και νέα
+     εγγραφή» σπάει στα δύο και ψηλώνει, ξεστοιχίζοντας τα διπλανά κουμπιά. */
+  white-space: nowrap;
 }
 
 .btn:hover { background: #5a67d8; }
@@ -536,6 +539,12 @@ body {
   gap: 16px;
   margin-bottom: 4px;
 }
+/* Ενδιάμεσο βήμα: σε laptop 1024px το περιεχόμενο είναι ~784px μετά το
+   sidebar. Χωρίς αυτό, οι τρίστηλες φόρμες έπεφταν κατευθείαν σε μία
+   στήλη και γίνονταν ατέλειωτα μακριές. */
+@media (max-width: 1100px) {
+  .form-grid-3 { grid-template-columns: 1fr 1fr; }
+}
 @media (max-width: 800px) {
   .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
 }
@@ -603,9 +612,32 @@ body {
 /* ===== DataTable ===== */
 .data-table-header {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   align-items: center;
   margin-bottom: 12px;
+}
+
+/* Φίλτρα δίπλα στην αναζήτηση — ίδιο ύψος και περίγραμμα με το πεδίο. */
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #ffffff;
+  color: #2d3748;
+  max-width: 220px;
+}
+.filter-select:focus { outline: none; border-color: #667eea; }
+.filter-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #718096;
+  cursor: pointer;
+  white-space: nowrap;
 }
 .search-input {
   flex: 1;
