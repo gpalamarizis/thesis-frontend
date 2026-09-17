@@ -92,10 +92,10 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Αντίδικοι">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Αντίδικοι / Συμβαλλόμενοι">
       <div className="section">
         <div className="section-header">
-          <h2>Αντίδικοι</h2>
+          <h2>Αντίδικοι / Συμβαλλόμενοι</h2>
           <button className="btn" onClick={openNew}>+ Νέος</button>
         </div>
 
