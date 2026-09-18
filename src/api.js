@@ -644,8 +644,10 @@ export const courtsReport = {
 export const gdpr = {
   exportData:    async () => {
     const token = localStorage.getItem('token');
-    const base = (typeof window !== 'undefined' && window.__API_BASE) || '';
-    const r = await fetch(`${base}/api/gdpr/export`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+    // Το window.__API_BASE δεν οριζόταν ΠΟΥΘΕΝΑ, οπότε το base έμενε κενό και
+    // η εξαγωγή πήγαινε στο app.thesislegal.gr αντί για το api.thesislegal.gr.
+    // Χρησιμοποιούμε το ίδιο API_URL με όλες τις άλλες κλήσεις.
+    const r = await fetch(`${API_URL}/api/gdpr/export`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
     if (!r.ok) { let m = 'Export failed'; try { m = (await r.json()).error || m; } catch {} throw new Error(m); }
     return await r.blob();
   },
