@@ -610,6 +610,229 @@ function SubscriptionsTab() {
   );
 }
 
+
+// ==================== PLANS TAB ====================
+// Δεν υπήρχε καθόλου: τα endpoints /api/platform/plans υπήρχαν στο backend και
+// οι κλήσεις στο api.js, αλλά καμία οθόνη δεν τα καλούσε. Χωρίς αυτήν, οι τιμές
+// έμεναν στο 0 και το checkout απαντούσε «Το πλάνο δεν έχει έγκυρη τιμή».
+
+function money(n) {
+  const v = Number(n);
+  return Number.isFinite(v) ? v.toFixed(2) + ' €' : '—';
+}
+
+function PlanModal({ plan, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    name:                plan.name || '',
+    price_per_user_year: plan.price_per_user_year ?? plan.price_year ?? '',
+    min_users:           plan.min_users ?? 1,
+    max_users_allowed:   plan.max_users_allowed ?? plan.max_users ?? 1,
+    storage_quota_mb:    plan.storage_quota_mb ?? 5120,
+    vat_rate:            plan.vat_rate ?? 24,
+    description:         plan.description || '',
+    active:              plan.active !== false,
+  });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const perUser = Number(form.price_per_user_year) || 0;
+  const minU    = Number(form.min_users) || 1;
+  const maxU    = Number(form.max_users_allowed) || minU;
+  const vat     = Number(form.vat_rate) || 0;
+  const netMin  = perUser * minU;
+  const netMax  = perUser * maxU;
+  const grossMin = netMin * (1 + vat / 100);
+  const grossMax = netMax * (1 + vat / 100);
+
+  const save = async () => {
+    setErr('');
+    if (!(perUser > 0)) { setErr('Η τιμή ανά χρήστη πρέπει να είναι μεγαλύτερη από μηδέν, αλλιώς η αγορά αποτυγχάνει.'); return; }
+    if (maxU < minU)    { setErr('Ο μέγιστος αριθμός χρηστών δεν μπορεί να είναι μικρότερος από τον ελάχιστο.'); return; }
+    setSaving(true);
+    try {
+      await platform.updatePlan(plan.aa, {
+        name: form.name,
+        price_per_user_year: perUser,
+        min_users: minU,
+        max_users_allowed: maxU,
+        max_users: maxU,
+        storage_quota_mb: Number(form.storage_quota_mb) || 0,
+        vat_rate: vat,
+        description: form.description,
+        active: !!form.active,
+      });
+      onSaved();
+      onClose();
+    } catch (e) { setErr(e.message); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <Modal
+      title={`Πλάνο — ${plan.code}`}
+      onClose={onClose}
+      actions={
+        <>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
+          <button type="button" className="btn" onClick={save} disabled={saving}>
+            {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
+          </button>
+        </>
+      }
+    >
+      {err && <div className="error">{err}</div>}
+
+      <div className="form-group">
+        <label>Ονομασία</label>
+        <input value={form.name} onChange={e => set('name', e.target.value)} />
+      </div>
+
+      <div className="form-grid-3">
+        <div className="form-group">
+          <label>Τιμή ανά χρήστη / έτος (χωρίς ΦΠΑ)</label>
+          <input type="number" min="0" step="0.01"
+                 value={form.price_per_user_year}
+                 onChange={e => set('price_per_user_year', e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label>ΦΠΑ %</label>
+          <input type="number" min="0" max="100" step="0.5"
+                 value={form.vat_rate} onChange={e => set('vat_rate', e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label>Αποθηκευτικός χώρος (MB)</label>
+          <input type="number" min="0" step="512"
+                 value={form.storage_quota_mb} onChange={e => set('storage_quota_mb', e.target.value)} />
+        </div>
+      </div>
+
+      <div className="form-grid-2">
+        <div className="form-group">
+          <label>Ελάχιστοι χρήστες</label>
+          <input type="number" min="1" value={form.min_users}
+                 onChange={e => set('min_users', e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label>Μέγιστοι χρήστες</label>
+          <input type="number" min="1" value={form.max_users_allowed}
+                 onChange={e => set('max_users_allowed', e.target.value)} />
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label>Περιγραφή</label>
+        <input value={form.description} onChange={e => set('description', e.target.value)} />
+      </div>
+
+      <label className="filter-check" style={{ marginBottom: 12 }}>
+        <input type="checkbox" checked={!!form.active}
+               onChange={e => set('active', e.target.checked)} />
+        Ενεργό — εμφανίζεται στη σελίδα συνδρομής
+      </label>
+
+      <div style={{
+        background: '#EBF8FF', border: '1px solid #BEE3F8', borderRadius: 6,
+        padding: 12, fontSize: 13, color: '#2A4365',
+      }}>
+        <strong>Τι θα χρεωθεί ο πελάτης</strong>
+        <div style={{ marginTop: 6 }}>
+          {minU} {minU === 1 ? 'χρήστης' : 'χρήστες'}: {money(netMin)} + ΦΠΑ {vat}% = <strong>{money(grossMin)}</strong>
+        </div>
+        {maxU !== minU && (
+          <div>
+            {maxU} χρήστες: {money(netMax)} + ΦΠΑ {vat}% = <strong>{money(grossMax)}</strong>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+function PlansTab() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState('');
+  const [editing, setEditing] = useState(null);
+
+  const load = () => {
+    setLoading(true);
+    platform.plans()
+      .then(d => setRows(d?.data || []))
+      .catch(e => setErr(e.message))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => { load(); }, []);
+
+  const withoutPrice = rows.filter(r => !(Number(r.price_per_user_year ?? r.price_year) > 0));
+
+  if (loading) return <div className="empty-state">Φόρτωση...</div>;
+
+  return (
+    <div>
+      {err && <div className="error">{err}</div>}
+
+      {withoutPrice.length > 0 && (
+        <div className="error" style={{ background: '#FEEBC8', color: '#744210', borderColor: '#FBD38D' }}>
+          {withoutPrice.length === 1
+            ? '1 πλάνο δεν έχει τιμή'
+            : `${withoutPrice.length} πλάνα δεν έχουν τιμή`}. Όσο η τιμή είναι μηδέν, η
+          αγορά αποτυγχάνει με μήνυμα «Το πλάνο δεν έχει έγκυρη τιμή».
+        </div>
+      )}
+
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Κωδικός</th>
+            <th>Ονομασία</th>
+            <th style={{ width: 150 }}>Τιμή / χρήστη / έτος</th>
+            <th style={{ width: 120 }}>Χρήστες</th>
+            <th style={{ width: 80 }}>ΦΠΑ</th>
+            <th style={{ width: 110 }}>Χώρος</th>
+            <th style={{ width: 90 }}>Κατάσταση</th>
+            <th style={{ width: 1 }}></th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => {
+            const per = Number(r.price_per_user_year ?? r.price_year);
+            const min = Number(r.min_users || 1);
+            const max = Number(r.max_users_allowed || r.max_users || min);
+            return (
+              <tr key={r.aa} className="clickable" onClick={() => setEditing(r)}>
+                <td><code>{r.code}</code></td>
+                <td><strong>{r.name}</strong></td>
+                <td>
+                  {per > 0
+                    ? money(per)
+                    : <span style={{ color: '#C53030', fontWeight: 600 }}>χωρίς τιμή</span>}
+                </td>
+                <td>{min === max ? min : `${min}–${max}`}</td>
+                <td>{Number(r.vat_rate ?? 24)}%</td>
+                <td>{Math.round((r.storage_quota_mb || 0) / 1024)} GB</td>
+                <td>
+                  {r.active !== false
+                    ? <span style={{ color: '#38A169' }}>Ενεργό</span>
+                    : <span style={{ color: '#718096' }}>Ανενεργό</span>}
+                </td>
+                <td onClick={e => e.stopPropagation()}>
+                  <button className="btn btn-sm btn-secondary" onClick={() => setEditing(r)}>Επεξ.</button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {editing && (
+        <PlanModal plan={editing} onClose={() => setEditing(null)} onSaved={load} />
+      )}
+    </div>
+  );
+}
+
 // ==================== CO-ADMINS TAB ====================
 function AdminsTab() {
   const [confirmNode, ask] = useConfirm();
@@ -679,6 +902,7 @@ function PlatformAdmin({ user, onLogout, onOpenCaseSearch }) {
         { label: '📊 Dashboard',      content: <DashboardTab /> },
         { label: '🏢 Οργανισμοί',     content: <OrganizationsTab /> },
         { label: '💰 Συνδρομές',      content: <SubscriptionsTab /> },
+        { label: '🏷️ Πλάνα',          content: <PlansTab /> },
         { label: '🤝 Partners',        content: <PartnersTab /> },
         { label: '👤 Co-admins',      content: <AdminsTab /> },
       ]} />
