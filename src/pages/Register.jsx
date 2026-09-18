@@ -1,7 +1,26 @@
 // src/pages/Register.jsx - 4-step wizard με autocomplete + strong password + passkey ready
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { api } from '../api';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { api, subscriptions } from '../api';
+
+// ΑΓΟΡΑ ΑΠΕΥΘΕΙΑΣ ΑΠΟ ΤΟ SITE
+//
+// Το thesislegal.gr στέλνει εδώ με ?plan=<code> όταν ο επισκέπτης πατήσει
+// αγορά αντί για δοκιμή. Μετά την εγγραφή πάει κατευθείαν στη Viva.
+//
+// Ο τύπος οργάνωσης προεπιλέγεται από τον κωδικό πλάνου ώστε να μη ρωτηθεί
+// δεύτερη φορά. Δεν είναι κρίσιμος: η ενεργοποίηση της συνδρομής ξαναγράφει
+// plan_code, plan_type, max_users και storage_quota_mb στον οργανισμό.
+const PLAN_TO_TYPE = {
+  solo:            'solo',
+  small:           'partnership_shared',
+  mid:             'partnership_shared',
+  partner_basic:   'partnership_shared',
+  partner_pro:     'partnership_shared',
+  partner_private: 'partnership_private',
+  firm_small:      'law_firm',
+  firm_medium:     'law_firm',
+};
 
 const TYPES = [
   { code: 'solo',                label: 'Μεμονωμένος δικηγόρος',              desc: 'Δουλεύεις μόνος σου. 1 χρήστης.', icon: '👤' },
@@ -41,10 +60,17 @@ function TypeCard({ type, selected, onClick }) {
 
 function Register({ onLogin }) {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+
+  // ?plan=solo&users=3 — ό,τι δεν αναγνωρίζεται αγνοείται και η εγγραφή
+  // συνεχίζει κανονικά ως δοκιμή.
+  const wantedPlan  = PLAN_TO_TYPE[params.get('plan')] ? params.get('plan') : null;
+  const wantedUsers = parseInt(params.get('users'), 10) || undefined;
+
   const [step, setStep] = useState(1);
   const [showPw, setShowPw] = useState(false);
   const [form, setForm] = useState({
-    plan_type: '',
+    plan_type: wantedPlan ? PLAN_TO_TYPE[wantedPlan] : '',
     visibility_mode: 'shared',
     organizationName: '',
     billing_afm: '',
@@ -86,6 +112,27 @@ function Register({ onLogin }) {
         billing_phone: form.billing_phone || form.phone,
       });
       onLogin(data.user, data.token);
+
+      // Ήρθε από κουμπί αγοράς: κατευθείαν στην πληρωμή.
+      //
+      // Αν η δημιουργία της παραγγελίας αποτύχει — ή αν ο χρήστης κλείσει το
+      // παράθυρο της Viva χωρίς να πληρώσει — ο λογαριασμός υπάρχει ήδη με τις
+      // 30 ημέρες δοκιμής. Δεν χάνεται ο πελάτης· η αγορά μένει ένα κλικ
+      // μακριά από τις Ρυθμίσεις.
+      if (wantedPlan) {
+        try {
+          const r = await subscriptions.checkout(wantedPlan, wantedUsers);
+          if (r && r.checkout_url) {
+            window.location.href = r.checkout_url;
+            return;
+          }
+        } catch (e) {
+          console.warn('[register] η αγορά δεν ξεκίνησε:', e.message);
+        }
+        navigate('/settings/subscription?plan=' + encodeURIComponent(wantedPlan));
+        return;
+      }
+
       navigate('/dashboard');
     } catch (e) {
       setError(e.message);
@@ -100,7 +147,11 @@ function Register({ onLogin }) {
     <div className="auth-container">
       <div className="auth-card" style={{ maxWidth: 720 }}>
         <h1 style={{ textAlign: 'center', marginBottom: 4 }}>Thesis</h1>
-        <p className="subtitle" style={{ textAlign: 'center' }}>Δωρεάν δοκιμαστική περίοδος 30 ημερών</p>
+        <p className="subtitle" style={{ textAlign: 'center' }}>
+          {wantedPlan
+            ? 'Μετά την εγγραφή θα μεταφερθείς στην πληρωμή'
+            : 'Δωρεάν δοκιμαστική περίοδος 30 ημερών'}
+        </p>
 
         {/* Progress bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 0 24px' }}>

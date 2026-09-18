@@ -87,7 +87,7 @@ function StatusBanner({ current }) {
   return null;
 }
 
-function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, minUsers }) {
+function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, minUsers, highlighted }) {
   const isCurrent = plan.code === currentPlanCode;
   const perUser   = Number(plan.price_per_user_year ?? plan.price_year);
   const min       = Number(plan.min_users || 1);
@@ -109,7 +109,8 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
     <div style={{
       padding: 20,
       background: isCurrent ? '#ebf8ff' : '#fff',
-      border: `2px solid ${isCurrent ? '#3182ce' : '#e2e8f0'}`,
+      // Τονισμένο όταν ο επισκέπτης ήρθε από κουμπί αγοράς του site
+      border: `2px solid ${isCurrent ? '#3182ce' : highlighted ? '#667eea' : '#e2e8f0'}`,
       borderRadius: 8,
       display: 'flex', flexDirection: 'column', gap: 8,
     }}>
@@ -285,6 +286,13 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
     }
   };
 
+  // ?plan=<code> — έρχεται από κουμπί αγοράς στο thesislegal.gr, ή από την
+  // εγγραφή όταν η πληρωμή δεν ξεκίνησε. Το πλάνο τονίζεται, δεν αγοράζεται
+  // αυτόματα: κανείς δεν πρέπει να καταλήγει σε σελίδα πληρωμής χωρίς να το
+  // πατήσει ο ίδιος.
+  const wantedPlan = searchParams.get('plan') || null;
+  const wantedExists = wantedPlan && plans.some(p => p.code === wantedPlan);
+
   // Ο platform admin χωρίς γραφείο δεν αγοράζει συνδρομή για τον εαυτό του
   const hasOrg  = !!current?.organization;
   const isOwner = hasOrg && (user.role === 'admin' || user.role === 'owner');
@@ -336,6 +344,16 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
           ) : (
             <>
               <h2 style={{ marginBottom: 16 }}>Διαθέσιμα πλάνα</h2>
+
+              {wantedExists && (
+                <div style={{
+                  padding: 12, marginBottom: 16, borderRadius: 6,
+                  background: '#EBF4FF', border: '1px solid #C3DAFE', color: '#4C51BF', fontSize: 14,
+                }}>
+                  Επέλεξες το πλάνο <strong>{plans.find(p => p.code === wantedPlan)?.name}</strong>.
+                  Έλεγξε τον αριθμό χρηστών και συνέχισε στην πληρωμή.
+                </div>
+              )}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
                 {plans.map(p => (
                   <PlanCard
@@ -346,6 +364,7 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
                     onBankTransfer={bankTransfer}
                     disabled={checkoutBusy}
                     minUsers={current?.usage?.active_users || 1}
+                    highlighted={p.code === wantedPlan}
                   />
                 ))}
               </div>
