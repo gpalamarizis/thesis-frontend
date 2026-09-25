@@ -11,6 +11,9 @@ const LIST_TYPES = [
   { key: 'ypotheseis_onomasies',           label: 'Είδος υπόθεσης',         fields: [{key:'name', label:'Ονομασία'}] },
   { key: 'theseis_arxeiothetisis',         label: 'Θέσεις αρχειοθέτησης',   fields: [{key:'name', label:'Ονομασία'}, {key:'perigrafi', label:'Περιγραφή'}] },
   { key: 'eidos_sxesis',                   label: 'Είδος σχέσης',           fields: [{key:'name', label:'Ονομασία'}] },
+  // Υπήρχε στο backend (routes/lists.js) αλλά δεν εμφανιζόταν ποτέ εδώ, παρότι
+  // η ιδιότητα φιλτράρει και σημαίνει τα σχετικά πρόσωπα.
+  { key: 'idiotites',                      label: 'Ιδιότητες',              fields: [{key:'name', label:'Ονομασία'}] },
   { key: 'pagia_exoda',                    label: 'Πάγια έξοδα (τύποι)',    fields: [{key:'name', label:'Ονομασία'}] },
   { key: 'amoives',                        label: 'Αμοιβές (τύποι)',        fields: [{key:'name', label:'Ονομασία'}, {key:'amount', label:'Ποσό (€)', type:'number', step:'0.01'}] },
   { key: 'cities',                         label: 'Πόλεις',                 fields: [{key:'name', label:'Ονομασία'}] },
