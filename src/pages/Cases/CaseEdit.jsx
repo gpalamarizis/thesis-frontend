@@ -377,7 +377,7 @@ function CaseTab({ caseData, onSave, saving }) {
             νέα υπόθεση ούτε νέο αριθμό πρωτοκόλλου — η υπόθεση παραμένει μία.
           </p>
           <CaseClientsPanel
-            caseId={id}
+            caseId={caseData.aa}
             fysikaList={fysikaList}
             primaryId={fysikoProsopoId}
           />
