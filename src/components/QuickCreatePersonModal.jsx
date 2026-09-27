@@ -6,7 +6,7 @@ import { people, fysika, nomika } from '../api';
  * QuickCreatePersonModal — inline "+ Νέος" creator from within case editing.
  * Only asks for minimum required fields; user can complete later from full page.
  *
- * kind: 'fysiko' | 'nomiko' | 'lawyer' | 'opponent' | 'opposing-lawyer'
+ * kind: 'fysiko' | 'nomiko' | 'lawyer' | 'opponent'
  * onCreated(record): called with the newly created record (has `aa`)
  */
 function QuickCreatePersonModal({ kind, onClose, onCreated }) {
@@ -53,17 +53,6 @@ function QuickCreatePersonModal({ kind, onClose, onCreated }) {
         { key: 'onoma',    label: 'Όνομα' },
         { key: 'telefono', label: 'Τηλέφωνο' },
         { key: 'email',    label: 'Email' },
-      ],
-    },
-    'opposing-lawyer': {
-      title: 'Νέος Δικηγόρος Αντιδίκου',
-      helper: people.opposingLawyers,
-      fields: [
-        { key: 'eponymo',  label: 'Επώνυμο *', required: true },
-        { key: 'onoma',    label: 'Όνομα' },
-        { key: 'tilefono', label: 'Τηλέφωνο' },
-        { key: 'email',    label: 'Email' },
-        { key: 'syllogos', label: 'Σύλλογος' },
       ],
     },
   };

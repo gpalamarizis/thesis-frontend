@@ -353,7 +353,6 @@ export const nomika = {
 // Kept here as convenience helpers for later batches.
 export const people = {
   lawyers:         genericPeople('lawyers'),
-  opposingLawyers: genericPeople('opposing-lawyers'),
   opponents:       genericPeople('opponents'),
   // Σχετικά πρόσωπα — επεκτεταμένο με φίλτρα και συνδεδεμένες υποθέσεις
   related: {

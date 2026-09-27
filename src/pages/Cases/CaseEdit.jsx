@@ -601,16 +601,32 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
   const [tmimata, setTmimata] = useState([]);
   const [cities, setCities] = useState([]);
   const [opponents, setOpponents] = useState([]);
+  // Ο δικηγόρος αντιδίκου είναι πλέον σχετικό πρόσωπο με ιδιότητα «Δικηγόρος».
+  // Ο χωριστός κατάλογος δικηγόρων αντιδίκων καταργήθηκε.
   const [opposingLawyers, setOpposingLawyers] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [quickCreate, setQuickCreate] = useState(null); // 'opponent' | 'opposing-lawyer'
+  const [quickCreate, setQuickCreate] = useState(null); // 'opponent'
 
   const reloadPeople = () => {
     people.opponents.list()
       .then(d => setOpponents(Array.isArray(d) ? d : (d?.data || [])))
       .catch(() => {});
-    people.opposingLawyers.list()
+    // Φιλτράρουμε στην ιδιότητα «Δικηγόρος» — με 1.726 σχετικά πρόσωπα,
+    // αφίλτρωτη λίστα δεν χρησιμοποιείται. Αν η ιδιότητα λείπει από το
+    // γραφείο, δείχνουμε όλα τα σχετικά πρόσωπα αντί για κενή λίστα.
+    lists.get('idiotites')
+      .then(d => {
+        const rows = Array.isArray(d) ? d : (d?.data || []);
+        // Σύγκριση χωρίς τόνους και χωρίς διάκριση τελικού σίγμα: τα ελληνικά
+        // κεφαλαία δεν τονίζονται, οπότε «ΔΙΚΗΓΟΡΟΣ».toLowerCase() δίνει
+        // «δικηγορος» και δεν ταιριάζει με «δικηγόρος».
+        const norm = (v) => String(v || '').trim().toLowerCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/ς/g, 'σ');
+        const dik = rows.find(i => norm(i.name) === norm('Δικηγόρος'));
+        return people.related.list(dik ? { idiotita_id: dik.aa } : {});
+      })
       .then(d => setOpposingLawyers(Array.isArray(d) ? d : (d?.data || [])))
       .catch(() => {});
   };
@@ -636,7 +652,6 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
     const newId = rec?.aa || rec?.id;
     if (!newId) return;
     if (kind === 'opponent') setForm(f => ({ ...f, antidikos_id: newId }));
-    else if (kind === 'opposing-lawyer') setForm(f => ({ ...f, dikigoros_antidikou_id: newId }));
   };
 
   const save = async () => {
@@ -755,12 +770,18 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
         <div className="form-group">
           <label style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span>Δικηγόρος αντιδίκου</span>
-            <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opposing-lawyer'); }} style={{ fontSize: 12, fontWeight: 'normal' }}>+ Νέος</a>
           </label>
           <select value={form.dikigoros_antidikou_id} onChange={c('dikigoros_antidikou_id')}>
             <option value="">-- κανένας --</option>
-            {opposingLawyers.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>)}
+            {opposingLawyers.map(o => (
+              <option key={o.aa || o.id} value={o.aa || o.id}>
+                {(o.eponymia && o.eponymia.trim()) || `${o.eponymo || ''} ${o.onoma || ''}`.trim()}
+              </option>
+            ))}
           </select>
+          <small style={{ color: '#718096', fontSize: 12 }}>
+            Από τα σχετικά πρόσωπα με ιδιότητα «Δικηγόρος»
+          </small>
         </div>
       </div>
       <div className="form-grid-2">

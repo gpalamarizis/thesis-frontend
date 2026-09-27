@@ -36,24 +36,6 @@ const KIND_CONFIG = {
       { key: 'email',      label: 'Email' },
     ],
   },
-  'opposing-lawyers': {
-    // Δικηγόροι αντιδίκων (dikigoroi_antidikon)
-    fields: [
-      { key: 'eponymo',   label: 'Επώνυμο *', type: 'text', required: true },
-      { key: 'onoma',     label: 'Όνομα',     type: 'text' },
-      { key: 'tilefono',  label: 'Τηλέφωνο',  type: 'tel' },
-      { key: 'email',     label: 'Email',     type: 'email' },
-      { key: 'syllogos',  label: 'Δικηγορικός σύλλογος', type: 'text' },
-    ],
-    columns: [
-      { key: 'aa',       label: 'Α/Α',    width: 60 },
-      { key: 'eponymo',  label: 'Επώνυμο' },
-      { key: 'onoma',    label: 'Όνομα' },
-      { key: 'tilefono', label: 'Τηλέφωνο', width: 130 },
-      { key: 'email',    label: 'Email' },
-      { key: 'syllogos', label: 'Σύλλογος' },
-    ],
-  },
   opponents: {
     // Αντίδικοι (antidikoi)
     fields: [
@@ -265,7 +247,6 @@ function PersonModal({ kind, config, initial, onClose, onSaved }) {
 function getPeopleHelper(kind) {
   switch (kind) {
     case 'lawyers':          return people.lawyers;
-    case 'opposing-lawyers': return people.opposingLawyers;
     case 'opponents':        return people.opponents;
     case 'related':          return people.related;
     default: throw new Error('Unknown kind: ' + kind);
