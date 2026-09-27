@@ -380,6 +380,7 @@ function CaseTab({ caseData, onSave, saving }) {
             caseId={caseData.aa}
             fysikaList={fysikaList}
             primaryId={fysikoProsopoId}
+            onPersonCreated={reloadFysika}
           />
         </div>
 

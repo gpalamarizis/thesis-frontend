@@ -10,21 +10,33 @@
 import { useState, useEffect, useMemo } from 'react';
 import { cases } from '../../api';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
 
 function fullName(p) {
   return `${p.eponymo || ''} ${p.onoma || ''}`.trim();
 }
 
-function CaseClientsPanel({ caseId, fysikaList, primaryId, onCountChange }) {
+// Δύο τρόποι λειτουργίας:
+//
+//   caseId  — η υπόθεση υπάρχει: κάθε προσθήκη και αφαίρεση πάει κατευθείαν
+//             στον διακομιστή.
+//   pending — νέα υπόθεση που δεν έχει αποθηκευτεί ακόμα: οι πελάτες
+//             κρατιούνται τοπικά και καταχωρούνται μόλις δημιουργηθεί.
+function CaseClientsPanel({
+  caseId, fysikaList, primaryId, onCountChange,
+  pending, onPendingChange, onPersonCreated,
+}) {
+  const isPending = !caseId;
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [q, setQ] = useState('');
   const [adding, setAdding] = useState(false);
   const [confirmDel, setConfirmDel] = useState(null);
+  const [quickCreate, setQuickCreate] = useState(false);
 
   const load = () => {
-    if (!caseId) { setLoading(false); return; }
+    if (isPending) { setLoading(false); return; }
     setLoading(true);
     cases.clients(caseId)
       .then(d => {
@@ -37,10 +49,13 @@ function CaseClientsPanel({ caseId, fysikaList, primaryId, onCountChange }) {
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [caseId]);
 
+  // Οι γραμμές που εμφανίζονται: από τον διακομιστή ή από την τοπική λίστα.
+  const shown = isPending ? (pending || []) : rows;
+
   // Υποψήφιοι: όσοι δεν είναι ήδη μέσα και δεν είναι ο κύριος πελάτης
   const taken = useMemo(
-    () => new Set([...rows.map(r => r.fysiko_prosopo_id), Number(primaryId) || 0]),
-    [rows, primaryId]
+    () => new Set([...shown.map(r => r.fysiko_prosopo_id), Number(primaryId) || 0]),
+    [shown, primaryId]
   );
 
   const matches = useMemo(() => {
@@ -59,36 +74,59 @@ function CaseClientsPanel({ caseId, fysikaList, primaryId, onCountChange }) {
 
   const add = async (p) => {
     setError('');
+    const pid = p.aa || p.id;
+
+    if (isPending) {
+      const next = [...(pending || []), {
+        aa: `new-${pid}`, fysiko_prosopo_id: pid,
+        eponymo: p.eponymo, onoma: p.onoma,
+        onoma_patros: p.onoma_patros, afm: p.afm,
+      }];
+      onPendingChange(next);
+      setQ('');
+      if (onCountChange) onCountChange(next.length);
+      return;
+    }
+
     setAdding(true);
     try {
-      await cases.addClient(caseId, p.aa || p.id);
+      await cases.addClient(caseId, pid);
       setQ('');
       load();
     } catch (e) { setError(e.message); }
     finally { setAdding(false); }
   };
 
+  // Δημιουργία νέου φυσικού προσώπου και άμεση προσθήκη του. Χρειάζεται όταν
+  // ο εντολέας εμφανίζεται μετά τη δημιουργία της υπόθεσης και δεν υπάρχει
+  // ακόμα στα Φυσικά Πρόσωπα — χωρίς αυτό ο χειριστής έπρεπε να βγει, να τον
+  // καταχωρίσει, και να ξαναγυρίσει.
+  const onCreated = async (rec) => {
+    setQuickCreate(false);
+    if (!rec) return;
+    if (onPersonCreated) onPersonCreated(rec);
+    await add(rec);
+  };
+
   const doRemove = async (row) => {
     setError('');
+    if (isPending) {
+      const next = (pending || []).filter(r => r.aa !== row.aa);
+      onPendingChange(next);
+      if (onCountChange) onCountChange(next.length);
+      return;
+    }
     try { await cases.removeClient(caseId, row.aa); load(); }
     catch (e) { setError(e.message); }
   };
-
-  if (!caseId) {
-    return (
-      <div style={{ fontSize: 13, color: '#718096' }}>
-        Αποθήκευσε πρώτα την υπόθεση και μετά πρόσθεσε επιπλέον πελάτες.
-      </div>
-    );
-  }
 
   return (
     <div>
       {error && <div className="error">{error}</div>}
 
-      {loading ? (
+      {loading && !isPending ? (
         <div style={{ fontSize: 13, color: '#718096' }}>Φόρτωση...</div>
-      ) : rows.length === 0 ? (
+      ) : shown.length === 0 ? (
         <div style={{ fontSize: 13, color: '#718096', marginBottom: 10 }}>
           Κανένας επιπλέον πελάτης.
         </div>
@@ -104,7 +142,7 @@ function CaseClientsPanel({ caseId, fysikaList, primaryId, onCountChange }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r, idx) => (
+            {shown.map((r, idx) => (
               <tr key={r.aa}>
                 <td>{idx + 1}</td>
                 <td><strong>{fullName(r)}</strong></td>
@@ -124,7 +162,14 @@ function CaseClientsPanel({ caseId, fysikaList, primaryId, onCountChange }) {
       )}
 
       <div className="form-group" style={{ marginBottom: 0, position: 'relative' }}>
-        <label>Προσθήκη πελάτη</label>
+        <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span>Προσθήκη πελάτη</span>
+          <a
+            href="#"
+            onClick={e => { e.preventDefault(); setQuickCreate(true); }}
+            style={{ fontSize: 12, fontWeight: 'normal' }}
+          >+ Νέο φυσικό πρόσωπο</a>
+        </label>
         <input
           type="search"
           value={q}
@@ -139,8 +184,10 @@ function CaseClientsPanel({ caseId, fysikaList, primaryId, onCountChange }) {
           }}>
             {matches.length === 0 ? (
               <div style={{ padding: '10px 12px', fontSize: 13, color: '#718096' }}>
-                Κανένα αποτέλεσμα. Αν το πρόσωπο δεν υπάρχει, καταχώρισέ το πρώτα
-                στα Φυσικά Πρόσωπα.
+                Κανένα αποτέλεσμα.{' '}
+                <a href="#" onClick={e => { e.preventDefault(); setQuickCreate(true); }}>
+                  Καταχώρισέ το τώρα
+                </a> ως νέο φυσικό πρόσωπο.
               </div>
             ) : matches.map(p => (
               <button
@@ -162,6 +209,14 @@ function CaseClientsPanel({ caseId, fysikaList, primaryId, onCountChange }) {
           </div>
         )}
       </div>
+
+      {quickCreate && (
+        <QuickCreatePersonModal
+          kind="fysiko"
+          onClose={() => setQuickCreate(false)}
+          onCreated={onCreated}
+        />
+      )}
 
       {confirmDel && (
         <ConfirmDialog

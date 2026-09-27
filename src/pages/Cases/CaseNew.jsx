@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import useConfirm from '../../components/useConfirm';
 import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
+import CaseClientsPanel from './CaseClientsPanel';
 import { cases, fysika, nomika, lists, people, api } from '../../api';
 import { saveDraft, loadDraft, clearDraft, formatDraftTime } from '../../utils/draft';
 import { entryKeyDown } from '../../utils/formKeys';
@@ -41,6 +42,8 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
 
   // Lookup lists
   const [fysikaList, setFysikaList] = useState([]);
+  // Επιπλέον πελάτες πριν υπάρξει η υπόθεση — καταχωρούνται μετά τη δημιουργία
+  const [pendingClients, setPendingClients] = useState([]);
   const [nomikaList, setNomikaList] = useState([]);
   const [opponents, setOpponents] = useState([]);
   const [lawyers, setLawyers] = useState([]);
@@ -245,6 +248,21 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
       };
       const res = await cases.create(payload);
       const newId = res?.aa || res?.data?.aa || res?.id;
+
+      // Οι επιπλέον πελάτες μπαίνουν τώρα που υπάρχει υπόθεση. Αν κάποιος
+      // αποτύχει, η υπόθεση έχει ήδη δημιουργηθεί — δεν την ακυρώνουμε γι'
+      // αυτό, απλώς το λέμε ώστε να προστεθεί χειροκίνητα.
+      if (newId && pendingClients.length) {
+        const failed = [];
+        for (const p of pendingClients) {
+          try { await cases.addClient(newId, p.fysiko_prosopo_id); }
+          catch (e) { failed.push(`${p.eponymo || ''} ${p.onoma || ''}`.trim()); }
+        }
+        if (failed.length) {
+          setError(`Η υπόθεση δημιουργήθηκε, αλλά δεν προστέθηκαν: ${failed.join(', ')}`);
+        }
+      }
+
       clearDraft(DRAFT_KEY);
       savedOk.current = true;
       if (newId) navigate(`/cases/${newId}`);
@@ -510,6 +528,23 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                 <label>Περίληψη / Περιγραφή</label>
                 <textarea rows="5" value={perilipsi} onChange={e => setPerilipsi(e.target.value)} placeholder="Σύντομη περιγραφή της υπόθεσης..." />
               </div>
+            </div>
+
+            {/* -------- Επιπλέον πελάτες -------- */}
+            <div className="section">
+              <h3 style={{ margin: '0 0 4px' }}>Επιπλέον πελάτες</h3>
+              <p style={{ fontSize: 13, color: '#718096', marginBottom: 12 }}>
+                Για υποθέσεις με περισσότερους από έναν εντολείς. Θα καταχωρηθούν
+                μόλις αποθηκευτεί η υπόθεση.
+              </p>
+              <CaseClientsPanel
+                caseId={null}
+                pending={pendingClients}
+                onPendingChange={setPendingClients}
+                fysikaList={fysikaList}
+                primaryId={fysikoProsopoId}
+                onPersonCreated={reloadFysika}
+              />
             </div>
 
             {/* -------- Χειριστές δικηγόροι γραφείου -------- */}
