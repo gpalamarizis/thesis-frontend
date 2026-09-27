@@ -19,7 +19,6 @@ import NomikaList from './pages/Nomika/NomikaList';
 import NomikaEdit from './pages/Nomika/NomikaEdit';
 import PeopleList from './pages/People/PeopleList';
 import Phonebook from './pages/Phonebook';
-import OpposingLawyers from './pages/OpposingLawyers';
 import Opponents from './pages/Opponents';
 import RelatedPersons from './pages/RelatedPersons';
 
@@ -149,7 +148,6 @@ function App() {
         <Route path="/nomika/new"       element={guard(NomikaEdit)} />
         <Route path="/nomika/:id"       element={guard(NomikaEdit)} />
         <Route path="/lawyers"          element={guard(PeopleList, { kind: 'lawyers',          title: 'Δικηγόροι Γραφείου' })} />
-        <Route path="/opposing-lawyers" element={guard(OpposingLawyers)} />
         <Route path="/opponents" element={guard(Opponents)} />
         <Route path="/related" element={guard(RelatedPersons)} />
         <Route path="/phonebook"        element={guard(Phonebook)} />
