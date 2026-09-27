@@ -183,7 +183,7 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
             { label: 'Εταιρεία',    content: tabCompany },
             { label: 'Έδρα',        content: tabAddress },
             { label: 'Επικοινωνία', content: tabPhones },
-            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="nomiko" accountsPanel={<ClientAccountsPanel ownerType="nomiko" ownerId={isNew ? null : Number(id)} />} /> },
+            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="nomiko" ownerId={isNew ? null : Number(id)} accountsPanel={<ClientAccountsPanel ownerType="nomiko" ownerId={isNew ? null : Number(id)} />} /> },
           ]}/>
         </div>
         <div className="form-actions">

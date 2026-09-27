@@ -218,7 +218,7 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
             { label: 'Στοιχεία',    content: tabPersonal },
             { label: 'Διευθύνσεις', content: tabAddresses },
             { label: 'Τηλέφωνα',    content: tabPhones },
-            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="fysiko" accountsPanel={<ClientAccountsPanel ownerType="fysiko" ownerId={isNew ? null : Number(id)} />} /> },
+            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="fysiko" ownerId={isNew ? null : Number(id)} accountsPanel={<ClientAccountsPanel ownerType="fysiko" ownerId={isNew ? null : Number(id)} />} /> },
           ]}/>
         </div>
         <div className="form-actions">

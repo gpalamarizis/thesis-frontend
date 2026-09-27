@@ -15,6 +15,7 @@ const menuGroups = [
       { path: '/fysika',           label: 'Φυσικά πρόσωπα',       icon: '👤' },
       { path: '/nomika',           label: 'Νομικά πρόσωπα',       icon: '🏢' },
       { path: '/lawyers',          label: 'Δικηγόροι γραφείου',   icon: '⚖️' },
+      { path: '/opposing-lawyers', label: 'Δικηγόροι αντιδίκων',  icon: '⚔️' },
       { path: '/opponents',        label: 'Αντίδικοι / Συμβαλλόμενοι', icon: '🔷' },
       { path: '/related',          label: 'Σχετικά πρόσωπα',      icon: '🔗' },
       { path: '/phonebook',        label: 'Τηλεφωνικός κατάλογος', icon: '📞' },
@@ -27,6 +28,7 @@ const menuGroups = [
       { path: '/reports/calendar-court', label: 'Ημερολόγιο δικαστικών ενεργ.',  icon: '🗓️' },
       { path: '/reports/calendar-tasks', label: 'Ημερολόγιο λοιπών ενεργειών',   icon: '📅' },
       { path: '/reports/courts',         label: 'Αναφορά Δικαστηρίων',           icon: '⚖️' },
+      { path: '/reports/tax-property',   label: 'Φορολογικά & Ιδιοκτησία',       icon: '🏠' },
   ]},
   { title: 'Τιμολόγηση', items: [
       { path: '/invoices',                 label: 'Τιμολόγια',          icon: '🧾' },

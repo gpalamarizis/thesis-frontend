@@ -1,3 +1,5 @@
+import { downloadFile } from '../api';
+
 // src/components/ClientCredentialsSection.jsx
 // Reusable section για φορολογικά + ιδιοκτησιακά στοιχεία πελατών.
 // Χρησιμοποιείται σε FysikaEdit + NomikaEdit.
@@ -6,6 +8,7 @@
 //   form                — το state object του form (contains all fields)
 //   onChange(fieldName) — factory function που επιστρέφει event handler
 //   kind                — 'fysiko' | 'nomiko'  (καθορίζει ποια πεδία εμφανίζονται)
+//   ownerId             — το id του πελάτη· χωρίς αυτό δεν εμφανίζονται οι εξαγωγές
 
 /**
  * MultiValueField — μία γραμμή ανά τιμή, με «+ Προσθήκη» και «×».
@@ -59,12 +62,33 @@ function MultiValueField({ label, value, onChange, placeholder, hint }) {
   );
 }
 
-function ClientCredentialsSection({ form, onChange, kind, accountsPanel }) {
+function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId }) {
   const isFysiko = kind === 'fysiko';
   const isDeceased = isFysiko && !!form.date_thanaton;
 
+  // Εξαγωγή της καρτέλας. Οι κωδικοί ΔΕΝ περιλαμβάνονται — μόνο το όνομα
+  // χρήστη και η ένδειξη ότι υπάρχει κωδικός.
+  const exportOne = (format) => {
+    const ext = format === 'xlsx' ? 'xlsx' : 'docx';
+    return downloadFile(
+      `/api/reports/tax-property/${kind}/${ownerId}?format=${format}`,
+      `Forologika.${ext}`
+    );
+  };
+
   return (
     <div>
+      {ownerId ? (
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginBottom: 12 }}>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={() => exportOne('xlsx')}>
+            Εξαγωγή σε Excel
+          </button>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={() => exportOne('docx')}>
+            Εξαγωγή σε Word
+          </button>
+        </div>
+      ) : null}
+
       {/* GDPR warning banner */}
       <div style={{
         background: '#fff5f5', border: '1px solid #feb2b2', borderRadius: 6,
