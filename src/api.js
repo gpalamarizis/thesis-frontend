@@ -326,6 +326,11 @@ export const cases = {
   previewProtocol: (clientType, clientId) =>
     api.get(`/api/cases/preview-protocol?clientType=${clientType}&clientId=${clientId}`),
   sameClient:      (id)              => api.get(`/api/cases/${id}/same-client`),
+  // Επιπλέον πελάτες στην ίδια υπόθεση (εργατικές, ομαδικές αγωγές).
+  // Ο κύριος πελάτης δεν περιλαμβάνεται — ζει στην ίδια την υπόθεση.
+  clients:         (id)              => api.get(`/api/cases/${id}/clients`),
+  addClient:       (id, fysikoId)    => api.post(`/api/cases/${id}/clients`, { fysiko_prosopo_id: fysikoId }),
+  removeClient:    (id, rowId)       => api.delete(`/api/cases/${id}/clients/${rowId}`),
   suggestions:     (id)              => api.get(`/api/cases/${id}/suggestions`),
   suggestionFeedback: (id, suggestedId, feedback) =>
     api.post(`/api/cases/${id}/suggestions/feedback`, { suggested_case_id: suggestedId, feedback }),
@@ -353,6 +358,7 @@ export const nomika = {
 // Kept here as convenience helpers for later batches.
 export const people = {
   lawyers:         genericPeople('lawyers'),
+  opposingLawyers: genericPeople('opposing-lawyers'),
   opponents:       genericPeople('opponents'),
   // Σχετικά πρόσωπα — επεκτεταμένο με φίλτρα και συνδεδεμένες υποθέσεις
   related: {
