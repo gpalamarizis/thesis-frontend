@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import { reports, cases } from '../api';
-import { fmtDate } from '../utils/format';
+import { fmtDate, toISODate } from '../utils/format';
 
 function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   const [stats, setStats] = useState({ total_cases: 0, pending_cases: 0, hearings_next_30d: 0, open_tasks: 0 });
@@ -52,8 +52,10 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   useEffect(() => {
     const y = monthCursor.getFullYear();
     const m = monthCursor.getMonth();
-    const from = new Date(y, m, 1).toISOString().slice(0, 10);
-    const to   = new Date(y, m + 1, 0).toISOString().slice(0, 10);
+    // Τοπική ώρα — το toISOString() γύριζε στην προηγούμενη μέρα και
+    // έκοβε την τελευταία δικάσιμο κάθε μήνα.
+    const from = toISODate(new Date(y, m, 1));
+    const to   = toISODate(new Date(y, m + 1, 0));
     reports.upcomingHearings(from, to)
       .then(d => {
         const list = Array.isArray(d) ? d : (d?.data || []);

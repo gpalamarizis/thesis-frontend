@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { invoices, invoiceSeries, orgSettings, fysika, nomika, cases } from '../../api';
-import { fmtDate, fmtCurrency, toDateInput } from '../../utils/format';
+import { fmtDate, fmtCurrency, toDateInput, toISODate } from '../../utils/format';
 import { generateInvoicePdf } from '../../utils/invoicePdf';
 import MyDataPanel from './MyDataPanel';
 
@@ -61,7 +61,9 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
     aa: null,
     status: 'draft',
     series_id: '',
-    date: new Date().toISOString().slice(0, 10),
+    // ΤΟΠΙΚΗ ημερομηνία: μετά τα μεσάνυχτα το toISOString() έδινε τη
+    // χθεσινή, δηλαδή λάθος ημερομηνία έκδοσης σε φορολογικό παραστατικό.
+    date: toISODate(new Date()),
     recipient_kind: 'fysiko',
     fysiko_prosopo_id: '',
     nomiko_prosopo_id: '',

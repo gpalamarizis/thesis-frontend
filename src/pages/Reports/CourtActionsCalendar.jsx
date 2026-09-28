@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { reports, people, lists } from '../../api';
-import { fmtDate, trunc } from '../../utils/format';
+import { fmtDate, trunc, toISODate } from '../../utils/format';
 import CalendarExportButton from '../../components/CalendarExportButton';
 import { eventFromCourtAction } from '../../utils/calendar';
 
@@ -31,8 +31,9 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
   useEffect(() => {
     const y = monthCursor.getFullYear();
     const m = monthCursor.getMonth();
-    const from = new Date(y, m, 1).toISOString().slice(0, 10);
-    const to = new Date(y, m + 1, 0).toISOString().slice(0, 10);
+    // Τοπική ώρα — βλ. toISODate
+    const from = toISODate(new Date(y, m, 1));
+    const to = toISODate(new Date(y, m + 1, 0));
     setLoading(true);
     const params = { from, to };
     if (xeiristId) params.xeiristId = xeiristId;

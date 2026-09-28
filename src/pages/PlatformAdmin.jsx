@@ -10,6 +10,7 @@ import usePrompt from '../components/usePrompt';
 import Modal from '../components/Modal';
 import { platform } from '../api';
 
+import { toISODate } from '../utils/format';
 function fmtDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('el-GR');
@@ -165,7 +166,7 @@ function OrganizationsTab() {
 
 // ==================== CREATE ORG MODAL ====================
 function CreateOrgModal({ onClose, onCreated }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toISODate(new Date());
   const [form, setForm] = useState({
     name: '', slug: '', plan_type: 'enterprise',
     admin_email: '', admin_password: '',

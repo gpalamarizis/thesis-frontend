@@ -12,6 +12,7 @@ import { cases, fysika, nomika, lists, people, api } from '../../api';
 import { saveDraft, loadDraft, clearDraft, formatDraftTime } from '../../utils/draft';
 import { entryKeyDown } from '../../utils/formKeys';
 
+import { toISODate } from '../../utils/format';
 const DRAFT_KEY = 'case-new';
 
 function CaseNew({ user, onLogout, onOpenCaseSearch }) {
@@ -28,7 +29,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   const [diadikosId, setDiadikosId] = useState('');
   const [xeiristesIds, setXeiristesIds] = useState([]);
   const [perilipsi, setPerilipsi] = useState('');
-  const [dateEnarxis, setDateEnarxis] = useState(() => new Date().toISOString().slice(0, 10));
+  const [dateEnarxis, setDateEnarxis] = useState(() => toISODate(new Date()));
   const [dateTelous, setDateTelous] = useState('');
   const [ekkremis, setEkkremis] = useState(true);
   const [onomasiaFakelou, setOnomasiaFakelou] = useState('');

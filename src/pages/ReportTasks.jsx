@@ -6,11 +6,14 @@ import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { api, people, lists, downloadFile } from '../api';
 
-const todayISO = () => new Date().toISOString().substring(0, 10);
+import { toISODate } from '../utils/format';
+// Τοπική ώρα: το toISOString() έδινε τη ΧΘΕΣΙΝΗ ημερομηνία από τα
+// μεσάνυχτα ως τις 2-3 π.μ. — ώρες που δουλεύουν δικηγόροι.
+const todayISO = () => toISODate(new Date());
 const addDaysISO = (n) => {
   const d = new Date();
   d.setDate(d.getDate() + n);
-  return d.toISOString().substring(0, 10);
+  return toISODate(d);
 };
 
 function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
