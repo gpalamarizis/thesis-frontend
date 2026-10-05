@@ -169,10 +169,16 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
     if (f.type === 'date')   return fmtDate(v);
     if (f.key === 'amount' || f.key === 'timi_oras') return fmtCurrency(v);
     if (f.splitInto) {
+      // Το όνομα έρχεται έτοιμο από τον διακομιστή. Δεν εξαρτάται από το
+      // αν ο συνεργάτης υπάρχει στις επιλογές του dropdown — αλλιώς όποιος
+      // λείπει από εκείνη τη λίστα εμφανιζόταν ως σκέτο id.
+      if (r.synergatis_name) {
+        return r.synergatis_role ? `${r.synergatis_name} — ${r.synergatis_role}` : r.synergatis_name;
+      }
       const col = f.splitInto.find(cc => r[cc] != null);
       if (!col) return '—';
       const opt = (f.options || []).find(o => String(o.value) === `${col}:${r[col]}`);
-      return opt ? opt.label : String(r[col]);
+      return opt ? opt.label : `#${r[col]}`;
     }
     if (f.type === 'select' && Array.isArray(f.options)) {
       const opt = f.options.find(o => String(o.value) === String(v));
