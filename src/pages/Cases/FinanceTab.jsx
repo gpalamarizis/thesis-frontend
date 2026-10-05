@@ -19,6 +19,7 @@ function FinanceTab({ caseId }) {
   const [lawyers, setLawyers] = useState([]);
   const [externals, setExternals] = useState([]);
   const [pagiaDefs, setPagiaDefs] = useState([]);
+  const [related, setRelated] = useState([]);
 
   useEffect(() => {
     people.lawyers.list()
@@ -29,6 +30,12 @@ function FinanceTab({ caseId }) {
         setExternals(all.filter(l => l.exoterikos === true));
       })
       .catch(() => {});
+    // Οι συνεργάτες μπορεί να είναι είτε δικηγόροι γραφείου σημειωμένοι ως
+    // εξωτερικοί, είτε σχετικά πρόσωπα — πραγματογνώμονες, μεταφραστές,
+    // επιμελητές. Φορτώνονται και τα δύο.
+    people.related.list()
+      .then(d => setRelated(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
     lists.get('pagia_exoda')
       .then(d => setPagiaDefs(Array.isArray(d) ? d : (d?.data || [])))
       .catch(() => {});
@@ -37,8 +44,23 @@ function FinanceTab({ caseId }) {
   const bumpCount = (k, n) => setCounts(c => ({ ...c, [k]: n }));
 
   const lawyerOptions = lawyers.map(l => ({ value: l.aa, label: `${l.eponymo || ''} ${l.onoma || ''}`.trim() }));
-  const externalOptions = externals.map(l => ({ value: l.aa, label: `${l.eponymo || ''} ${l.onoma || ''}`.trim() }));
   const pagiaOptions = pagiaDefs.map(p => ({ value: p.aa, label: p.name }));
+
+  // Η τιμή κωδικοποιεί ΚΑΙ τον πίνακα: «dikigoros:12», «sxetiko:3401».
+  // Χωρίς αυτό, δύο εγγραφές με το ίδιο id από διαφορετικούς πίνακες
+  // δεν ξεχωρίζουν.
+  const fullName = (p) =>
+    (p.eponymia && p.eponymia.trim())
+    || `${p.eponymo || ''} ${p.onoma || ''}`.trim()
+    || '(χωρίς όνομα)';
+
+  const synergatisOptions = [
+    ...externals.map(l => ({ value: `dikigoros:${l.aa}`, label: `${fullName(l)} — δικηγόρος γραφείου` })),
+    ...related.map(r => ({
+      value: `sxetiko:${r.aa}`,
+      label: `${fullName(r)}${r.idiotita_name ? ' — ' + r.idiotita_name : ' — σχετικό πρόσωπο'}`,
+    })),
+  ];
 
   const oresFields = [
     { key: 'date',         label: 'Ημερομηνία',    type: 'date',   required: true },
@@ -65,7 +87,9 @@ function FinanceTab({ caseId }) {
 
   const synergatiFields = [
     { key: 'date',          label: 'Ημερομηνία', type: 'date',   required: true },
-    { key: 'synergatis_id', label: 'Συνεργάτης', type: 'select', options: externalOptions, emptyHint: 'Πρόσθεσε εξωτερικούς δικηγόρους στους «Δικηγόρους γραφείου» με το πεδίο «Εξωτερικός συνεργάτης» ενεργό' },
+    { key: 'synergatis_id', label: 'Συνεργάτης', type: 'select', options: synergatisOptions,
+      composite: 'synergatis_type',
+      emptyHint: 'Πρόσθεσε εξωτερικούς δικηγόρους στους «Δικηγόρους γραφείου», ή καταχώρισε σχετικά πρόσωπα' },
     { key: 'amount',        label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
     { key: 'perigrafi',     label: 'Περιγραφή',  type: 'textarea' },
   ];
@@ -77,9 +101,32 @@ function FinanceTab({ caseId }) {
       </div>
       <Tabs tabs={[
         { label: 'Ώρες εργασίας',   badge: counts.ores,                content: <FinanceResource caseId={caseId} resource="ores"            fields={oresFields}      onCountChange={n => bumpCount('ores', n)} /> },
-        { label: 'Πάγια έξοδα',     badge: counts['pagia-exoda'],      content: <FinanceResource caseId={caseId} resource="pagia-exoda"     fields={pagiaFields}     onCountChange={n => bumpCount('pagia-exoda', n)} /> },
+        // Τα πάγια έξοδα και τα έξοδα συνεργάτη ενώθηκαν σε μία καρτέλα με
+        // δύο ενότητες. Τα δεδομένα παραμένουν σε χωριστούς πίνακες: το ένα
+        // δείχνει σε είδος εξόδου από λίστα, το άλλο σε πρόσωπο.
+        { label: 'Έξοδα',
+          badge: (counts['pagia-exoda'] || 0) + (counts['exoda-synergati'] || 0),
+          content: (
+            <div>
+              <h3 style={{ fontSize: 15, margin: '0 0 4px' }}>Πάγια έξοδα</h3>
+              <p style={{ fontSize: 13, color: '#718096', margin: '0 0 12px' }}>
+                Έξοδα από τον κατάλογο ειδών — παράβολα, τέλη, αποζημιώσεις.
+              </p>
+              <FinanceResource caseId={caseId} resource="pagia-exoda" fields={pagiaFields}
+                onCountChange={n => bumpCount('pagia-exoda', n)} />
+
+              <div style={{ borderTop: '1px solid #e2e8f0', margin: '24px 0 0', paddingTop: 20 }}>
+                <h3 style={{ fontSize: 15, margin: '0 0 4px' }}>Έξοδα συνεργάτη</h3>
+                <p style={{ fontSize: 13, color: '#718096', margin: '0 0 12px' }}>
+                  Έξοδα που αφορούν συγκεκριμένο πρόσωπο — δικηγόρο γραφείου ή
+                  σχετικό πρόσωπο.
+                </p>
+                <FinanceResource caseId={caseId} resource="exoda-synergati" fields={synergatiFields}
+                  onCountChange={n => bumpCount('exoda-synergati', n)} />
+              </div>
+            </div>
+          ) },
         { label: 'Αμοιβές',         badge: counts.amoives,             content: <FinanceResource caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
-        { label: 'Έξοδα συνεργάτη', badge: counts['exoda-synergati'],  content: <FinanceResource caseId={caseId} resource="exoda-synergati" fields={synergatiFields} onCountChange={n => bumpCount('exoda-synergati', n)} /> },
       ]} />
     </div>
   );
@@ -121,7 +168,8 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
     if (f.type === 'date')   return fmtDate(v);
     if (f.key === 'amount' || f.key === 'timi_oras') return fmtCurrency(v);
     if (f.type === 'select' && Array.isArray(f.options)) {
-      const opt = f.options.find(o => String(o.value) === String(v));
+      const key = f.composite ? `${r[f.composite] || 'dikigoros'}:${v}` : v;
+      const opt = f.options.find(o => String(o.value) === String(key));
       return opt ? opt.label : (v ?? '—');
     }
     return v ?? '—';
@@ -193,6 +241,13 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
 function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved }) {
   const initForm = {};
   fields.forEach(f => {
+    if (f.composite) {
+      // Το id και ο τύπος ζουν σε δύο στήλες, αλλά το dropdown θέλει μία τιμή
+      const id = initial?.[f.key];
+      const t = initial?.[f.composite];
+      initForm[f.key] = id != null ? `${t || 'dikigoros'}:${id}` : '';
+      return;
+    }
     initForm[f.key] = initial?.[f.key] != null
       ? (f.type === 'date' ? toDateInput(initial[f.key]) : String(initial[f.key]))
       : '';
@@ -241,6 +296,14 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
       fields.forEach(f => {
         if (f.virtual) return; // skip virtual fields (like timi_oras — used only for calc)
         let v = form[f.key];
+        if (f.composite) {
+          // «sxetiko:3401» -> synergatis_id = 3401, synergatis_type = 'sxetiko'
+          if (!v) { payload[f.key] = null; payload[f.composite] = null; return; }
+          const [t, id] = String(v).split(':');
+          payload[f.key] = Number(id);
+          payload[f.composite] = t;
+          return;
+        }
         if (v === '') v = null;
         else if ((f.type === 'number' || f.key.endsWith('_id')) && v != null) v = Number(v);
         payload[f.key] = v;
