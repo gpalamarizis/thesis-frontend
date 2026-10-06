@@ -1,6 +1,7 @@
 import { downloadFile } from '../api';
 
 import DateInput from './DateInput';
+import FilerPicker from './FilerPicker';
 // src/components/ClientCredentialsSection.jsx
 // Reusable section για φορολογικά + ιδιοκτησιακά στοιχεία πελατών.
 // Χρησιμοποιείται σε FysikaEdit + NomikaEdit.
@@ -65,6 +66,13 @@ function MultiValueField({ label, value, onChange, placeholder, hint }) {
 
 function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId }) {
   const isFysiko = kind === 'fysiko';
+
+  // Ο υποβάλλων τη δήλωση ζει σε δύο στήλες. Γράφονται ΜΑΖΙ, ώστε η επιλογή
+  // της μίας να μηδενίζει πάντα την άλλη.
+  const setFiler = ({ dilosi_dikigoros_id, dilosi_sxetiko_id }) => {
+    onChange('dilosi_dikigoros_id')({ target: { value: dilosi_dikigoros_id, type: 'number' } });
+    onChange('dilosi_sxetiko_id')({ target: { value: dilosi_sxetiko_id, type: 'number' } });
+  };
   const isDeceased = isFysiko && !!form.date_thanaton;
 
   // Εξαγωγή της καρτέλας. Οι κωδικοί ΔΕΝ περιλαμβάνονται — μόνο το όνομα
@@ -135,6 +143,12 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId
               Υπόχρεος φορολογικής δήλωσης
             </label>
           </div>
+
+          <FilerPicker
+            dikigorosId={form.dilosi_dikigoros_id}
+            sxetikoId={form.dilosi_sxetiko_id}
+            onChange={setFiler}
+          />
         </>
       )}
 
