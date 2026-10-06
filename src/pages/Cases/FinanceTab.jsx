@@ -5,6 +5,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import { finance, people, lists } from '../../api';
 import { fmtDate, fmtCurrency, toDateInput } from '../../utils/format';
 
+import DateInput from '../../components/DateInput';
 /**
  * FinanceTab — Backend schema:
  *   ores:             ypothesi_id, dikigoros_id, date, ores, perigrafi, amount
@@ -364,6 +365,12 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
                 </select>
                 {showEmptyHint && <small style={{ color: '#a0aec0', display: 'block', marginTop: 4 }}>{f.emptyHint}</small>}
               </>
+            ) : f.type === 'date' ? (
+              <DateInput
+                value={form[f.key] || ''}
+                onChange={e => setField(f.key, e.target.value)}
+                required={f.required}
+              />
             ) : (
               <input
                 type={f.type || 'text'}

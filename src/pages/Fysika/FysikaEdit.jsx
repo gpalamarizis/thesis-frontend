@@ -8,6 +8,7 @@ import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { fysika } from '../../api';
 import { toDateInput } from '../../utils/format';
 
+import DateInput from '../../components/DateInput';
 // Backend fields (from routes/fysika.js FIELDS list):
 const emptyForm = {
   eponymo: '', onoma: '', onoma_patros: '',
@@ -147,7 +148,7 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
       <div className="form-grid-3">
         <div className="form-group">
           <label>Ημερομηνία γέννησης</label>
-          <input type="date" value={form.date_gennisis} onChange={onChange('date_gennisis')} />
+          <DateInput value={form.date_gennisis} onChange={onChange('date_gennisis')} />
         </div>
         <div className="form-group">
           <label>Α.Δ.Τ.</label>

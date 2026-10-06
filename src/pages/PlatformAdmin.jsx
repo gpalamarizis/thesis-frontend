@@ -11,6 +11,7 @@ import Modal from '../components/Modal';
 import { platform } from '../api';
 
 import { toISODate } from '../utils/format';
+import DateInput from '../components/DateInput';
 function fmtDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('el-GR');
@@ -207,7 +208,7 @@ function CreateOrgModal({ onClose, onCreated }) {
             <option value="enterprise">Enterprise</option>
           </select>
         </div>
-        <div className="form-group"><label>Έναρξη συνδρομής</label><input type="date" value={form.subscription_start} onChange={e => upd('subscription_start', e.target.value)} /></div>
+        <div className="form-group"><label>Έναρξη συνδρομής</label><DateInput value={form.subscription_start} onChange={e => upd('subscription_start', e.target.value)} /></div>
         <div className="form-group"><label>Διάρκεια (έτη)</label><input type="number" min="1" max="10" value={form.subscription_years} onChange={e => upd('subscription_years', parseInt(e.target.value))} /></div>
         <div className="form-group"><label>Max χρήστες</label><input type="number" value={form.max_users} onChange={e => upd('max_users', parseInt(e.target.value))} /></div>
         <div className="form-group"><label>Email τιμολόγησης</label><input type="email" value={form.billing_email} onChange={e => upd('billing_email', e.target.value)} /></div>
@@ -406,8 +407,8 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
             </div>
             <div className="form-group"><label>Max χρήστες</label><input type="number" value={form.max_users} onChange={e => setForm(f => ({ ...f, max_users: parseInt(e.target.value) }))} /></div>
             <div className="form-group"><label>Storage quota (MB)</label><input type="number" value={form.storage_quota_mb} onChange={e => setForm(f => ({ ...f, storage_quota_mb: parseInt(e.target.value) }))} /></div>
-            <div className="form-group"><label>Trial ends</label><input type="date" value={form.trial_ends_at} onChange={e => setForm(f => ({ ...f, trial_ends_at: e.target.value }))} /></div>
-            <div className="form-group"><label>Subscription ends</label><input type="date" value={form.subscription_ends_at} onChange={e => setForm(f => ({ ...f, subscription_ends_at: e.target.value }))} /></div>
+            <div className="form-group"><label>Trial ends</label><DateInput value={form.trial_ends_at} onChange={e => setForm(f => ({ ...f, trial_ends_at: e.target.value }))} /></div>
+            <div className="form-group"><label>Subscription ends</label><DateInput value={form.subscription_ends_at} onChange={e => setForm(f => ({ ...f, subscription_ends_at: e.target.value }))} /></div>
           </div>
           <div className="form-group"><label>Σημειώσεις</label><textarea rows="2" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
         </div>

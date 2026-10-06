@@ -6,6 +6,7 @@ import { actions, people } from '../../api';
 import { fmtDate, toDateInput } from '../../utils/format';
 import { eventFromTaskAction } from '../../utils/calendar';
 
+import DateInput from '../../components/DateInput';
 /**
  * TaskActionsTab — Λοιπές ενέργειες (energeies table)
  * Backend fields: ypotheseis_id, date_dead_line, perigrafi_energias, ekkremis
@@ -198,7 +199,7 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
       <div className="form-grid-2">
         <div className="form-group">
           <label>Προθεσμία</label>
-          <input type="date" value={form.date_dead_line} onChange={c('date_dead_line')} />
+          <DateInput value={form.date_dead_line} onChange={c('date_dead_line')} />
         </div>
         <div className="form-group">
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 28 }}>

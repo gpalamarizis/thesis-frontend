@@ -18,6 +18,7 @@ import RelatedPersonsTab from './RelatedPersonsTab';
 import RelatedCasesPanel from './RelatedCasesPanel';
 import CaseInvoicesTab from './CaseInvoicesTab';
 
+import DateInput from '../../components/DateInput';
 function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -261,11 +262,11 @@ function CaseTab({ caseData, onSave, saving }) {
         <div className="form-grid-2">
           <div className="form-group">
             <label>Ημερομηνία εισαγωγής</label>
-            <input type="date" value={dateEisagogis} onChange={e => setDateEisagogis(e.target.value)} />
+            <DateInput value={dateEisagogis} onChange={e => setDateEisagogis(e.target.value)} />
           </div>
           <div className="form-group">
             <label>Ημερομηνία τέλους</label>
-            <input type="date" value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
+            <DateInput value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
           </div>
         </div>
         {/* ΑΦΑΙΡΕΘΗΚΕ: «Ονομασία φακέλου».
@@ -716,7 +717,7 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
       <div className="form-grid-2">
         <div className="form-group">
           <label>Ημερομηνία δικασίμου *</label>
-          <input type="date" value={form.date} onChange={c('date')} />
+          <DateInput value={form.date} onChange={c('date')} />
         </div>
         <div className="form-group">
           <label>Δικαστήριο</label>
@@ -803,7 +804,7 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
       <div className="form-grid-2">
         <div className="form-group">
           <label>Ημ. Έκδοσης Απόφασης</label>
-          <input type="date" value={form.date_apofasis} onChange={c('date_apofasis')} />
+          <DateInput value={form.date_apofasis} onChange={c('date_apofasis')} />
         </div>
         <div className="form-group">
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 24 }}>
@@ -1016,7 +1017,7 @@ function SubActionModal({ courtActionId, initial, lawyers, energeiaOptions, onCl
       <div className="form-grid-2">
         <div className="form-group">
           <label>Ημερομηνία</label>
-          <input type="date" value={form.date} onChange={c('date')} />
+          <DateInput value={form.date} onChange={c('date')} />
         </div>
         <div className="form-group">
           <label>Χειριστής δικηγόρος</label>
@@ -1033,7 +1034,7 @@ function SubActionModal({ courtActionId, initial, lawyers, energeiaOptions, onCl
       <div className="form-grid-2">
         <div className="form-group">
           <label>Ημ. Έκδοσης Απόφασης</label>
-          <input type="date" value={form.date_apofasis} onChange={c('date_apofasis')} />
+          <DateInput value={form.date_apofasis} onChange={c('date_apofasis')} />
         </div>
         <div className="form-group">
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 24 }}>

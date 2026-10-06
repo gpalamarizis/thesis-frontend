@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { courtsReport } from '../../api';
 
+import DateInput from '../../components/DateInput';
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('el-GR') : '—'; }
 
 function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
@@ -54,11 +55,11 @@ function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
       <div className="filter-bar" style={{ marginBottom: 16, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'end' }}>
         <div className="form-group" style={{ margin: 0 }}>
           <label style={{ fontSize: 12 }}>Από</label>
-          <input type="date" value={filters.date_from} onChange={e => setFilters(f => ({ ...f, date_from: e.target.value }))} />
+          <DateInput value={filters.date_from} onChange={e => setFilters(f => ({ ...f, date_from: e.target.value }))} />
         </div>
         <div className="form-group" style={{ margin: 0 }}>
           <label style={{ fontSize: 12 }}>Έως</label>
-          <input type="date" value={filters.date_to} onChange={e => setFilters(f => ({ ...f, date_to: e.target.value }))} />
+          <DateInput value={filters.date_to} onChange={e => setFilters(f => ({ ...f, date_to: e.target.value }))} />
         </div>
         <div className="form-group" style={{ margin: 0, minWidth: 220 }}>
           <label style={{ fontSize: 12 }}>Δικαστήριο</label>

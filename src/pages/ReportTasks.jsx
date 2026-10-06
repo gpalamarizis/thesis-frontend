@@ -7,6 +7,7 @@ import Layout from '../components/Layout';
 import { api, people, lists, downloadFile } from '../api';
 
 import { toISODate } from '../utils/format';
+import DateInput from '../components/DateInput';
 // Τοπική ώρα: το toISOString() έδινε τη ΧΘΕΣΙΝΗ ημερομηνία από τα
 // μεσάνυχτα ως τις 2-3 π.μ. — ώρες που δουλεύουν δικηγόροι.
 const todayISO = () => toISODate(new Date());
@@ -111,19 +112,15 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
         }}>
           <div>
             <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Από (προθεσμία)</label>
-            <input
-              type="date" value={fromDate}
+            <DateInput value={fromDate}
               onChange={e => setFromDate(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }}
-            />
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }} />
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Έως</label>
-            <input
-              type="date" value={toDate}
+            <DateInput value={toDate}
               onChange={e => setToDate(e.target.value)}
-              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }}
-            />
+              style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', marginTop: 18 }}>
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>

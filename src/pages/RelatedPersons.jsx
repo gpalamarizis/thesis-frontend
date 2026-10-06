@@ -9,6 +9,7 @@ import { entryKeyDown } from '../utils/formKeys';
 import ConfirmDialog from '../components/ConfirmDialog';
 import DataTable from '../components/DataTable';
 
+import DateInput from '../components/DateInput';
 const EMPTY = {
   // Στοιχεία Επιχείρησης
   eponymia: '', diakritikos_titlos: '',
@@ -305,7 +306,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 </div>
                 <div className="form-group">
                   <label>Ημ. Γέννησης</label>
-                  <input type="date" name="date_gennisis" value={form.date_gennisis} onChange={c} />
+                  <DateInput name="date_gennisis" value={form.date_gennisis} onChange={c} />
                 </div>
               </div>
               <div className="form-row">

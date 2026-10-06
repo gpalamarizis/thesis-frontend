@@ -7,6 +7,7 @@ import { fmtDate, fmtCurrency, toDateInput, toISODate } from '../../utils/format
 import { generateInvoicePdf } from '../../utils/invoicePdf';
 import MyDataPanel from './MyDataPanel';
 
+import DateInput from '../../components/DateInput';
 function round2(n) { return Math.round(Number(n || 0) * 100) / 100; }
 
 function computeTotals(lines, applyWithhold, applyStamp, applyTn) {
@@ -360,11 +361,11 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
           </div>
           <div className="form-group">
             <label>Ημερομηνία *</label>
-            <input type="date" value={form.date} onChange={e => setField('date', e.target.value)} disabled={isReadOnly} />
+            <DateInput value={form.date} onChange={e => setField('date', e.target.value)} disabled={isReadOnly} />
           </div>
           <div className="form-group">
             <label>Ημ/νία λήξης πληρωμής</label>
-            <input type="date" value={form.due_date} onChange={e => setField('due_date', e.target.value)} disabled={isReadOnly} />
+            <DateInput value={form.due_date} onChange={e => setField('due_date', e.target.value)} disabled={isReadOnly} />
           </div>
         </div>
 

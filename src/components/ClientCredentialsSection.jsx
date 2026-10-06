@@ -1,5 +1,6 @@
 import { downloadFile } from '../api';
 
+import DateInput from './DateInput';
 // src/components/ClientCredentialsSection.jsx
 // Reusable section για φορολογικά + ιδιοκτησιακά στοιχεία πελατών.
 // Χρησιμοποιείται σε FysikaEdit + NomikaEdit.
@@ -104,11 +105,8 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId
           <div className="form-grid-2">
             <div className="form-group">
               <label>Ημερομηνία θανάτου</label>
-              <input
-                type="date"
-                value={form.date_thanaton || ''}
-                onChange={onChange('date_thanaton')}
-              />
+              <DateInput value={form.date_thanaton || ''}
+                onChange={onChange('date_thanaton')} />
               {isDeceased && (
                 <div style={{ fontSize: 12, color: '#742a2a', marginTop: 4 }}>
                   Το πρόσωπο είναι αποβιώσαν — έλεγξε τη νομιμοποίηση επεξεργασίας δεδομένων.

@@ -13,6 +13,7 @@ import { saveDraft, loadDraft, clearDraft, formatDraftTime } from '../../utils/d
 import { entryKeyDown } from '../../utils/formKeys';
 
 import { toISODate } from '../../utils/format';
+import DateInput from '../../components/DateInput';
 const DRAFT_KEY = 'case-new';
 
 function CaseNew({ user, onLogout, onOpenCaseSearch }) {
@@ -410,11 +411,11 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
               <div className="form-grid-3">
                 <div className="form-group">
                   <label>Άνοιγμα (εισαγωγή)</label>
-                  <input type="date" value={dateEnarxis} onChange={e => setDateEnarxis(e.target.value)} />
+                  <DateInput value={dateEnarxis} onChange={e => setDateEnarxis(e.target.value)} />
                 </div>
                 <div className="form-group">
                   <label>Κλείσιμο (τέλος)</label>
-                  <input type="date" value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
+                  <DateInput value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
                 </div>
                 <div className="form-group" style={{ display: 'flex', alignItems: 'end' }}>
                   <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', paddingBottom: 8 }}>

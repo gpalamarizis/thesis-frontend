@@ -55,6 +55,25 @@ for (const f of files) {
   });
 }
 
+// ---- 4. Εξάρτημα JSX που χρησιμοποιείται χωρίς import ή δήλωση ----
+// Το eslint χωρίς το πρόσθετο για React ΔΕΝ βλέπει το <Foo /> ως αναφορά
+// στο Foo, οπότε το no-undef δεν το πιάνει. Ακριβώς έτσι ξέφυγε μια χρήση
+// του DateInput χωρίς import.
+//
+// Κανόνας: αν το όνομα εμφανίζεται ΜΟΝΟ μετά από «<», δεν υπάρχει πουθενά
+// αλλού — ούτε import, ούτε δήλωση, ούτε παράμετρος.
+for (const f of files.filter((x) => x.endsWith('.jsx'))) {
+  const src = fs.readFileSync(f, 'utf8');
+  const used = new Set([...src.matchAll(/<([A-Z][A-Za-z0-9_]*)[\s/>]/g)].map((m) => m[1]));
+  for (const name of used) {
+    const all = (src.match(new RegExp('\\b' + name + '\\b', 'g')) || []).length;
+    const asTag = (src.match(new RegExp('</?' + name + '\\b', 'g')) || []).length;
+    if (all - asTag === 0) {
+      problems.push(f + ': το <' + name + '> χρησιμοποιείται χωρίς import ή δήλωση');
+    }
+  }
+}
+
 if (problems.length) {
   console.error('\nΑΠΟΤΥΧΙΑ ΕΛΕΓΧΩΝ:\n');
   for (const p of problems) console.error('  ✗ ' + p);

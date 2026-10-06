@@ -4,6 +4,7 @@ import Modal from './Modal';
 import { cases, fysika, nomika, people, lists } from '../api';
 import { fmtDate, trunc } from '../utils/format';
 
+import DateInput from './DateInput';
 /**
  * CaseSearchModal v4 — πλήρης αναζήτηση υπόθεσης.
  *
@@ -184,11 +185,11 @@ function CaseSearchModal({ onClose }) {
       <div className="form-grid-3">
         <div className="form-group">
           <label>Εισαγωγή από</label>
-          <input type="date" value={criteria.from} onChange={c('from')} />
+          <DateInput value={criteria.from} onChange={c('from')} />
         </div>
         <div className="form-group">
           <label>Εισαγωγή έως</label>
-          <input type="date" value={criteria.to} onChange={c('to')} />
+          <DateInput value={criteria.to} onChange={c('to')} />
         </div>
         <div className="form-group">
           <label>Κατάσταση</label>
