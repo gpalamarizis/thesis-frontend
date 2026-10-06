@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { people } from '../api';
 
-// «Δήλωση υποβάλλεται από …» — ένα πρόσωπο, από δύο διαφορετικούς
-// καταλόγους.
+// Επιλογή ΕΝΟΣ προσώπου από δύο διαφορετικούς καταλόγους. Χρησιμοποιείται
+// για τον υποβάλλοντα τη φορολογική δήλωση, για τον συνεργάτη ενός εξόδου
+// και για το ποιος πλήρωσε — η ετικέτα δίνεται από έξω.
 //
 // Οι δικηγόροι γραφείου είναι λίγοι και φορτώνονται ολόκληροι. Τα σχετικά
 // πρόσωπα είναι 1.700+ και δεν χωράνε σε dropdown: αναζητούνται από τον
@@ -18,7 +19,7 @@ const fullName = (p) =>
   || `${p?.eponymo || ''} ${p?.onoma || ''}`.trim()
   || '(χωρίς όνομα)';
 
-function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled }) {
+function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled, label }) {
   const [lawyers, setLawyers] = useState([]);
   const [chosenSxetiko, setChosenSxetiko] = useState(null);
   const [q, setQ] = useState('');
@@ -68,7 +69,7 @@ function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled }) {
 
   return (
     <div className="form-group">
-      <label>Δήλωση υποβάλλεται από</label>
+      <label>{label || 'Δήλωση υποβάλλεται από'}</label>
 
       {sxetikoId ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

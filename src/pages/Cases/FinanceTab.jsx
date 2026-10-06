@@ -6,6 +6,8 @@ import { finance, people, lists } from '../../api';
 import { fmtDate, fmtCurrency, toDateInput } from '../../utils/format';
 
 import DateInput from '../../components/DateInput';
+import FilerPicker from '../../components/FilerPicker';
+import DocumentPicker from '../../components/DocumentPicker';
 /**
  * FinanceTab — Backend schema:
  *   ores:             ypothesi_id, dikigoros_id, date, ores, perigrafi, amount
@@ -73,11 +75,18 @@ function FinanceTab({ caseId }) {
     { key: 'perigrafi',    label: 'Περιγραφή',     type: 'textarea' },
   ];
 
+  const plironeiField = { key: 'plironei', label: 'Πληρώνει', type: 'person',
+    personCols: { dikigoros: 'plironei_dikigoros_id', sxetiko: 'plironei_sxetiko_id' },
+    nameField: 'plironei_name', roleField: 'plironei_role' };
+  const parastatikoField = { key: 'parastatiko_document_id', label: 'Παραστατικό', type: 'document' };
+
   const pagiaFields = [
     { key: 'date',                      label: 'Ημερομηνία',   type: 'date',   required: true },
     { key: 'pagio_exodo_definition_id', label: 'Είδος εξόδου',  type: 'select', options: pagiaOptions },
     { key: 'amount',                    label: 'Ποσό (€)',      type: 'number', required: true, step: '0.01' },
     { key: 'perigrafi',                 label: 'Περιγραφή',     type: 'textarea' },
+    plironeiField,
+    parastatikoField,
   ];
 
   const amoivesFields = [
@@ -89,10 +98,13 @@ function FinanceTab({ caseId }) {
 
   const synergatiFields = [
     { key: 'date',          label: 'Ημερομηνία', type: 'date',   required: true },
-    { key: 'synergatis', label: 'Συνεργάτης', type: 'select', options: synergatisOptions,
-      // εικονικό πεδίο: γράφει σε μία από δύο στήλες
-      splitInto: ['synergatis_id', 'synergatis_dikigoros_id'],
-      emptyHint: 'Πρόσθεσε εξωτερικούς δικηγόρους στους «Δικηγόρους γραφείου», ή καταχώρισε σχετικά πρόσωπα' },
+    // Επιλογέας προσώπου: λίστα δικηγόρων + αναζήτηση σε σχετικά πρόσωπα.
+    // Απλό dropdown δεν στέκει — τα σχετικά πρόσωπα είναι πάνω από 1.700.
+    { key: 'synergatis', label: 'Συνεργάτης', type: 'person',
+      personCols: { dikigoros: 'synergatis_dikigoros_id', sxetiko: 'synergatis_id' },
+      nameField: 'synergatis_name', roleField: 'synergatis_role' },
+    plironeiField,
+    parastatikoField,
     { key: 'amount',        label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
     { key: 'perigrafi',     label: 'Περιγραφή',  type: 'textarea' },
   ];
@@ -169,6 +181,15 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
     const v = r[f.key];
     if (f.type === 'date')   return fmtDate(v);
     if (f.key === 'amount' || f.key === 'timi_oras') return fmtCurrency(v);
+    if (f.personCols) {
+      // Το όνομα έρχεται από τη βάση, όχι από τις επιλογές του browser
+      const nm = r[f.nameField];
+      if (!nm) return '—';
+      return r[f.roleField] ? `${nm} — ${r[f.roleField]}` : nm;
+    }
+    if (f.type === 'document') {
+      return r.parastatiko_name || (r[f.key] ? `#${r[f.key]}` : '—');
+    }
     if (f.splitInto) {
       // Το όνομα έρχεται έτοιμο από τον διακομιστή. Δεν εξαρτάται από το
       // αν ο συνεργάτης υπάρχει στις επιλογές του dropdown — αλλιώς όποιος
@@ -254,6 +275,14 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
 function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved }) {
   const initForm = {};
   fields.forEach(f => {
+    if (f.personCols) {
+      // Δύο στήλες, μία ανά πίνακα
+      initForm[f.key] = {
+        dikigoros: initial?.[f.personCols.dikigoros] ?? null,
+        sxetiko:   initial?.[f.personCols.sxetiko] ?? null,
+      };
+      return;
+    }
     if (f.splitInto) {
       // Όποια από τις δύο στήλες είναι συμπληρωμένη, αυτή δίνει την τιμή
       const col = f.splitInto.find(cc => initial?.[cc] != null);
@@ -307,6 +336,14 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
       const payload = { ypothesi_id: Number(caseId) };
       fields.forEach(f => {
         if (f.virtual) return; // skip virtual fields (like timi_oras — used only for calc)
+        if (f.personCols) {
+          // Δύο στήλες, μία ανά πίνακα. Γράφονται μαζί ώστε να μη μείνουν
+          // ποτέ και οι δύο γεμάτες — το ίδιο εγγυάται και η βάση.
+          const v3 = form[f.key] || {};
+          payload[f.personCols.dikigoros] = v3.dikigoros ?? null;
+          payload[f.personCols.sxetiko]   = v3.sxetiko ?? null;
+          return;
+        }
         if (f.splitInto) {
           // «synergatis_id:3401» -> synergatis_id = 3401, η άλλη στήλη null.
           // Ο περιορισμός της βάσης δεν δέχεται και τις δύο συμπληρωμένες.
@@ -365,6 +402,20 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
                 </select>
                 {showEmptyHint && <small style={{ color: '#a0aec0', display: 'block', marginTop: 4 }}>{f.emptyHint}</small>}
               </>
+            ) : f.type === 'person' ? (
+              <FilerPicker
+                label={f.label}
+                dikigorosId={(form[f.key] || {}).dikigoros}
+                sxetikoId={(form[f.key] || {}).sxetiko}
+                onChange={({ dilosi_dikigoros_id, dilosi_sxetiko_id }) =>
+                  setField(f.key, { dikigoros: dilosi_dikigoros_id, sxetiko: dilosi_sxetiko_id })}
+              />
+            ) : f.type === 'document' ? (
+              <DocumentPicker
+                caseId={caseId}
+                value={form[f.key] || ''}
+                onChange={(v) => setField(f.key, v)}
+              />
             ) : f.type === 'date' ? (
               <DateInput
                 value={form[f.key] || ''}
