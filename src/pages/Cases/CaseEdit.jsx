@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
 import Modal from '../../components/Modal';
@@ -22,6 +22,18 @@ import DateInput from '../../components/DateInput';
 function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // ?tab=court ανοίγει κατευθείαν στις Δικαστικές ενέργειες. Οι σύνδεσμοι
+  // του Πίνακα Ελέγχου δείχνουν εδώ, ώστε ο χειριστής να προσγειώνεται
+  // στο στοιχείο που πάτησε και να μην ψάχνει ξανά.
+  //
+  // Τα ονόματα είναι σταθερά, όχι αριθμοί: αν αλλάξει η σειρά των
+  // καρτελών, οι υπάρχοντες σύνδεσμοι συνεχίζουν να δουλεύουν.
+  const [searchParams] = useSearchParams();
+  const TAB_INDEX = {
+    case: 0, court: 1, tasks: 2, persons: 3, files: 4, finance: 5, invoices: 6,
+  };
+  const initialTab = TAB_INDEX[searchParams.get('tab')] ?? 0;
 
   const [caseData, setCaseData] = useState(null);
   const [courtActions, setCourtActions] = useState([]);
@@ -85,7 +97,7 @@ function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
       {okMsg && <div className="success">{okMsg}</div>}
 
       <div className="section">
-        <Tabs tabs={[
+        <Tabs initial={initialTab} tabs={[
           { label: 'Υπόθεση',              content: <CaseTab caseData={caseData} onSave={saveCase} saving={saving} /> },
           { label: 'Δικαστικές ενέργειες', badge: courtActions.length, content: <CourtActionsTab caseId={id} rows={courtActions} courts={courtsList} onChange={() => loadAll(false)} /> },
           { label: 'Λοιπές ενέργειες',     badge: taskActions.length,  content: <TaskActionsTab caseId={id} rows={taskActions} onChange={() => loadAll(false)} /> },

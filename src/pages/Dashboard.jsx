@@ -6,6 +6,7 @@ import { reports, cases } from '../api';
 import { fmtDate, toISODate } from '../utils/format';
 
 function Dashboard({ user, onLogout, onOpenCaseSearch }) {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ total_cases: 0, pending_cases: 0, hearings_next_30d: 0, open_tasks: 0 });
   const [hearings, setHearings] = useState([]);
   const [tasks, setTasks] = useState([]);
@@ -118,14 +119,26 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
                 </tr>
               </thead>
               <tbody>
-                {hearings.map((h, i) => (
-                  <tr key={h.aa || h.id || i}>
-                    <td>{fmtDate(h.date)}</td>
-                    <td>{h.xeirokinito_id || '—'}</td>
-                    <td>{h.pelatis || '—'}</td>
-                    <td>{handlerOf(h) || '—'}</td>
-                  </tr>
-                ))}
+                {hearings.map((h, i) => {
+                  // Η γραμμή οδηγεί στην υπόθεση, ανοιχτή στις Δικαστικές
+                  // ενέργειες — εκεί που ζει η δικάσιμος.
+                  const to = h.ypothesi_id ? `/cases/${h.ypothesi_id}?tab=court` : null;
+                  return (
+                    <tr key={h.aa || h.id || i}
+                        onClick={to ? () => navigate(to) : undefined}
+                        style={to ? { cursor: 'pointer' } : undefined}
+                        title={to ? 'Άνοιγμα υπόθεσης' : undefined}>
+                      <td>{fmtDate(h.date)}</td>
+                      <td>{to
+                        ? <Link to={to} className="link-inline" onClick={e => e.stopPropagation()}>
+                            {h.xeirokinito_id || '(χωρίς πρωτόκολλο)'}
+                          </Link>
+                        : (h.xeirokinito_id || '—')}</td>
+                      <td>{h.pelatis || '—'}</td>
+                      <td>{handlerOf(h) || '—'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -150,13 +163,24 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
                 </tr>
               </thead>
               <tbody>
-                {tasks.map((t, i) => (
-                  <tr key={t.aa || t.id || i}>
-                    <td>{fmtDate(t.date_dead_line)}</td>
-                    <td>{t.perigrafi_energias || '—'}</td>
-                    <td>{t.xeirokinito_id || '—'}</td>
-                  </tr>
-                ))}
+                {tasks.map((t, i) => {
+                  // Οδηγεί στις Λοιπές ενέργειες της υπόθεσης
+                  const to = t.ypothesi_id ? `/cases/${t.ypothesi_id}?tab=tasks` : null;
+                  return (
+                    <tr key={t.aa || t.id || i}
+                        onClick={to ? () => navigate(to) : undefined}
+                        style={to ? { cursor: 'pointer' } : undefined}
+                        title={to ? 'Άνοιγμα υπόθεσης' : undefined}>
+                      <td>{fmtDate(t.date_dead_line)}</td>
+                      <td>{t.perigrafi_energias || '—'}</td>
+                      <td>{to
+                        ? <Link to={to} className="link-inline" onClick={e => e.stopPropagation()}>
+                            {t.xeirokinito_id || '(χωρίς πρωτόκολλο)'}
+                          </Link>
+                        : (t.xeirokinito_id || '—')}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
