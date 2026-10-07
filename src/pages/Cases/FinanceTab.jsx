@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Tabs from '../../components/Tabs';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { finance, people, lists } from '../../api';
+import { finance, people, lists, downloadFile } from '../../api';
 import { fmtDate, fmtCurrency, toDateInput } from '../../utils/format';
 
 import DateInput from '../../components/DateInput';
@@ -109,11 +109,35 @@ function FinanceTab({ caseId }) {
     { key: 'perigrafi',     label: 'Περιγραφή',  type: 'textarea' },
   ];
 
+  // Εξαγωγή όλων των εξόδων της υπόθεσης — πάγια και συνεργάτη σε ένα
+  // φύλλο, με σύνολο στο τέλος.
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState('');
+  const exportExoda = async () => {
+    setExporting(true);
+    setExportError('');
+    try {
+      await downloadFile(finance.exportExodaXlsx(caseId), 'Exoda.xlsx');
+    } catch (err) {
+      setExportError(err.message || 'Η εξαγωγή απέτυχε.');
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div>
-      <div style={{ color: '#718096', marginBottom: 16 }}>
-        Οικονομικά στοιχεία της υπόθεσης
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
+        <div style={{ color: '#718096' }}>Οικονομικά στοιχεία της υπόθεσης</div>
+        <button type="button" className="btn btn-sm"
+                onClick={exportExoda} disabled={exporting}>
+          {exporting ? 'Εξαγωγή…' : '⬇ Έξοδα σε Excel'}
+        </button>
       </div>
+      {exportError && (
+        <div className="error-message" style={{ marginBottom: 12 }}>{exportError}</div>
+      )}
       <Tabs tabs={[
         { label: 'Ώρες εργασίας',   badge: counts.ores,                content: <FinanceResource caseId={caseId} resource="ores"            fields={oresFields}      onCountChange={n => bumpCount('ores', n)} /> },
         // Πάγια και έξοδα συνεργάτη ενώθηκαν σε μία καρτέλα με δύο

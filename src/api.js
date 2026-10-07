@@ -325,8 +325,6 @@ export const cases = {
   remove:          (id)              => api.delete(`/api/cases/${id}`),
   previewProtocol: (clientType, clientId) =>
     api.get(`/api/cases/preview-protocol?clientType=${clientType}&clientId=${clientId}`),
-  // Ο επόμενος παλαιός κωδικός, ώστε να φαίνεται πριν την αποθήκευση
-  previewOldKod:   () => api.get('/api/cases/preview-old-kod'),
   sameClient:      (id)              => api.get(`/api/cases/${id}/same-client`),
   // Επιπλέον πελάτες στην ίδια υπόθεση (εργατικές, ομαδικές αγωγές).
   // Ο κύριος πελάτης δεν περιλαμβάνεται — ζει στην ίδια την υπόθεση.
@@ -534,6 +532,8 @@ export const reports = {
   },};
 
 export const finance = {
+  // Όλα τα έξοδα μιας υπόθεσης σε Excel, πάγια και συνεργάτη μαζί
+  exportExodaXlsx: (caseId) => `/api/finance/export/xlsx?ypothesi_id=${caseId}`,
   list:   (resource, caseId)          => api.get(`/api/finance/${resource}?ypothesi_id=${caseId}`),
   create: (resource, payload)         => api.post(`/api/finance/${resource}`, payload),
   update: (resource, id, payload)     => api.put(`/api/finance/${resource}/${id}`, payload),
