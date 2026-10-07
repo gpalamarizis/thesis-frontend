@@ -2,11 +2,12 @@
 // Αναφορά: Εκκρεμείς Υποθέσεις
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { api, people, lists, downloadFile } from '../api';
 
 function ReportPending({ user, onLogout, onOpenCaseSearch }) {
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -150,9 +151,13 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
               </thead>
               <tbody>
                 {items.map(r => (
-                  <tr key={r.aa}>
+                  <tr key={r.aa}
+                      onClick={() => navigate(`/cases/${r.aa}`)}
+                      style={{ cursor: 'pointer' }}
+                      title="Άνοιγμα υπόθεσης">
                     <td>
-                      <Link to={`/cases/${r.aa}`} style={{ fontWeight: 'bold', color: '#3182ce' }}>
+                      <Link to={`/cases/${r.aa}`} onClick={e => e.stopPropagation()}
+                            style={{ fontWeight: 'bold', color: '#3182ce' }}>
                         {r.xeirokinito_id || `#${r.aa}`}
                       </Link>
                     </td>

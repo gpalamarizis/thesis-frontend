@@ -2,7 +2,7 @@
 // Αναφορά Δικαστηρίων — grouped by court με φίλτρα και export
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { courtsReport } from '../../api';
 
@@ -10,6 +10,7 @@ import DateInput from '../../components/DateInput';
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('el-GR') : '—'; }
 
 function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [summary, setSummary] = useState(null);
   const [courts, setCourts] = useState([]);
@@ -138,9 +139,17 @@ function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
                   </thead>
                   <tbody>
                     {court.actions.map(a => (
-                      <tr key={a.action_id}>
+                      <tr key={a.action_id}
+                          onClick={a.ypothesi_id ? () => navigate(`/cases/${a.ypothesi_id}?tab=court`) : undefined}
+                          style={a.ypothesi_id ? { cursor: 'pointer' } : undefined}
+                          title={a.ypothesi_id ? 'Άνοιγμα υπόθεσης' : undefined}>
                         <td>{fmtDate(a.date_action)}</td>
-                        <td><Link to={`/cases/${a.ypothesi_id}`}>{a.xeirokinito}</Link><br/><small>{a.perilipsi}</small></td>
+                        <td>
+                          <Link to={`/cases/${a.ypothesi_id}?tab=court`} onClick={e => e.stopPropagation()}>
+                            {a.xeirokinito}
+                          </Link>
+                          <br/><small>{a.perilipsi}</small>
+                        </td>
                         <td>{a.client_name || '—'}</td>
                         <td>{a.ar_pinakiou || '—'}</td>
                         <td>{a.apofasi_num || '—'}</td>

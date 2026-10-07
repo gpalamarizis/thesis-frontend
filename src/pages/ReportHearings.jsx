@@ -2,7 +2,7 @@
 // Αναφορά: Προσεχείς Δικάσιμοι (Ημερολόγιο Δικαστικών Ενεργειών)
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { api, people, lists, downloadFile } from '../api';
 
@@ -19,6 +19,7 @@ const addDaysISO = (n) => {
 };
 
 function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -212,7 +213,10 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
               </thead>
               <tbody>
                 {items.map(r => (
-                  <tr key={r.aa}>
+                  <tr key={r.aa}
+                      onClick={r.ypothesi_id ? () => navigate(`/cases/${r.ypothesi_id}?tab=court`) : undefined}
+                      style={r.ypothesi_id ? { cursor: 'pointer' } : undefined}
+                      title={r.ypothesi_id ? 'Άνοιγμα υπόθεσης' : undefined}>
                     <td style={{ fontWeight: 500 }}>{fmtDate(r.date)}</td>
                     <td>{r.dikastirio_name || '—'}</td>
                     <td>{r.tmima_name || '—'}</td>
@@ -221,7 +225,8 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
                     <td>{r.city_name || '—'}</td>
                     <td>
                       {r.ypothesi_id ? (
-                        <Link to={`/cases/${r.ypothesi_id}`} style={{ fontWeight: 'bold', color: '#3182ce' }}>
+                        <Link to={`/cases/${r.ypothesi_id}?tab=court`} onClick={e => e.stopPropagation()}
+                              style={{ fontWeight: 'bold', color: '#3182ce' }}>
                           {r.xeirokinito_id || `#${r.ypothesi_id}`}
                         </Link>
                       ) : '—'}

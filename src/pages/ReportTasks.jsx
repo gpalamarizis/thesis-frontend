@@ -2,7 +2,7 @@
 // Αναφορά: Εκκρεμείς Λοιπές Ενέργειες (Ημερολόγιο tasks)
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { api, people, lists, downloadFile } from '../api';
 
@@ -18,6 +18,7 @@ const addDaysISO = (n) => {
 };
 
 function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -225,7 +226,13 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                 {items.map(r => {
                   const overdue = r.ekkremis && isPast(r.date_dead_line);
                   return (
-                    <tr key={r.aa} style={overdue ? { backgroundColor: '#feebc8' } : {}}>
+                    <tr key={r.aa}
+                        onClick={r.ypothesi_id ? () => navigate(`/cases/${r.ypothesi_id}?tab=tasks`) : undefined}
+                        title={r.ypothesi_id ? 'Άνοιγμα υπόθεσης' : undefined}
+                        style={{
+                          ...(overdue ? { backgroundColor: '#feebc8' } : {}),
+                          ...(r.ypothesi_id ? { cursor: 'pointer' } : {}),
+                        }}>
                       <td style={{ fontWeight: 500 }}>
                         {r.date_dead_line ? (
                           <>
@@ -254,7 +261,8 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                       <td>{r.perigrafi_energias || '—'}</td>
                       <td>
                         {r.ypothesi_id ? (
-                          <Link to={`/cases/${r.ypothesi_id}`} style={{ fontWeight: 'bold', color: '#3182ce' }}>
+                          <Link to={`/cases/${r.ypothesi_id}?tab=tasks`} onClick={e => e.stopPropagation()}
+                                style={{ fontWeight: 'bold', color: '#3182ce' }}>
                             {r.xeirokinito_id || `#${r.ypothesi_id}`}
                           </Link>
                         ) : '—'}
