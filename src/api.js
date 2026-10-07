@@ -325,6 +325,8 @@ export const cases = {
   remove:          (id)              => api.delete(`/api/cases/${id}`),
   previewProtocol: (clientType, clientId) =>
     api.get(`/api/cases/preview-protocol?clientType=${clientType}&clientId=${clientId}`),
+  // Ο επόμενος παλαιός κωδικός, ώστε να φαίνεται πριν την αποθήκευση
+  previewOldKod:   () => api.get('/api/cases/preview-old-kod'),
   sameClient:      (id)              => api.get(`/api/cases/${id}/same-client`),
   // Επιπλέον πελάτες στην ίδια υπόθεση (εργατικές, ομαδικές αγωγές).
   // Ο κύριος πελάτης δεν περιλαμβάνεται — ζει στην ίδια την υπόθεση.

@@ -37,6 +37,22 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   const [thesiArxeiothetisisId, setThesiArxeiothetisisId] = useState('');
   const [oldKod, setOldKod] = useState('');
 
+  // Ο παλαιός κωδικός προτείνεται ΜΟΛΙΣ ανοίξει η φόρμα, όχι στην
+  // αποθήκευση. Ο χειριστής τον βλέπει και μπορεί να τον αλλάξει.
+  const [oldKodSuggested, setOldKodSuggested] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    cases.previewOldKod()
+      .then((d) => {
+        const v = d?.old_kod ?? d?.data?.old_kod ?? null;
+        // Δεν πατάμε ό,τι έχει ήδη γράψει ή επαναφέρει από πρόχειρο
+        if (alive && v) setOldKod((cur) => (cur ? cur : String(v)));
+        if (alive && v) setOldKodSuggested(true);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
   // Protocol preview
   const [protocolPreview, setProtocolPreview] = useState('');
   const [previewing, setPreviewing] = useState(false);
@@ -523,7 +539,13 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                    και εξακολουθεί να εμφανίζεται στις κάρτες «Σχετικές υποθέσεις». */}
               <div className="form-group" style={{ marginTop: 12 }}>
                 <label>Παλιός Κωδικός</label>
-                <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
+                <input type="text" value={oldKod}
+                  onChange={e => { setOldKod(e.target.value); setOldKodSuggested(false); }} />
+                {oldKodSuggested && (
+                  <div style={{ fontSize: 12, color: '#718096', marginTop: 4 }}>
+                    Προτεινόμενος — ο επόμενος της σειράς. Μπορείς να τον αλλάξεις.
+                  </div>
+                )}
               </div>
 
               <div className="form-group" style={{ marginTop: 12 }}>
