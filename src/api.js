@@ -519,6 +519,8 @@ export const reports = {
     return api.get('/api/reports/upcoming-hearings' + (p.length ? `?${p.join('&')}` : ''));
   },
   pendingTasks:     ()                 => api.get('/api/reports/pending-tasks'),
+  // Δικάσιμοι και προθεσμίες που έφτασαν ή πέρασαν, ακόμα εκκρεμείς
+  dueActions:       ()                 => api.get('/api/reports/due-actions'),
 
   courtActionsCalendar: (params = {}) => {
     const p = new URLSearchParams();

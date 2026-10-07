@@ -5,6 +5,7 @@ import Modal from '../components/Modal';
 import { reports, cases } from '../api';
 import { fmtDate, toISODate } from '../utils/format';
 
+import DueActionsPanel from '../components/DueActionsPanel';
 function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ total_cases: 0, pending_cases: 0, hearings_next_30d: 0, open_tasks: 0 });
@@ -80,6 +81,11 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
           <button className="btn" onClick={() => setShowProtoSearch(true)}>🔍 Αναζήτηση με αριθμό πρωτοκόλλου</button>
         </div>
       </div>
+
+      {/* Οι ενέργειες που έφτασαν μπαίνουν ΠΑΝΩ από τα πάντα: αν ο
+          χειριστής δει μόνο ένα πράγμα ανοίγοντας την εφαρμογή, αυτό
+          πρέπει να είναι. Κρύβεται μόνη της όταν δεν υπάρχει καμία. */}
+      <DueActionsPanel />
 
       <div className="stats">
         <StatCard label="Υποθέσεις σύνολο"        value={stats.total_cases}       to="/cases" />
