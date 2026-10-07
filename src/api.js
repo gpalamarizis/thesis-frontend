@@ -562,7 +562,9 @@ export const documents = {
     }
     return api.post('/api/documents', fd);
   },
-  downloadUrl: (id) => api.get(`/api/documents/${id}/download-url`),
+  // { inline: true } -> το R2 σερβίρει το αρχείο για άνοιγμα, όχι για λήψη
+  downloadUrl: (id, opts = {}) =>
+    api.get(`/api/documents/${id}/download-url${opts.inline ? '?inline=1' : ''}`),
   remove:      (id) => api.delete(`/api/documents/${id}`),
 };
 

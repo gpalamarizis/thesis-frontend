@@ -1058,21 +1058,40 @@ function DocsTab({ caseId, rows, onChange }) {
   const [newFilePrompt, setNewFilePrompt] = useState(null); // 'docx' | 'xlsx'
   const [newFileName, setNewFileName] = useState('');
   const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
 
+  // Ανεβαίνουν ΠΟΛΛΑ αρχεία μαζί, ένα κάθε φορά ώστε να μην πέσει ο
+  // διακομιστής με δέκα ταυτόχρονα. Αν κάποιο αποτύχει, τα υπόλοιπα
+  // συνεχίζουν και στο τέλος λέμε ποια δεν πέρασαν — δεν χάνεται η
+  // δουλειά επειδή ένα αρχείο ήταν προβληματικό.
   const onUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
     setUploading(true);
     setError('');
+    const failed = [];
     try {
-      // Extract metadata (author, last modified by, etc.) client-side before upload
-      const metadata = await extractFileMetadata(file);
-      await documents.upload(caseId, file, '', metadata);
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        setUploadProgress(files.length > 1 ? `${i + 1} από ${files.length}: ${file.name}` : '');
+        try {
+          // Τα μεταδεδομένα (συντάκτης, τελευταία αποθήκευση) διαβάζονται
+          // στον browser πριν το ανέβασμα
+          const metadata = await extractFileMetadata(file);
+          await documents.upload(caseId, file, '', metadata);
+        } catch (err) {
+          failed.push(`${file.name}: ${err.message}`);
+        }
+      }
+      if (failed.length) {
+        setError(failed.length === files.length
+          ? `Δεν ανέβηκε κανένα αρχείο.\n${failed.join('\n')}`
+          : `Ανέβηκαν ${files.length - failed.length} από ${files.length}. Απέτυχαν:\n${failed.join('\n')}`);
+      }
       onChange();
-    } catch (err) {
-      setError(err.message);
     } finally {
       setUploading(false);
+      setUploadProgress('');
       e.target.value = '';
     }
   };
@@ -1101,7 +1120,8 @@ function DocsTab({ caseId, rows, onChange }) {
 
   const openPreview = async (doc) => {
     try {
-      const res = await documents.downloadUrl(doc.aa || doc.id);
+      // inline: το αρχείο ανοίγει αντί να κατεβαίνει
+      const res = await documents.downloadUrl(doc.aa || doc.id, { inline: true });
       const url = res?.url || res?.download_url || res?.data?.url || res?.signed_url || res?.signedUrl;
       if (!url) { setError('Δεν βρέθηκε URL αρχείου.'); return; }
       const name = doc.file_name || doc.fileName || doc.filename || doc.name || doc.original_name || doc.originalName || 'αρχείο';
@@ -1165,8 +1185,8 @@ function DocsTab({ caseId, rows, onChange }) {
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('docx'); setNewFileName(''); }}>📄 Νέο Word</button>
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('xlsx'); setNewFileName(''); }}>📊 Νέο Excel</button>
           <label className={`btn btn-sm ${uploading ? 'btn-disabled' : ''}`} style={{ margin: 0, cursor: 'pointer' }}>
-            {uploading ? 'Ανέβασμα...' : '📎 Ανέβασμα αρχείου'}
-            <input type="file" style={{ display: 'none' }} onChange={onUpload} disabled={uploading} />
+            {uploading ? (uploadProgress || 'Ανέβασμα...') : '📎 Ανέβασμα αρχείων'}
+            <input type="file" multiple style={{ display: 'none' }} onChange={onUpload} disabled={uploading} />
           </label>
         </div>
       </div>
