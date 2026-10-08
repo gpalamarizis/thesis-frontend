@@ -334,20 +334,23 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-sm btn-secondary" onClick={() => navigate('/invoices')}>← Πίσω</button>
-            {form.aa && form.status !== 'draft' && (
-              <button className="btn btn-sm" onClick={downloadPdf}>🖨️ Εκτύπωση / PDF</button>
-            )}
+            {/* ΕΝΑ κουμπί εκτύπωσης, σε κάθε κατάσταση. Ήταν δύο χωριστά —
+                ένα για πρόχειρα και ένα για εκδοθέντα — και η επιλογή
+                γλώσσας έλειπε από το δεύτερο. Σε μη αποθηκευμένο
+                τιμολόγιο η επιλογή φαίνεται αλλά το κουμπί ζητά πρώτα
+                αποθήκευση, ώστε να ξέρει ο χειριστής ότι υπάρχει. */}
+            <select value={pdfLang} onChange={e => setPdfLang(e.target.value)}
+                    style={{ width: 'auto' }} title="Γλώσσα εντύπου">
+              <option value="el">Ελληνικά</option>
+              <option value="en">English</option>
+              <option value="fr">Français</option>
+            </select>
+            <button className="btn btn-sm" onClick={downloadPdf}
+                    title={form.aa ? '' : 'Αποθήκευσε πρώτα το τιμολόγιο'}>
+              🖨️ {form.status === 'draft' || !form.aa ? 'Preview / PDF' : 'Εκτύπωση / PDF'}
+            </button>
             {form.aa && form.status === 'draft' && (
-              <>
-                <select value={pdfLang} onChange={e => setPdfLang(e.target.value)}
-                        style={{ width: 'auto' }} title="Γλώσσα εντύπου">
-                  <option value="el">Ελληνικά</option>
-                  <option value="en">English</option>
-                  <option value="fr">Français</option>
-                </select>
-                <button className="btn btn-sm" onClick={downloadPdf}>🖨️ Preview / PDF</button>
-                <button className="btn btn-sm" onClick={() => setConfirmIssue(true)} disabled={!form.series_id}>✓ Έκδοση</button>
-              </>
+              <button className="btn btn-sm" onClick={() => setConfirmIssue(true)} disabled={!form.series_id}>✓ Έκδοση</button>
             )}
             {form.status === 'issued' && (
               <button className="btn btn-sm btn-danger" onClick={() => setConfirmCancel(true)}>Ακύρωση</button>
