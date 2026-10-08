@@ -284,12 +284,15 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
     }
   };
 
+  // Χωριστό έντυπο ανά γλώσσα. Το ελληνικό είναι το φορολογικό· τα άλλα
+  // δύο φέρουν σημείωση ότι είναι συνοδευτικά.
+  const [pdfLang, setPdfLang] = useState('el');
   const downloadPdf = async () => {
     if (!form.aa) { setError('Αποθήκευσε πρώτα το draft.'); return; }
     try {
       const d = await invoices.get(form.aa);
       const inv = d?.data || d;
-      await generateInvoicePdf(inv, orgData);
+      await generateInvoicePdf(inv, orgData, pdfLang);
     } catch (e) {
       setError(e.message);
     }
@@ -336,6 +339,12 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
             )}
             {form.aa && form.status === 'draft' && (
               <>
+                <select value={pdfLang} onChange={e => setPdfLang(e.target.value)}
+                        style={{ width: 'auto' }} title="Γλώσσα εντύπου">
+                  <option value="el">Ελληνικά</option>
+                  <option value="en">English</option>
+                  <option value="fr">Français</option>
+                </select>
                 <button className="btn btn-sm" onClick={downloadPdf}>🖨️ Preview / PDF</button>
                 <button className="btn btn-sm" onClick={() => setConfirmIssue(true)} disabled={!form.series_id}>✓ Έκδοση</button>
               </>

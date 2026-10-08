@@ -29,20 +29,102 @@ function esc(s) {
     .replace(/'/g, '&#39;');
 }
 
-function buildHtml(invoice, orgData) {
+
+// ---------------------------------------------------------------------------
+// ΓΛΩΣΣΕΣ
+//
+// Χωριστό αρχείο ανά γλώσσα, όπως ζητήθηκε. Το ΕΛΛΗΝΙΚΟ είναι το
+// φορολογικό παραστατικό και αυτό διαβιβάζεται στο myDATA· τα άλλα δύο
+// είναι συνοδευτικά για τον πελάτη και φέρουν ρητή σημείωση.
+//
+// Ο αριθμός παραστατικού, το ΑΦΜ και το ΜΑΡΚ δεν μεταφράζονται ποτέ.
+const T = {
+  el: {
+    invoiceService: 'Τιμολόγιο Παροχής Υπηρεσιών', invoiceSale: 'Τιμολόγιο Πώλησης',
+    creditNote: 'Πιστωτικό Τιμολόγιο',
+    issuer: 'Εκδότης', recipient: 'Λήπτης',
+    afm: 'ΑΦΜ', doy: 'ΔΟΥ', kad: 'ΚΑΔ', gemi: 'ΓΕΜΗ', tel: 'Τηλ',
+    issueDate: 'Ημερομηνία έκδοσης', dueDate: 'Λήξη πληρωμής',
+    caseRef: 'Υπόθεση',
+    descr: 'Περιγραφή', qty: 'Ποσότ.', unitPrice: 'Τιμή/μον.',
+    vatPct: 'ΦΠΑ %', net: 'Καθαρή αξία', total: 'Σύνολο',
+    vat: 'ΦΠΑ', withhold: 'Παρακράτηση', stamp: 'Χαρτόσημο',
+    tn: 'Ταμείο Νομικών', oga: 'ΟΓΑ',
+    payable: 'ΠΛΗΡΩΤΕΟ ΠΟΣΟ', terms: 'Όροι πληρωμής', notes: 'Σημειώσεις',
+    bankAccount: 'Τραπεζικός λογαριασμός',
+    print: 'Εκτύπωση / Αποθήκευση ως PDF',
+    draft: 'Πρόχειρο', issued: 'Εκδοθέν', cancelled: 'Ακυρωμένο',
+    cancelledMark: 'ΑΚΥΡΩΘΗΚΕ', cancelling: 'Ακυρωτικό',
+    sentTo: 'Διαβιβάστηκε στο', aade: 'ΑΑΔΕ', sentDate: 'Ημερομηνία διαβίβασης',
+    created: 'Δημιουργήθηκε',
+    courtesy: null,
+  },
+  en: {
+    invoiceService: 'Invoice for Services', invoiceSale: 'Sales Invoice',
+    creditNote: 'Credit Note',
+    issuer: 'Issuer', recipient: 'Client',
+    afm: 'VAT No', doy: 'Tax office', kad: 'Activity code', gemi: 'Reg. No', tel: 'Tel',
+    issueDate: 'Issue date', dueDate: 'Payment due',
+    caseRef: 'Case',
+    descr: 'Description', qty: 'Qty', unitPrice: 'Unit price',
+    vatPct: 'VAT %', net: 'Net amount', total: 'Total',
+    vat: 'VAT', withhold: 'Withholding tax', stamp: 'Stamp duty',
+    tn: "Lawyers' Fund", oga: 'OGA levy',
+    payable: 'AMOUNT PAYABLE', terms: 'Payment terms', notes: 'Notes',
+    bankAccount: 'Bank account',
+    print: 'Print / Save as PDF',
+    draft: 'Draft', issued: 'Issued', cancelled: 'Cancelled',
+    cancelledMark: 'CANCELLED', cancelling: 'Cancellation',
+    sentTo: 'Transmitted to', aade: 'AADE', sentDate: 'Transmission date',
+    created: 'Created',
+    courtesy: 'Courtesy translation. The Greek invoice is the official tax document.',
+  },
+  fr: {
+    invoiceService: 'Facture de prestation de services', invoiceSale: 'Facture de vente',
+    creditNote: 'Facture d\u2019avoir',
+    issuer: 'Émetteur', recipient: 'Client',
+    afm: 'No TVA', doy: 'Centre des impôts', kad: 'Code activité', gemi: 'No RCS', tel: 'Tél',
+    issueDate: 'Date d\u2019émission', dueDate: 'Échéance',
+    caseRef: 'Dossier',
+    descr: 'Description', qty: 'Qté', unitPrice: 'Prix unit.',
+    vatPct: 'TVA %', net: 'Montant net', total: 'Total',
+    vat: 'TVA', withhold: 'Retenue à la source', stamp: 'Droit de timbre',
+    tn: 'Caisse des avocats', oga: 'Contribution OGA',
+    payable: 'MONTANT À PAYER', terms: 'Conditions de paiement', notes: 'Remarques',
+    bankAccount: 'Compte bancaire',
+    print: 'Imprimer / Enregistrer en PDF',
+    draft: 'Brouillon', issued: 'Émise', cancelled: 'Annulée',
+    cancelledMark: 'ANNULÉE', cancelling: 'Annulation',
+    sentTo: 'Transmise à', aade: 'AADE', sentDate: 'Date de transmission',
+    created: 'Créée',
+    courtesy: 'Traduction de courtoisie. La facture grecque est le document fiscal officiel.',
+  },
+};
+
+function buildHtml(invoice, orgData, lang = 'el') {
+  const t = T[lang] || T.el;
+  // Επωνυμία και διεύθυνση στη γλώσσα του εντύπου, με πτώση στα ελληνικά
+  const pick = (base) => (lang === 'el' ? (orgData || {})[base]
+    : ((orgData || {})[`${base}_${lang}`] || (orgData || {})[base] || ''));
   const isIssued = invoice.status === 'issued';
   const isCancelled = invoice.status === 'cancelled';
   const isDraft = invoice.status === 'draft';
 
   const issuer = {
-    eponymia:           invoice.issuer_eponymia   || orgData?.eponymia || '—',
+    // Στο ξενόγλωσσο κερδίζει η μετάφραση· στο ελληνικό το αποτύπωμα που
+    // πάγωσε κατά την έκδοση, γιατί αυτό είναι το φορολογικό παραστατικό.
+    eponymia:           (lang === 'el'
+                          ? (invoice.issuer_eponymia || pick('eponymia'))
+                          : (pick('eponymia') || invoice.issuer_eponymia)) || '—',
     diakritikos_titlos: orgData?.diakritikos_titlos || '',
     afm:                invoice.issuer_afm        || orgData?.afm || '',
     doy:                invoice.issuer_doy        || orgData?.doy || '',
-    odos:               invoice.issuer_odos       || orgData?.odos || '',
+    odos:               (lang === 'el' ? (invoice.issuer_odos || pick('odos'))
+                                      : (pick('odos') || invoice.issuer_odos)) || '',
     arithmos:           invoice.issuer_arithmos   || orgData?.arithmos || '',
     tk:                 invoice.issuer_tk         || orgData?.tk || '',
-    poli:               invoice.issuer_poli       || orgData?.poli || '',
+    poli:               (lang === 'el' ? (invoice.issuer_poli || pick('poli'))
+                                      : (pick('poli') || invoice.issuer_poli)) || '',
     kad:                invoice.issuer_kad        || orgData?.kad || '',
     gemi:               orgData?.gemi || '',
     email:              orgData?.email || '',
@@ -58,16 +140,18 @@ function buildHtml(invoice, orgData) {
     address:           invoice.recipient_address || '',
   };
 
+  // ΠΡΟΣΟΧΗ: η μεταβλητή του τύπου παραστατικού ΔΕΝ λέγεται t, γιατί
+  // σκιάζει το λεξικό μεταφράσεων.
   const docTitle = (() => {
-    const t = invoice.mydata_type;
-    if (t === '5.1') return 'Πιστωτικό Τιμολόγιο';
-    if (t === '1.1') return 'Τιμολόγιο Πώλησης';
-    return 'Τιμολόγιο Παροχής Υπηρεσιών';
+    const mt = invoice.mydata_type;
+    if (mt === '5.1') return t.creditNote;
+    if (mt === '1.1') return t.invoiceSale;
+    return t.invoiceService;
   })();
 
   const numberDisplay = invoice.full_number
     ? invoice.full_number
-    : (invoice.status === 'draft' ? `Πρόχειρο #${invoice.aa}` : `#${invoice.aa}`);
+    : (invoice.status === 'draft' ? `${t.draft} #${invoice.aa}` : `#${invoice.aa}`);
 
   const withhold = Number(invoice.withhold_total || 0);
   const stamp    = Number(invoice.stamp_total    || 0);
@@ -87,6 +171,7 @@ function buildHtml(invoice, orgData) {
     * { box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; color: #1a202c; font-size: 10pt; line-height: 1.5; }
     @page { size: A4; margin: 15mm; }
+    .courtesy { text-align: center; font-size: 8pt; color: #777; font-style: italic; margin-top: 6mm; }
     .print-btn { position: fixed; top: 10mm; right: 10mm; padding: 8px 16px; background: #2b6cb0; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13pt; z-index: 100; }
     .wrap { max-width: 180mm; margin: 0 auto; padding: 10mm 0; }
     .watermark { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 100pt; opacity: 0.08; z-index: -1; font-weight: bold; }
@@ -136,10 +221,11 @@ function buildHtml(invoice, orgData) {
   </style>
 </head>
 <body>
-  ${isCancelled ? '<div class="watermark cancelled">ΑΚΥΡΩΘΗΚΕ</div>' : ''}
+  ${isCancelled ? '<div class="watermark cancelled">${t.cancelledMark}</div>' : ''}
   ${isDraft ? '<div class="watermark draft">DRAFT</div>' : ''}
 
-  <button class="print-btn" onclick="window.print()">🖨️ Εκτύπωση / Αποθήκευση ως PDF</button>
+  ${t.courtesy ? `<div class="courtesy">${esc(t.courtesy)}</div>` : ''}
+  <button class="print-btn" onclick="window.print()">🖨️ ${t.print}</button>
 
   <div class="wrap">
     <div class="header">
@@ -147,36 +233,36 @@ function buildHtml(invoice, orgData) {
         <h1>${esc(docTitle)}</h1>
         <div class="sub">
           <span class="badge ${isIssued ? 'issued' : isCancelled ? 'cancelled' : 'draft'}">
-            ${isIssued ? 'Εκδοθέν' : isCancelled ? 'Ακυρωμένο' : 'Draft'}
+            ${isIssued ? t.issued : isCancelled ? t.cancelled : 'Draft'}
           </span>
           ${invoice.mydata_mark ? ` · myDATA MARK: <code>${esc(invoice.mydata_mark)}</code>` : ''}
         </div>
       </div>
       <div class="date">
-        <div class="lbl">Ημερομηνία έκδοσης</div>
+        <div class="lbl">${t.issueDate}</div>
         <div><strong>${esc(greekDate(invoice.date))}</strong></div>
-        ${invoice.due_date ? `<div class="lbl" style="margin-top:2mm">Λήξη πληρωμής</div><div>${esc(greekDate(invoice.due_date))}</div>` : ''}
+        ${invoice.due_date ? `<div class="lbl" style="margin-top:2mm">${t.dueDate}</div><div>${esc(greekDate(invoice.due_date))}</div>` : ''}
       </div>
     </div>
 
     <div class="parties">
       <div class="box">
-        <h3>Εκδότης</h3>
+        <h3>${t.issuer}</h3>
         <div class="name">${esc(issuer.eponymia)}</div>
         ${issuer.diakritikos_titlos ? `<div class="row"><em>${esc(issuer.diakritikos_titlos)}</em></div>` : ''}
         <div class="row">${esc([issuer.odos, issuer.arithmos].filter(Boolean).join(' '))}${issuer.tk || issuer.poli ? `, ${esc([issuer.tk, issuer.poli].filter(Boolean).join(' '))}` : ''}</div>
-        ${issuer.afm ? `<div class="row">ΑΦΜ: <strong>${esc(issuer.afm)}</strong>${issuer.doy ? ` · ΔΟΥ: ${esc(issuer.doy)}` : ''}</div>` : ''}
-        ${issuer.kad ? `<div class="row">ΚΑΔ: ${esc(issuer.kad)}</div>` : ''}
-        ${issuer.gemi ? `<div class="row">ΓΕΜΗ: ${esc(issuer.gemi)}</div>` : ''}
-        ${issuer.tilefono ? `<div class="row">Τηλ: ${esc(issuer.tilefono)}</div>` : ''}
+        ${issuer.afm ? `<div class="row">${t.afm}: <strong>${esc(issuer.afm)}</strong>${issuer.doy ? ` · ${t.doy}: ${esc(issuer.doy)}` : ''}</div>` : ''}
+        ${issuer.kad ? `<div class="row">${t.kad}: ${esc(issuer.kad)}</div>` : ''}
+        ${issuer.gemi ? `<div class="row">${t.gemi}: ${esc(issuer.gemi)}</div>` : ''}
+        ${issuer.tilefono ? `<div class="row">${t.tel}: ${esc(issuer.tilefono)}</div>` : ''}
         ${issuer.email ? `<div class="row">Email: ${esc(issuer.email)}</div>` : ''}
       </div>
       <div class="box">
-        <h3>Λήπτης</h3>
+        <h3>${t.recipient}</h3>
         <div class="name">${esc(recipient.name)}</div>
         ${recipient.address ? `<div class="row">${esc(recipient.address)}</div>` : ''}
-        ${recipient.afm ? `<div class="row">ΑΦΜ: <strong>${esc(recipient.afm)}</strong>${recipient.doy ? ` · ΔΟΥ: ${esc(recipient.doy)}` : ''}</div>` : ''}
-        ${invoice.case_protocol ? `<div class="row" style="margin-top:2mm">Υπόθεση: <code>${esc(invoice.case_protocol)}</code></div>` : ''}
+        ${recipient.afm ? `<div class="row">${t.afm}: <strong>${esc(recipient.afm)}</strong>${recipient.doy ? ` · ${t.doy}: ${esc(recipient.doy)}` : ''}</div>` : ''}
+        ${invoice.case_protocol ? `<div class="row" style="margin-top:2mm">${t.caseRef}: <code>${esc(invoice.case_protocol)}</code></div>` : ''}
       </div>
     </div>
 
@@ -184,12 +270,12 @@ function buildHtml(invoice, orgData) {
       <thead>
         <tr>
           <th style="width:10mm">#</th>
-          <th>Περιγραφή</th>
-          <th class="num" style="width:15mm">Ποσότ.</th>
-          <th class="num" style="width:22mm">Τιμή/μον.</th>
-          <th class="num" style="width:12mm">ΦΠΑ %</th>
-          <th class="num" style="width:22mm">Καθαρή αξία</th>
-          <th class="num" style="width:22mm">Σύνολο</th>
+          <th>${t.descr}</th>
+          <th class="num" style="width:15mm">${t.qty}</th>
+          <th class="num" style="width:22mm">${t.unitPrice}</th>
+          <th class="num" style="width:12mm">${t.vatPct}</th>
+          <th class="num" style="width:22mm">${t.net}</th>
+          <th class="num" style="width:22mm">${t.total}</th>
         </tr>
       </thead>
       <tbody>
@@ -209,24 +295,24 @@ function buildHtml(invoice, orgData) {
 
     <div class="totals">
       <table>
-        <tr><td class="lbl">Καθαρή αξία</td><td class="val">${money(invoice.subtotal)}</td></tr>
-        <tr><td class="lbl">ΦΠΑ</td><td class="val">${money(invoice.vat_total)}</td></tr>
-        <tr><td class="lbl"><strong>Σύνολο</strong></td><td class="val"><strong>${money(invoice.total_gross)}</strong></td></tr>
-        ${withhold > 0 ? `<tr class="minus"><td class="lbl">− Παρακράτηση 20%</td><td class="val">${money(withhold)}</td></tr>` : ''}
-        ${stamp    > 0 ? `<tr class="minus"><td class="lbl">− Χαρτόσημο 2.4% + ΟΓΑ 20%</td><td class="val">${money(stamp)}</td></tr>` : ''}
-        ${tn       > 0 ? `<tr class="minus"><td class="lbl">− Ταμείο Νομικών 12%</td><td class="val">${money(tn)}</td></tr>` : ''}
-        <tr class="final"><td class="lbl">ΠΛΗΡΩΤΕΟ ΠΟΣΟ</td><td class="val">${money(invoice.total_net)}</td></tr>
+        <tr><td class="lbl">${t.net}</td><td class="val">${money(invoice.subtotal)}</td></tr>
+        <tr><td class="lbl">${t.vat}</td><td class="val">${money(invoice.vat_total)}</td></tr>
+        <tr><td class="lbl"><strong>${t.total}</strong></td><td class="val"><strong>${money(invoice.total_gross)}</strong></td></tr>
+        ${withhold > 0 ? `<tr class="minus"><td class="lbl">− ${t.withhold} 20%</td><td class="val">${money(withhold)}</td></tr>` : ''}
+        ${stamp    > 0 ? `<tr class="minus"><td class="lbl">− ${t.stamp} 2.4% + ${t.oga} 20%</td><td class="val">${money(stamp)}</td></tr>` : ''}
+        ${tn       > 0 ? `<tr class="minus"><td class="lbl">− ${t.tn} 12%</td><td class="val">${money(tn)}</td></tr>` : ''}
+        <tr class="final"><td class="lbl">${t.payable}</td><td class="val">${money(invoice.total_net)}</td></tr>
       </table>
     </div>
 
     ${(invoice.notes || invoice.payment_terms || orgData?.iban) ? `
     <div class="footer-info">
       <div>
-        ${invoice.notes ? `<div class="box"><h4>Σημειώσεις</h4>${esc(invoice.notes).replace(/\n/g, '<br>')}</div>` : ''}
-        ${invoice.payment_terms ? `<div class="box" style="margin-top:3mm"><h4>Όροι πληρωμής</h4>${esc(invoice.payment_terms).replace(/\n/g, '<br>')}</div>` : ''}
+        ${invoice.notes ? `<div class="box"><h4>${t.notes}</h4>${esc(invoice.notes).replace(/\n/g, '<br>')}</div>` : ''}
+        ${invoice.payment_terms ? `<div class="box" style="margin-top:3mm"><h4>${t.terms}</h4>${esc(invoice.payment_terms).replace(/\n/g, '<br>')}</div>` : ''}
       </div>
       <div>
-        ${orgData?.iban ? `<div class="box"><h4>Τραπεζικός λογαριασμός</h4>${esc(orgData.trapeza || '')}<br>IBAN: <strong>${esc(orgData.iban)}</strong></div>` : ''}
+        ${orgData?.iban ? `<div class="box"><h4>${t.bankAccount}</h4>${esc(orgData.trapeza || '')}<br>IBAN: <strong>${esc(orgData.iban)}</strong></div>` : ''}
       </div>
     </div>
     ` : ''}
@@ -235,19 +321,19 @@ function buildHtml(invoice, orgData) {
     <div class="mydata-block">
       <div class="qr"><div id="qr-target"></div></div>
       <div class="info">
-        <h4>✓ Διαβιβάστηκε στο myDATA (ΑΑΔΕ)</h4>
+        <h4>✓ ${t.sentTo} myDATA (${t.aade})</h4>
         <div class="row">MARK: <code>${esc(invoice.mydata_mark)}</code></div>
         ${invoice.mydata_uid ? `<div class="row">UID: <code>${esc(invoice.mydata_uid)}</code></div>` : ''}
         ${invoice.mydata_auth_code ? `<div class="row">Authentication Code: <code>${esc(invoice.mydata_auth_code)}</code></div>` : ''}
-        ${invoice.mydata_submitted_at ? `<div class="row">Ημερομηνία διαβίβασης: ${esc(new Date(invoice.mydata_submitted_at).toLocaleString('el-GR'))}</div>` : ''}
-        ${invoice.mydata_cancel_mark ? `<div class="row" style="color:#742a2a">Ακυρωτικό MARK: <code>${esc(invoice.mydata_cancel_mark)}</code></div>` : ''}
+        ${invoice.mydata_submitted_at ? `<div class="row">${t.sentDate}: ${esc(new Date(invoice.mydata_submitted_at).toLocaleString('el-GR'))}</div>` : ''}
+        ${invoice.mydata_cancel_mark ? `<div class="row" style="color:#742a2a">${t.cancelling} MARK: <code>${esc(invoice.mydata_cancel_mark)}</code></div>` : ''}
       </div>
     </div>
     ` : ''}
   </div>
 
   <div class="footer">
-    <span>Δημιουργήθηκε: ${esc(new Date().toLocaleString('el-GR'))}</span>
+    <span>${t.created}: ${esc(new Date().toLocaleString('el-GR'))}</span>
     <span>${invoice.mydata_mark ? `myDATA MARK: <code>${esc(invoice.mydata_mark)}</code>` : ''}</span>
   </div>
 
@@ -282,8 +368,9 @@ function buildHtml(invoice, orgData) {
  * @param {object} invoice - full invoice object from API
  * @param {object} orgData - organization settings (issuer)
  */
-export async function generateInvoicePdf(invoice, orgData) {
-  const html = buildHtml(invoice, orgData);
+// lang: 'el' | 'en' | 'fr'. Χωριστό έντυπο ανά γλώσσα.
+export async function generateInvoicePdf(invoice, orgData, lang = 'el') {
+  const html = buildHtml(invoice, orgData, lang);
   const w = window.open('', '_blank');
   if (!w) {
     throw new Error('Δεν άνοιξε νέο παράθυρο (μπλοκαρίστηκε από pop-up blocker). Επίτρεψε pop-ups για αυτή τη σελίδα.');
