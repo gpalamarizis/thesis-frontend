@@ -75,6 +75,17 @@ function FinanceTab({ caseId }) {
     { key: 'perigrafi',    label: 'Περιγραφή',     type: 'textarea' },
   ];
 
+  // ΠΡΟΚΑΤΑΒΟΛΕΣ — χρήματα που έχει ήδη λάβει το γραφείο.
+  // Ο αποστολέας είναι ελεύθερο κείμενο: συχνά πληρώνει τρίτος που δεν
+  // υπάρχει στο μητρώο.
+  const prokatavolesFields = [
+    { key: 'date',       label: 'Ημερομηνία', type: 'date',   required: true },
+    { key: 'trapeza',    label: 'Τράπεζα',    type: 'text' },
+    { key: 'apostoleas', label: 'Αποστολέας', type: 'text' },
+    { key: 'amount',     label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',  label: 'Σημειώσεις', type: 'textarea' },
+  ];
+
   const plironeiField = { key: 'plironei', label: 'Πληρώνει', type: 'person',
     personCols: { dikigoros: 'plironei_dikigoros_id', sxetiko: 'plironei_sxetiko_id' },
     nameField: 'plironei_name', roleField: 'plironei_role' };
@@ -164,6 +175,7 @@ function FinanceTab({ caseId }) {
               </div>
             </div>
           ) },
+        { label: 'Προκαταβολές',    badge: counts.prokatavoles,        content: <FinanceResource caseId={caseId} resource="prokatavoles"   fields={prokatavolesFields} onCountChange={n => bumpCount('prokatavoles', n)} /> },
         { label: 'Αμοιβές',         badge: counts.amoives,             content: <FinanceResource caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
       ]} />
     </div>
