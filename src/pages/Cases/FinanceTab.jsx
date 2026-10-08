@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Tabs from '../../components/Tabs';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { finance, people, lists, downloadFile } from '../../api';
+import { finance, people, lists, reports, downloadFile } from '../../api';
 import { fmtDate, fmtCurrency, toDateInput } from '../../utils/format';
 
 import DateInput from '../../components/DateInput';
@@ -17,7 +17,7 @@ import DocumentPicker from '../../components/DocumentPicker';
  *
  * "virtual: true" fields are shown in UI but NOT sent to backend (used for calc only).
  */
-function FinanceTab({ caseId }) {
+function FinanceTab({ caseId, clientType, clientId }) {
   const [counts, setCounts] = useState({ ores: 0, 'pagia-exoda': 0, amoives: 0, 'exoda-synergati': 0 });
   const [lawyers, setLawyers] = useState([]);
   const [externals, setExternals] = useState([]);
@@ -124,6 +124,23 @@ function FinanceTab({ caseId }) {
   // φύλλο, με σύνολο στο τέλος.
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState('');
+  // Αναλυτικός λογαριασμός πελάτη, σε μία από τις τρεις γλώσσες
+  const [accLang, setAccLang] = useState('el');
+  const [exportingAcc, setExportingAcc] = useState(false);
+  const exportAccount = async () => {
+    setExportingAcc(true);
+    setExportError('');
+    try {
+      await downloadFile(
+        reports.clientAccountDocxUrl(clientType, clientId, accLang),
+        'Logariasmos.docx');
+    } catch (err) {
+      setExportError(err.message || 'Η παραγωγή απέτυχε.');
+    } finally {
+      setExportingAcc(false);
+    }
+  };
+
   const exportExoda = async () => {
     setExporting(true);
     setExportError('');
@@ -141,10 +158,28 @@ function FinanceTab({ caseId }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
         <div style={{ color: '#718096' }}>Οικονομικά στοιχεία της υπόθεσης</div>
-        <button type="button" className="btn btn-sm"
-                onClick={exportExoda} disabled={exporting}>
-          {exporting ? 'Εξαγωγή…' : '⬇ Έξοδα σε Excel'}
-        </button>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" className="btn btn-sm"
+                  onClick={exportExoda} disabled={exporting}>
+            {exporting ? 'Εξαγωγή…' : '⬇ Έξοδα σε Excel'}
+          </button>
+          {/* Ο αναλυτικός λογαριασμός είναι ανά ΠΕΛΑΤΗ: μαζεύει από όλες
+              τις υποθέσεις του, όχι μόνο από αυτή. */}
+          {clientId && (
+            <>
+              <select value={accLang} onChange={e => setAccLang(e.target.value)}
+                      style={{ width: 'auto' }} title="Γλώσσα εντύπου">
+                <option value="el">Ελληνικά</option>
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+              </select>
+              <button type="button" className="btn btn-sm"
+                      onClick={exportAccount} disabled={exportingAcc}>
+                {exportingAcc ? 'Παραγωγή…' : '⬇ Αναλυτικός λογαριασμός'}
+              </button>
+            </>
+          )}
+        </div>
       </div>
       {exportError && (
         <div className="error-message" style={{ marginBottom: 12 }}>{exportError}</div>

@@ -521,6 +521,12 @@ export const reports = {
   pendingTasks:     ()                 => api.get('/api/reports/pending-tasks'),
   // Δικάσιμοι και προθεσμίες που έφτασαν ή πέρασαν, ακόμα εκκρεμείς
   dueActions:       ()                 => api.get('/api/reports/due-actions'),
+  // Αναλυτικός λογαριασμός πελάτη — JSON και έντυπο Word
+  clientAccount:    (type, id, from, to) =>
+    api.get(`/api/reports/client-account?clientType=${type}&clientId=${id}`
+      + (from ? `&from=${from}` : '') + (to ? `&to=${to}` : '')),
+  clientAccountDocxUrl: (type, id, lang = 'el') =>
+    `/api/reports/client-account/docx?clientType=${type}&clientId=${id}&lang=${lang}`,
 
   courtActionsCalendar: (params = {}) => {
     const p = new URLSearchParams();

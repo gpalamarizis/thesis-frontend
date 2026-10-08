@@ -103,7 +103,9 @@ function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
           { label: 'Λοιπές ενέργειες',     badge: taskActions.length,  content: <TaskActionsTab caseId={id} rows={taskActions} onChange={() => loadAll(false)} /> },
           { label: 'Σχετικά πρόσωπα',      content: <RelatedPersonsTab caseId={id} /> },
           { label: 'Αρχεία',               badge: docs.length,         content: <DocsTab caseId={id} rows={docs} onChange={() => loadAll(false)} /> },
-          { label: 'Οικονομικά',           content: <FinanceTab caseId={id} /> },
+          { label: 'Οικονομικά',           content: <FinanceTab caseId={id}
+              clientType={caseData?.nomiko_prosopo_id ? 'nomiko' : 'fysiko'}
+              clientId={caseData?.nomiko_prosopo_id || caseData?.fysiko_prosopo_id} /> },
           { label: 'Τιμολόγια',            content: <CaseInvoicesTab caseId={id} /> },
         ]}/>
       </div>
