@@ -8,6 +8,7 @@ import { fmtDate, fmtCurrency, toDateInput } from '../../utils/format';
 import DateInput from '../../components/DateInput';
 import FilerPicker from '../../components/FilerPicker';
 import DocumentPicker from '../../components/DocumentPicker';
+import ClientAccountPanel from '../../components/ClientAccountPanel';
 /**
  * FinanceTab — Backend schema:
  *   ores:             ypothesi_id, dikigoros_id, date, ores, perigrafi, amount
@@ -181,6 +182,9 @@ function FinanceTab({ caseId, clientType, clientId }) {
           )}
         </div>
       </div>
+      {/* Ό,τι εκκρεμεί από ΟΛΕΣ τις υποθέσεις του πελάτη */}
+      <ClientAccountPanel clientType={clientType} clientId={clientId} currentCaseId={caseId} />
+
       {exportError && (
         <div className="error-message" style={{ marginBottom: 12 }}>{exportError}</div>
       )}
