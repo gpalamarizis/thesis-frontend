@@ -101,6 +101,88 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
             <input type="text" value={form.diakritikos_titlos || ''} onChange={c('diakritikos_titlos')} disabled={!isAdmin} />
           </div>
         </div>
+        {/* ΞΕΝΟΓΛΩΣΣΑ ΣΤΟΙΧΕΙΑ
+            Χρησιμοποιούνται ΜΟΝΟ στον αναλυτικό λογαριασμό προς ξένους
+            πελάτες. Το φορολογικό παραστατικό και το myDATA παραμένουν
+            στα ελληνικά. Κενό πεδίο σημαίνει ότι το έντυπο πέφτει πίσω
+            στην ελληνική τιμή. */}
+        <h4 style={{ margin: '22px 0 4px', fontSize: 15 }}>Ξενόγλωσσα στοιχεία</h4>
+        <p style={{ color: '#718096', fontSize: 13, margin: '0 0 12px' }}>
+          Για τον αναλυτικό λογαριασμό σε αγγλικά ή γαλλικά. Ό,τι αφήσεις
+          κενό εμφανίζεται στα ελληνικά.
+        </p>
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Επωνυμία (EN)</label>
+            <input type="text" value={form.eponymia_en || ''} onChange={c('eponymia_en')} disabled={!isAdmin} />
+          </div>
+          <div className="form-group">
+            <label>Επωνυμία (FR)</label>
+            <input type="text" value={form.eponymia_fr || ''} onChange={c('eponymia_fr')} disabled={!isAdmin} />
+          </div>
+        </div>
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Διακριτικός τίτλος (EN)</label>
+            <input type="text" value={form.diakritikos_titlos_en || ''} onChange={c('diakritikos_titlos_en')} disabled={!isAdmin} />
+          </div>
+          <div className="form-group">
+            <label>Διακριτικός τίτλος (FR)</label>
+            <input type="text" value={form.diakritikos_titlos_fr || ''} onChange={c('diakritikos_titlos_fr')} disabled={!isAdmin} />
+          </div>
+        </div>
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Οδός (EN)</label>
+            <input type="text" value={form.odos_en || ''} onChange={c('odos_en')} disabled={!isAdmin} />
+          </div>
+          <div className="form-group">
+            <label>Οδός (FR)</label>
+            <input type="text" value={form.odos_fr || ''} onChange={c('odos_fr')} disabled={!isAdmin} />
+          </div>
+        </div>
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Πόλη (EN)</label>
+            <input type="text" value={form.poli_en || ''} onChange={c('poli_en')} disabled={!isAdmin} />
+          </div>
+          <div className="form-group">
+            <label>Πόλη (FR)</label>
+            <input type="text" value={form.poli_fr || ''} onChange={c('poli_fr')} disabled={!isAdmin} />
+          </div>
+        </div>
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Χώρα (EN)</label>
+            <input type="text" value={form.xora_en || ''} onChange={c('xora_en')} disabled={!isAdmin} />
+          </div>
+          <div className="form-group">
+            <label>Χώρα (FR)</label>
+            <input type="text" value={form.xora_fr || ''} onChange={c('xora_fr')} disabled={!isAdmin} />
+          </div>
+        </div>
+
+        {/* ΕΤΑΙΡΟΙ — στατική λίστα για την κεφαλίδα του λογαριασμού */}
+        <h4 style={{ margin: '22px 0 4px', fontSize: 15 }}>Εταίροι</h4>
+        <div className="form-group">
+          <label>Εταίροι στην κεφαλίδα του λογαριασμού</label>
+          <textarea rows={5} value={form.partners_list || ''} onChange={c('partners_list')}
+                    disabled={!isAdmin} placeholder={'ΣΠΥΡΟΣ Δ. ΜΑΥΡΟΣ\nΕΛΕΝΗ Δ. ΣΠΗΛΙΑΔΗ\n…'} />
+          <small style={{ color: '#718096' }}>Ένα όνομα ανά γραμμή.</small>
+        </div>
+
+        {/* ΕΜΒΑΣΜΑ — SWIFT και αριθμός λογαριασμού για ξένους πελάτες */}
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Αριθμός λογαριασμού</label>
+            <input type="text" value={form.bank_account_no || ''} onChange={c('bank_account_no')} disabled={!isAdmin} placeholder="359-00-2320-003047" />
+          </div>
+          <div className="form-group">
+            <label>SWIFT / BIC</label>
+            <input type="text" value={form.swift || ''} onChange={c('swift')} disabled={!isAdmin} placeholder="CRBAGRAAXXX" />
+          </div>
+        </div>
+
         <div className="form-grid-2">
           <div className="form-group">
             <label>ΚΑΔ κύριας δραστηριότητας</label>

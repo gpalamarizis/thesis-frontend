@@ -132,7 +132,7 @@ function FinanceTab({ caseId, clientType, clientId }) {
     setExportError('');
     try {
       await downloadFile(
-        reports.clientAccountDocxUrl(clientType, clientId, accLang),
+        reports.clientAccountDocxUrl(clientType, clientId, accLang, caseId),
         'Logariasmos.docx');
     } catch (err) {
       setExportError(err.message || 'Η παραγωγή απέτυχε.');

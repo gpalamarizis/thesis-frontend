@@ -525,8 +525,10 @@ export const reports = {
   clientAccount:    (type, id, from, to) =>
     api.get(`/api/reports/client-account?clientType=${type}&clientId=${id}`
       + (from ? `&from=${from}` : '') + (to ? `&to=${to}` : '')),
-  clientAccountDocxUrl: (type, id, lang = 'el') =>
-    `/api/reports/client-account/docx?clientType=${type}&clientId=${id}&lang=${lang}`,
+  // caseId: ο αριθμός υπόθεσης γίνεται αριθμός λογαριασμού στο έντυπο
+  clientAccountDocxUrl: (type, id, lang = 'el', caseId = null) =>
+    `/api/reports/client-account/docx?clientType=${type}&clientId=${id}&lang=${lang}`
+    + (caseId ? `&ypothesi_id=${caseId}` : ''),
 
   courtActionsCalendar: (params = {}) => {
     const p = new URLSearchParams();
