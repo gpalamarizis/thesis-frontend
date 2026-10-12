@@ -531,10 +531,14 @@ export const reports = {
       + (from ? `&from=${from}` : '') + (to ? `&to=${to}` : '')),
   // caseId: ο αριθμός υπόθεσης γίνεται αριθμός λογαριασμού στο έντυπο
   // cases: ποιες υποθέσεις μπαίνουν στο έντυπο. Κενό = όλες του πελάτη.
-  clientAccountDocxUrl: (type, id, lang = 'el', caseId = null, cases = null) =>
+  clientAccountDocxUrl: (type, id, lang = 'el', caseId = null, cases = null,
+                         from = null, to = null, issue = false) =>
     `/api/reports/client-account/docx?clientType=${type}&clientId=${id}&lang=${lang}`
     + (caseId ? `&ypothesi_id=${caseId}` : '')
-    + (cases && cases.length ? `&cases=${cases.join(',')}` : ''),
+    + (cases && cases.length ? `&cases=${cases.join(',')}` : '')
+    + (from ? `&from=${from}` : '') + (to ? `&to=${to}` : '')
+    // issue: δίνει αύξοντα αριθμό και καταγράφει την έκδοση
+    + (issue ? '&issue=1' : ''),
 
   courtActionsCalendar: (params = {}) => {
     const p = new URLSearchParams();

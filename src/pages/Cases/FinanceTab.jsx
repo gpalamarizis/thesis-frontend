@@ -189,7 +189,7 @@ function FinanceTab({ caseId, clientType, clientId }) {
         <div className="error-message" style={{ marginBottom: 12 }}>{exportError}</div>
       )}
       <Tabs tabs={[
-        { label: 'Ώρες εργασίας',   badge: counts.ores,                content: <FinanceResource caseId={caseId} resource="ores"            fields={oresFields}      onCountChange={n => bumpCount('ores', n)} /> },
+        { label: 'Αμοιβή με ωριαία απασχόληση', badge: counts.ores,                content: <FinanceResource caseId={caseId} resource="ores"            fields={oresFields}      onCountChange={n => bumpCount('ores', n)} /> },
         // Πάγια και έξοδα συνεργάτη ενώθηκαν σε μία καρτέλα με δύο
         // ενότητες. Τα δεδομένα μένουν σε χωριστούς πίνακες: το ένα δείχνει
         // σε είδος εξόδου από λίστα, το άλλο σε πρόσωπο.
@@ -197,17 +197,18 @@ function FinanceTab({ caseId, clientType, clientId }) {
           badge: (counts['pagia-exoda'] || 0) + (counts['exoda-synergati'] || 0),
           content: (
             <div>
-              <h3 style={{ fontSize: 15, margin: '0 0 4px' }}>Πάγια έξοδα</h3>
+              <h3 style={{ fontSize: 15, margin: '0 0 4px' }}>Έξοδα χωρίς ΦΠΑ</h3>
               <p style={{ fontSize: 13, color: '#718096', margin: '0 0 12px' }}>
-                Από τον κατάλογο ειδών — παράβολα, τέλη, αποζημιώσεις.
+                Έξοδα που δεν υπάγονται σε ΦΠΑ — παράβολα, τέλη, αποζημιώσεις.
               </p>
               <FinanceResource caseId={caseId} resource="pagia-exoda" fields={pagiaFields}
                 onCountChange={n => bumpCount('pagia-exoda', n)} />
 
               <div style={{ borderTop: '1px solid #e2e8f0', margin: '24px 0 0', paddingTop: 20 }}>
-                <h3 style={{ fontSize: 15, margin: '0 0 4px' }}>Έξοδα συνεργάτη</h3>
+                <h3 style={{ fontSize: 15, margin: '0 0 4px' }}>Έξοδα με ΦΠΑ</h3>
                 <p style={{ fontSize: 13, color: '#718096', margin: '0 0 12px' }}>
-                  Αφορούν συγκεκριμένο πρόσωπο — δικηγόρο γραφείου ή σχετικό πρόσωπο.
+                  Έξοδα που υπάγονται σε ΦΠΑ, με παραστατικό από συνεργάτη —
+                  δικηγόρο γραφείου ή σχετικό πρόσωπο.
                 </p>
                 <FinanceResource caseId={caseId} resource="exoda-synergati" fields={synergatiFields}
                   onCountChange={n => bumpCount('exoda-synergati', n)} />
@@ -215,7 +216,7 @@ function FinanceTab({ caseId, clientType, clientId }) {
             </div>
           ) },
         { label: 'Προκαταβολές',    badge: counts.prokatavoles,        content: <FinanceResource caseId={caseId} resource="prokatavoles"   fields={prokatavolesFields} onCountChange={n => bumpCount('prokatavoles', n)} /> },
-        { label: 'Αμοιβές',         badge: counts.amoives,             content: <FinanceResource caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
+        { label: 'Πάγιες αμοιβές',  badge: counts.amoives,             content: <FinanceResource caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
       ]} />
     </div>
   );

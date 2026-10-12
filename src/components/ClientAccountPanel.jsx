@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { reports, downloadFile } from '../api';
 import { fmtDate, fmtCurrency } from '../utils/format';
 
+import DateInput from './DateInput';
 // ΛΟΓΑΡΙΑΣΜΟΣ ΠΕΛΑΤΗ — ό,τι εκκρεμεί από ΟΛΕΣ τις υποθέσεις του.
 //
 // Ο δικηγόρος χρεώνει τον πελάτη συνολικά, όχι ανά φάκελο: το υπόλοιπο
@@ -15,6 +16,10 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId }) {
   const [error, setError] = useState('');
   const [chosen, setChosen] = useState(null);   // Set υποθέσεων, null = όλες
   const [lang, setLang] = useState('el');
+  // Χρονικό παράθυρο: σε μόνιμες υποθέσεις τιμολογείται περίοδος, π.χ.
+  // τρίμηνο, όχι ό,τι έχει μαζευτεί από την αρχή.
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -22,12 +27,12 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId }) {
     if (!clientId) { setLoading(false); return; }
     let alive = true;
     setLoading(true);
-    reports.clientAccount(clientType, clientId)
+    reports.clientAccount(clientType, clientId, from || null, to || null)
       .then(d => { if (alive) setData(d?.data || d || null); })
       .catch(e => { if (alive) setError(e.message || 'Αποτυχία φόρτωσης'); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
-  }, [clientType, clientId]);
+  }, [clientType, clientId, from, to]);
 
   if (!clientId || loading) return null;
   if (error) return <div className="error-message" style={{ marginBottom: 12 }}>{error}</div>;
@@ -54,12 +59,28 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId }) {
   const countFor = (id) => ['hours', 'fees', 'expenses', 'advances']
     .reduce((a, k) => a + (data[k] || []).filter(r => r.ypothesi_id === id).length, 0);
 
-  const print = async () => {
+  // Τρίμηνο σε ΤΟΠΙΚΗ ώρα: με toISOString η 1η του μήνα γίνεται 31η του
+  // προηγούμενου στην Ελλάδα.
+  const quarter = (offset) => {
+    const now = new Date();
+    const q = Math.floor(now.getMonth() / 3) + offset;
+    const year = now.getFullYear() + Math.floor(q / 4);
+    const qq = ((q % 4) + 4) % 4;
+    const d = (y, m, day) =>
+      `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    setFrom(d(year, qq * 3, 1));
+    setTo(d(year, qq * 3 + 2, new Date(year, qq * 3 + 3, 0).getDate()));
+  };
+
+  // issue=false: προεπισκόπηση, χωρίς αριθμό και χωρίς καταγραφή.
+  // issue=true:  έκδοση — παίρνει αύξοντα αριθμό που δεν επιστρέφεται.
+  const print = async (issue = false) => {
     setBusy(true); setError('');
     try {
       const ids = [...sel];
       await downloadFile(
-        reports.clientAccountDocxUrl(clientType, clientId, lang, currentCaseId, ids),
+        reports.clientAccountDocxUrl(clientType, clientId, lang, currentCaseId,
+          ids, from, to, issue),
         'Logariasmos.docx');
     } catch (e) {
       setError(e.message || 'Η παραγωγή απέτυχε.');
@@ -92,6 +113,30 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId }) {
 
       {open && (
         <>
+          <p style={{ color: '#718096', fontSize: 13, margin: '14px 0 8px' }}>
+            Περίοδος — άφησέ τα κενά για τα πάντα από την αρχή.
+          </p>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center',
+                        flexWrap: 'wrap', marginBottom: 10 }}>
+            <div style={{ minWidth: 150 }}>
+              <DateInput value={from} onChange={e => setFrom(e.target.value)} />
+            </div>
+            <span style={{ color: '#718096' }}>έως</span>
+            <div style={{ minWidth: 150 }}>
+              <DateInput value={to} onChange={e => setTo(e.target.value)} />
+            </div>
+            <button type="button" className="btn btn-sm" onClick={() => quarter(0)}>
+              Τρέχον τρίμηνο
+            </button>
+            <button type="button" className="btn btn-sm" onClick={() => quarter(-1)}>
+              Προηγούμενο τρίμηνο
+            </button>
+            {(from || to) && (
+              <button type="button" className="btn btn-sm"
+                      onClick={() => { setFrom(''); setTo(''); }}>Καθάρισμα</button>
+            )}
+          </div>
+
           <p style={{ color: '#718096', fontSize: 13, margin: '14px 0 8px' }}>
             Διάλεξε ποιες υποθέσεις μπαίνουν στο έντυπο.
           </p>
@@ -138,9 +183,14 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId }) {
               <option value="en">English</option>
               <option value="fr">Français</option>
             </select>
+            <button type="button" className="btn btn-sm"
+                    onClick={() => print(false)} disabled={busy || sel.size === 0}>
+              {busy ? 'Παραγωγή…' : '👁 Προεπισκόπηση'}
+            </button>
             <button type="button" className="btn btn-sm btn-primary"
-                    onClick={print} disabled={busy || sel.size === 0}>
-              {busy ? 'Παραγωγή…' : '⬇ Εκτύπωση λογαριασμού'}
+                    onClick={() => print(true)} disabled={busy || sel.size === 0}
+                    title="Δίνει αύξοντα αριθμό λογαριασμού">
+              {busy ? 'Παραγωγή…' : '⬇ Έκδοση λογαριασμού'}
             </button>
             {sel.size === 0 && (
               <span style={{ color: '#718096', fontSize: 13, alignSelf: 'center' }}>
