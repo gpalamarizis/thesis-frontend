@@ -24,6 +24,7 @@ function FinanceTab({ caseId, clientType, clientId }) {
   const [externals, setExternals] = useState([]);
   const [pagiaDefs, setPagiaDefs] = useState([]);
   const [related, setRelated] = useState([]);
+  const [grammatiaDefs, setGrammatiaDefs] = useState([]);
 
   useEffect(() => {
     people.lawyers.list()
@@ -39,6 +40,9 @@ function FinanceTab({ caseId, clientType, clientId }) {
     // επιμελητής. Φορτώνονται και τα δύο.
     people.related.list()
       .then(d => setRelated(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+    lists.get('grammatia_katigories')
+      .then(d => setGrammatiaDefs(Array.isArray(d) ? d : (d?.data || [])))
       .catch(() => {});
     lists.get('pagia_exoda')
       .then(d => setPagiaDefs(Array.isArray(d) ? d : (d?.data || [])))
@@ -79,6 +83,20 @@ function FinanceTab({ caseId, clientType, clientId }) {
   // ΠΡΟΚΑΤΑΒΟΛΕΣ — χρήματα που έχει ήδη λάβει το γραφείο.
   // Ο αποστολέας είναι ελεύθερο κείμενο: συχνά πληρώνει τρίτος που δεν
   // υπάρχει στο μητρώο.
+  // ΓΡΑΜΜΑΤΙΑ ΔΙΚΗΓΟΡΙΚΩΝ ΣΥΛΛΟΓΩΝ — χωριστά από τις πάγιες αμοιβές.
+  // Οι κατηγορίες συντηρούνται στην Επεξεργασία λιστών, γιατί αλλάζουν
+  // ανά σύλλογο και ανά έτος.
+  const grammatiaFields = [
+    { key: 'date',                   label: 'Ημερομηνία', type: 'date', required: true },
+    { key: 'grammatio_katigoria_id', label: 'Κατηγορία',  type: 'select',
+      options: grammatiaDefs.map(g => ({ value: g.aa, label: g.name })),
+      emptyHint: 'Πρόσθεσε κατηγορίες στην Επεξεργασία λιστών → Κατηγορίες γραμματίων' },
+    { key: 'arithmos',               label: 'Αριθμός γραμματίου', type: 'text' },
+    { key: 'dikigoros_id',           label: 'Δικηγόρος',  type: 'select', options: lawyerOptions },
+    { key: 'amount',                 label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',              label: 'Σημειώσεις', type: 'textarea' },
+  ];
+
   const prokatavolesFields = [
     { key: 'date',       label: 'Ημερομηνία', type: 'date',   required: true },
     { key: 'trapeza',    label: 'Τράπεζα',    type: 'text' },
@@ -215,6 +233,7 @@ function FinanceTab({ caseId, clientType, clientId }) {
               </div>
             </div>
           ) },
+        { label: 'Γραμμάτια',       badge: counts.grammatia,           content: <FinanceResource caseId={caseId} resource="grammatia"      fields={grammatiaFields}    onCountChange={n => bumpCount('grammatia', n)} /> },
         { label: 'Προκαταβολές',    badge: counts.prokatavoles,        content: <FinanceResource caseId={caseId} resource="prokatavoles"   fields={prokatavolesFields} onCountChange={n => bumpCount('prokatavoles', n)} /> },
         { label: 'Πάγιες αμοιβές',  badge: counts.amoives,             content: <FinanceResource caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
       ]} />

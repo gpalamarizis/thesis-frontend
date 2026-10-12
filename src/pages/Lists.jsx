@@ -15,6 +15,9 @@ const LIST_TYPES = [
   // η ιδιότητα φιλτράρει και σημαίνει τα σχετικά πρόσωπα.
   { key: 'idiotites',                      label: 'Ιδιότητες',              fields: [{key:'name', label:'Ονομασία'}] },
   { key: 'pagia_exoda',                    label: 'Πάγια έξοδα (τύποι)',    fields: [{key:'name', label:'Ονομασία'}] },
+  // Κατηγορίες γραμματίων δικηγορικών συλλόγων. Αλλάζουν ανά σύλλογο και
+  // ανά έτος, οπότε τις συντηρεί το γραφείο και δεν είναι στον κώδικα.
+  { key: 'grammatia_katigories',           label: 'Κατηγορίες γραμματίων',  fields: [{key:'name', label:'Ονομασία'}, {key:'perigrafi', label:'Περιγραφή'}] },
   { key: 'amoives',                        label: 'Αμοιβές (τύποι)',        fields: [{key:'name', label:'Ονομασία'}, {key:'amount', label:'Ποσό (€)', type:'number', step:'0.01'}] },
   { key: 'cities',                         label: 'Πόλεις',                 fields: [{key:'name', label:'Ονομασία'}] },
   { key: 'countries',                      label: 'Χώρες',                  fields: [{key:'name', label:'Ονομασία'}] },

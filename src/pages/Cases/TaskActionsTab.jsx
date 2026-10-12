@@ -125,6 +125,21 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
   });
   const [lawyers, setLawyers] = useState([]);
   const [saving, setSaving] = useState(false);
+  // Τα κείμενα που έχει ήδη γράψει το γραφείο
+  const [templates, setTemplates] = useState([]);
+  const [showTpl, setShowTpl] = useState(false);
+  useEffect(() => {
+    actions.task.templates()
+      .then(d => setTemplates(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+  }, []);
+  // Φιλτράρονται στον browser: ο κατάλογος είναι μικρός και η
+  // πληκτρολόγηση δεν πρέπει να περιμένει τον διακομιστή.
+  const typed = (form.perigrafi_energias || '').trim().toLowerCase();
+  const tplMatches = templates
+    .filter(t => t.keimeno && t.keimeno.trim().toLowerCase() !== typed)
+    .filter(t => typed.length < 2 || t.keimeno.toLowerCase().includes(typed))
+    .slice(0, 8);
   const [error, setError] = useState('');
   const [lawyerFilter, setLawyerFilter] = useState('');
 
@@ -210,7 +225,31 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
       </div>
       <div className="form-group">
         <label>Περιγραφή ενέργειας *</label>
-        <textarea rows="4" value={form.perigrafi_energias} onChange={c('perigrafi_energias')} required />
+        <textarea rows="4" value={form.perigrafi_energias}
+                  onChange={e => { c('perigrafi_energias')(e); setShowTpl(true); }}
+                  onFocus={() => setShowTpl(true)}
+                  required />
+        {/* Προτάσεις από ό,τι έχει ήδη γράψει το γραφείο, ώστε να μη
+            ξαναγράφεται το ίδιο κείμενο κάθε φορά. Συχνότερα πρώτα. */}
+        {showTpl && tplMatches.length > 0 && (
+          <div style={{ border: '1px solid #e2e8f0', borderTop: 'none',
+                        borderRadius: '0 0 4px 4px', maxHeight: 180,
+                        overflowY: 'auto', background: '#fff' }}>
+            {tplMatches.map((t) => (
+              <div key={t.keimeno}
+                   onClick={() => { setForm(f => ({ ...f, perigrafi_energias: t.keimeno })); setShowTpl(false); }}
+                   style={{ padding: '7px 10px', cursor: 'pointer', fontSize: 13.5,
+                            borderBottom: '1px solid #f1f5f9' }}
+                   onMouseEnter={ev => { ev.currentTarget.style.background = '#f7fafc'; }}
+                   onMouseLeave={ev => { ev.currentTarget.style.background = '#fff'; }}>
+                {t.keimeno.length > 90 ? t.keimeno.slice(0, 90) + '…' : t.keimeno}
+                {t.plithos > 1 && (
+                  <span style={{ color: '#718096', fontSize: 12 }}> · {t.plithos} φορές</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       <div className="form-group">
         <label>

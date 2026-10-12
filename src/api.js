@@ -417,6 +417,9 @@ export const actions = {
     remove:     (id) => api.delete(`/api/actions/court/${id}`),
   },
   task: {
+    // Κείμενα ενεργειών που έχει ήδη γράψει το γραφείο, ως πρότυπα
+    templates: (q = '') =>
+      api.get('/api/actions/task/templates' + (q ? `?q=${encodeURIComponent(q)}` : '')),
     listByCase: (caseId) => api.get(`/api/actions/task?ypothesi_id=${caseId}`),
     create:     (payload) => api.post('/api/actions/task', payload),
     update:     (id, payload) => api.put(`/api/actions/task/${id}`, payload),
