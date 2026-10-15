@@ -269,7 +269,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                       </td>
                       <td>{r.pelatis?.trim() || '—'}</td>
                       <td>{r.onomasia_name || '—'}</td>
-                      <td>{r.dikigoroi_energeias || r.xeiristes || '—'}</td>
+                      <td>{r.xeiristes || r.dikigoroi_energeias || '—'}</td>
                     </tr>
                   );
                 })}
