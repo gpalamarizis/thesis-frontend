@@ -333,7 +333,10 @@ export const cases = {
   // Επιπλέον πελάτες στην ίδια υπόθεση (εργατικές, ομαδικές αγωγές).
   // Ο κύριος πελάτης δεν περιλαμβάνεται — ζει στην ίδια την υπόθεση.
   clients:         (id)              => api.get(`/api/cases/${id}/clients`),
-  addClient:       (id, fysikoId)    => api.post(`/api/cases/${id}/clients`, { fysiko_prosopo_id: fysikoId }),
+  // typos: 'fysiko' (προεπιλογή, ώστε οι παλιές κλήσεις να δουλεύουν) ή 'nomiko'
+  addClient:       (id, personId, typos = 'fysiko') =>
+    api.post(`/api/cases/${id}/clients`,
+      typos === 'nomiko' ? { nomiko_prosopo_id: personId } : { fysiko_prosopo_id: personId }),
   removeClient:    (id, rowId)       => api.delete(`/api/cases/${id}/clients/${rowId}`),
   suggestions:     (id)              => api.get(`/api/cases/${id}/suggestions`),
   suggestionFeedback: (id, suggestedId, feedback) =>

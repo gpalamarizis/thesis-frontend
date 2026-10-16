@@ -394,7 +394,9 @@ function CaseTab({ caseData, onSave, saving }) {
           <CaseClientsPanel
             caseId={caseData.aa}
             fysikaList={fysikaList}
+            nomikaList={nomikaList}
             primaryId={fysikoProsopoId}
+            primaryNomikoId={caseData.nomiko_prosopo_id}
             onPersonCreated={reloadFysika}
           />
         </div>

@@ -273,8 +273,12 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
       if (newId && pendingClients.length) {
         const failed = [];
         for (const p of pendingClients) {
-          try { await cases.addClient(newId, p.fysiko_prosopo_id); }
-          catch (e) { failed.push(`${p.eponymo || ''} ${p.onoma || ''}`.trim()); }
+          try {
+            await cases.addClient(newId,
+              p.typos === 'nomiko' ? p.nomiko_prosopo_id : p.fysiko_prosopo_id,
+              p.typos || 'fysiko');
+          }
+          catch (e) { failed.push(p.eponymia || `${p.eponymo || ''} ${p.onoma || ''}`.trim()); }
         }
         if (failed.length) {
           setError(`Η υπόθεση δημιουργήθηκε, αλλά δεν προστέθηκαν: ${failed.join(', ')}`);
@@ -566,7 +570,9 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                 pending={pendingClients}
                 onPendingChange={setPendingClients}
                 fysikaList={fysikaList}
+                nomikaList={nomikaList}
                 primaryId={fysikoProsopoId}
+                primaryNomikoId={nomikoProsopoId}
                 onPersonCreated={reloadFysika}
               />
             </div>

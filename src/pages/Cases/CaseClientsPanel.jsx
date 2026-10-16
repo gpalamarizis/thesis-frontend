@@ -12,9 +12,28 @@ import { cases } from '../../api';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
 
+// Νομικό πρόσωπο: η επωνυμία. Φυσικό: επώνυμο και όνομα.
 function fullName(p) {
+  if (p.eponymia) return p.eponymia.trim();
   return `${p.eponymo || ''} ${p.onoma || ''}`.trim();
 }
+
+// Μικρή ετικέτα τύπου. Σταθερό πλάτος ώστε να στοιχίζονται τα ονόματα.
+function TypeTag({ typos }) {
+  const n = typos === 'nomiko';
+  return (
+    <span style={{
+      display: 'inline-block', width: 26, textAlign: 'center', marginRight: 8,
+      fontSize: 11, fontWeight: 600, borderRadius: 4, padding: '1px 0',
+      verticalAlign: 'middle',
+      background: n ? '#ebf4ff' : '#f0fff4', color: n ? '#2c5282' : '#276749',
+    }} title={n ? 'Νομικό πρόσωπο' : 'Φυσικό πρόσωπο'}>{n ? 'ΝΠ' : 'ΦΠ'}</span>
+  );
+}
+
+// Κλειδί που ξεχωρίζει τα δύο είδη: ο φυσικός 12 και ο νομικός 12
+// είναι διαφορετικά πρόσωπα.
+const keyOf = (typos, id) => `${typos === 'nomiko' ? 'n' : 'f'}:${id}`;
 
 // Δύο τρόποι λειτουργίας:
 //
@@ -23,7 +42,7 @@ function fullName(p) {
 //   pending — νέα υπόθεση που δεν έχει αποθηκευτεί ακόμα: οι πελάτες
 //             κρατιούνται τοπικά και καταχωρούνται μόλις δημιουργηθεί.
 function CaseClientsPanel({
-  caseId, fysikaList, primaryId, onCountChange,
+  caseId, fysikaList, nomikaList, primaryId, primaryNomikoId, onCountChange,
   pending, onPendingChange, onPersonCreated,
 }) {
   const isPending = !caseId;
@@ -53,34 +72,48 @@ function CaseClientsPanel({
   const shown = isPending ? (pending || []) : rows;
 
   // Υποψήφιοι: όσοι δεν είναι ήδη μέσα και δεν είναι ο κύριος πελάτης
-  const taken = useMemo(
-    () => new Set([...shown.map(r => r.fysiko_prosopo_id), Number(primaryId) || 0]),
-    [shown, primaryId]
-  );
+  const taken = useMemo(() => {
+    const t = new Set(shown.map(r => r.nomiko_prosopo_id
+      ? keyOf('nomiko', r.nomiko_prosopo_id)
+      : keyOf('fysiko', r.fysiko_prosopo_id)));
+    if (primaryId) t.add(keyOf('fysiko', Number(primaryId)));
+    if (primaryNomikoId) t.add(keyOf('nomiko', Number(primaryNomikoId)));
+    return t;
+  }, [shown, primaryId, primaryNomikoId]);
 
   const matches = useMemo(() => {
     const term = q.trim().toLowerCase();
     if (term.length < 2) return [];
-    return (fysikaList || [])
-      .filter(p => !taken.has(p.aa || p.id))
+    // Αναζήτηση και στα δύο είδη, με σημάδι τύπου σε κάθε αποτέλεσμα
+    const all = [
+      ...(fysikaList || []).map(p => ({ ...p, typos: 'fysiko' })),
+      ...(nomikaList || []).map(p => ({ ...p, typos: 'nomiko' })),
+    ];
+    return all
+      .filter(p => !taken.has(keyOf(p.typos, p.aa || p.id)))
       .filter(p => {
         const name = fullName(p).toLowerCase();
         return name.includes(term)
           || String(p.afm || '').includes(term)
+          || String(p.diakritikos_titlos || '').toLowerCase().includes(term)
           || `${p.onoma || ''} ${p.eponymo || ''}`.trim().toLowerCase().includes(term);
       })
-      .slice(0, 8);
-  }, [q, fysikaList, taken]);
+      .slice(0, 10);
+  }, [q, fysikaList, nomikaList, taken]);
 
   const add = async (p) => {
     setError('');
     const pid = p.aa || p.id;
 
     if (isPending) {
+      const isN = p.typos === 'nomiko';
       const next = [...(pending || []), {
-        aa: `new-${pid}`, fysiko_prosopo_id: pid,
-        eponymo: p.eponymo, onoma: p.onoma,
-        onoma_patros: p.onoma_patros, afm: p.afm,
+        aa: `new-${keyOf(p.typos, pid)}`, typos: p.typos || 'fysiko',
+        fysiko_prosopo_id: isN ? null : pid,
+        nomiko_prosopo_id: isN ? pid : null,
+        eponymo: p.eponymo, onoma: p.onoma, eponymia: p.eponymia,
+        onoma_patros: p.onoma_patros, diakritikos_titlos: p.diakritikos_titlos,
+        afm: p.afm,
       }];
       onPendingChange(next);
       setQ('');
@@ -90,7 +123,7 @@ function CaseClientsPanel({
 
     setAdding(true);
     try {
-      await cases.addClient(caseId, pid);
+      await cases.addClient(caseId, pid, p.typos || 'fysiko');
       setQ('');
       load();
     } catch (e) { setError(e.message); }
@@ -135,8 +168,8 @@ function CaseClientsPanel({
           <thead>
             <tr>
               <th style={{ width: 40 }}>#</th>
-              <th>Ονοματεπώνυμο</th>
-              <th style={{ width: 120 }}>Πατρώνυμο</th>
+              <th>Ονοματεπώνυμο / Επωνυμία</th>
+              <th style={{ width: 140 }}>Πατρώνυμο / Τίτλος</th>
               <th style={{ width: 110 }}>ΑΦΜ</th>
               <th style={{ width: 1 }}></th>
             </tr>
@@ -145,8 +178,10 @@ function CaseClientsPanel({
             {shown.map((r, idx) => (
               <tr key={r.aa}>
                 <td>{idx + 1}</td>
-                <td><strong>{fullName(r)}</strong></td>
-                <td>{r.onoma_patros || '—'}</td>
+                <td><TypeTag typos={r.typos || (r.nomiko_prosopo_id ? 'nomiko' : 'fysiko')} />
+                  <strong>{fullName(r)}</strong></td>
+                <td>{(r.nomiko_prosopo_id || r.typos === 'nomiko')
+                  ? (r.diakritikos_titlos || '—') : (r.onoma_patros || '—')}</td>
                 <td>{r.afm || '—'}</td>
                 <td style={{ whiteSpace: 'nowrap' }}>
                   <button
@@ -175,7 +210,7 @@ function CaseClientsPanel({
           value={q}
           disabled={adding}
           onChange={e => setQ(e.target.value)}
-          placeholder="Επώνυμο, όνομα ή ΑΦΜ — τουλάχιστον 2 χαρακτήρες"
+          placeholder="Όνομα, επωνυμία ή ΑΦΜ — φυσικά και νομικά, τουλάχιστον 2 χαρακτήρες"
         />
         {q.trim().length >= 2 && (
           <div style={{
@@ -191,7 +226,7 @@ function CaseClientsPanel({
               </div>
             ) : matches.map(p => (
               <button
-                key={p.aa || p.id}
+                key={keyOf(p.typos, p.aa || p.id)}
                 type="button"
                 onClick={() => add(p)}
                 disabled={adding}
@@ -202,6 +237,7 @@ function CaseClientsPanel({
                   fontFamily: 'inherit', color: '#2d3748',
                 }}
               >
+                <TypeTag typos={p.typos} />
                 {fullName(p)}
                 {p.afm && <span style={{ color: '#718096', fontSize: 12 }}> · ΑΦΜ {p.afm}</span>}
               </button>
@@ -221,7 +257,8 @@ function CaseClientsPanel({
       {confirmDel && (
         <ConfirmDialog
           title="Αφαίρεση πελάτη"
-          message={`Αφαίρεση του «${fullName(confirmDel)}» από την υπόθεση; Το πρόσωπο παραμένει στα Φυσικά Πρόσωπα.`}
+          message={`Αφαίρεση του «${fullName(confirmDel)}» από την υπόθεση; Το πρόσωπο παραμένει στα ${
+            (confirmDel.nomiko_prosopo_id || confirmDel.typos === 'nomiko') ? 'Νομικά' : 'Φυσικά'} Πρόσωπα.`}
           confirmLabel="Αφαίρεση"
           onConfirm={() => doRemove(confirmDel)}
           onClose={() => setConfirmDel(null)}
