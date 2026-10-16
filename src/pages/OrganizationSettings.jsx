@@ -169,6 +169,33 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
           <textarea rows={5} value={form.partners_list || ''} onChange={c('partners_list')}
                     disabled={!isAdmin} placeholder={'ΣΠΥΡΟΣ Δ. ΜΑΥΡΟΣ\nΕΛΕΝΗ Δ. ΣΠΗΛΙΑΔΗ\n…'} />
           <small style={{ color: '#718096' }}>Ένα όνομα ανά γραμμή.</small>
+        </div>
+        <div className="form-grid-2">
+          <div className="form-group">
+            <label>Εταίροι (EN)</label>
+            <textarea rows={5} value={form.partners_list_en || ''} onChange={c('partners_list_en')}
+                      disabled={!isAdmin} placeholder={'SPYRIDON MAVROS\nDIMITRIOS MAVROS\n…'} />
+          </div>
+          <div className="form-group">
+            <label>Εταίροι (FR)</label>
+            <textarea rows={5} value={form.partners_list_fr || ''} onChange={c('partners_list_fr')}
+                      disabled={!isAdmin} placeholder={'SPYRIDON MAVROS\nDIMITRIOS MAVROS\n…'} />
+          </div>
+        </div>
+
+        {/* ΠΟΛΛΟΙ ΤΡΑΠΕΖΙΚΟΙ ΛΟΓΑΡΙΑΣΜΟΙ
+            Ένας ανά γραμμή. Αν μείνει κενό, χρησιμοποιούνται τα μονά πεδία
+            παρακάτω, ώστε να μη χαθεί ό,τι έχει ήδη συμπληρωθεί. */}
+        <h4 style={{ margin: '22px 0 4px', fontSize: 15 }}>Τραπεζικοί λογαριασμοί</h4>
+        <div className="form-group">
+          <label>Λογαριασμοί για τα έντυπα — ένας ανά γραμμή</label>
+          <textarea rows={4} value={form.bank_accounts || ''} onChange={c('bank_accounts')}
+                    disabled={!isAdmin}
+                    placeholder={'ALPHA BANK | 359-00-2320-003047 | GR28 0140 3590 ... | CRBAGRAAXXX\nΠΕΙΡΑΙΩΣ | ... | GR... | PIRBGRAA\nEUROBANK | ... | GR... | ERBKGRAA'} />
+          <small style={{ color: '#718096' }}>
+            Μορφή: Τράπεζα | Αριθμός | IBAN | SWIFT. Ό,τι λείπει παραλείπεται.
+            Αν το αφήσεις κενό, χρησιμοποιούνται τα παρακάτω πεδία.
+          </small>
         </div>
 
         {/* ΕΜΒΑΣΜΑ — SWIFT και αριθμός λογαριασμού για ξένους πελάτες */}

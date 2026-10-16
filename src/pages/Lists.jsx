@@ -17,6 +17,8 @@ const LIST_TYPES = [
   { key: 'pagia_exoda',                    label: 'Πάγια έξοδα (τύποι)',    fields: [{key:'name', label:'Ονομασία'}] },
   // Κατηγορίες γραμματίων δικηγορικών συλλόγων. Αλλάζουν ανά σύλλογο και
   // ανά έτος, οπότε τις συντηρεί το γραφείο και δεν είναι στον κώδικα.
+  // Προεπιλεγμένα κείμενα για τα πεδία περιγραφής των οικονομικών
+  { key: 'perigrafes_oikonomikon',         label: 'Περιγραφές οικονομικών', fields: [{key:'name', label:'Κείμενο'}, {key:'perigrafi', label:'Σημείωση'}] },
   { key: 'grammatia_katigories',           label: 'Κατηγορίες γραμματίων',  fields: [{key:'name', label:'Ονομασία'}, {key:'perigrafi', label:'Περιγραφή'}] },
   { key: 'amoives',                        label: 'Αμοιβές (τύποι)',        fields: [{key:'name', label:'Ονομασία'}, {key:'amount', label:'Ποσό (€)', type:'number', step:'0.01'}] },
   { key: 'cities',                         label: 'Πόλεις',                 fields: [{key:'name', label:'Ονομασία'}] },

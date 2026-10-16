@@ -104,6 +104,19 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
           <span>Ενεργός</span>
         </label>
       </div>
+      {/* ΧΡΕΩΣΗ ΑΝΑ ΩΡΑ
+          Ορίζεται μία φορά εδώ και προσυμπληρώνεται σε κάθε εγγραφή ωρών,
+          σε κάθε υπόθεση του πελάτη. Αλλάζει ελεύθερα ανά εγγραφή. */}
+      <div className="form-grid-3">
+        <div className="form-group">
+          <label>Χρέωση ανά ώρα (€)</label>
+          <input type="number" step="0.01" value={form.xreosi_ora || ''}
+                 onChange={onChange('xreosi_ora')} placeholder="π.χ. 150" />
+          <small style={{ color: '#718096' }}>
+            Προσυμπληρώνεται στις εγγραφές ωρών όλων των υποθέσεών του.
+          </small>
+        </div>
+      </div>
     </div>
   );
 

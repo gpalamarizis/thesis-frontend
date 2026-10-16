@@ -560,6 +560,14 @@ export const reports = {
 export const finance = {
   // Όλα τα έξοδα μιας υπόθεσης σε Excel, πάγια και συνεργάτη μαζί
   exportExodaXlsx: (caseId) => `/api/finance/export/xlsx?ypothesi_id=${caseId}`,
+  // Συγκεντρωτική κατάσταση από ΟΛΕΣ τις υποθέσεις
+  exportAllXlsx: ({ from, to, status } = {}) =>
+    '/api/finance/export/all-xlsx'
+    + `?status=${status || 'all'}`
+    + (from ? `&from=${from}` : '') + (to ? `&to=${to}` : ''),
+  // Προτάσεις περιγραφής ανά πόρο
+  templates: (resource, q = '') =>
+    api.get(`/api/finance/${resource}/templates` + (q ? `?q=${encodeURIComponent(q)}` : '')),
   list:   (resource, caseId)          => api.get(`/api/finance/${resource}?ypothesi_id=${caseId}`),
   create: (resource, payload)         => api.post(`/api/finance/${resource}`, payload),
   update: (resource, id, payload)     => api.put(`/api/finance/${resource}/${id}`, payload),

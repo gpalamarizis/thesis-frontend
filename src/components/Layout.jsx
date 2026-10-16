@@ -28,6 +28,7 @@ const menuGroups = [
       { path: '/reports/calendar-tasks', label: 'Ημερολόγιο λοιπών ενεργειών',   icon: '📅' },
       { path: '/reports/courts',         label: 'Αναφορά Δικαστηρίων',           icon: '⚖️' },
       { path: '/reports/tax-property',   label: 'Φορολογικά & Ιδιοκτησία',       icon: '🏠' },
+      { path: '/reports/finance',        label: 'Συγκεντρωτικά οικονομικά',      icon: '💶' },
   ]},
   { title: 'Τιμολόγηση', items: [
       { path: '/invoices',                 label: 'Τιμολόγια',          icon: '🧾' },

@@ -9,6 +9,7 @@ import DateInput from '../../components/DateInput';
 import FilerPicker from '../../components/FilerPicker';
 import DocumentPicker from '../../components/DocumentPicker';
 import ClientAccountPanel from '../../components/ClientAccountPanel';
+import DescriptionSuggest from '../../components/DescriptionSuggest';
 /**
  * FinanceTab — Backend schema:
  *   ores:             ypothesi_id, dikigoros_id, date, ores, perigrafi, amount
@@ -18,7 +19,7 @@ import ClientAccountPanel from '../../components/ClientAccountPanel';
  *
  * "virtual: true" fields are shown in UI but NOT sent to backend (used for calc only).
  */
-function FinanceTab({ caseId, clientType, clientId }) {
+function FinanceTab({ caseId, clientType, clientId, clientRate }) {
   const [counts, setCounts] = useState({ ores: 0, 'pagia-exoda': 0, amoives: 0, 'exoda-synergati': 0 });
   const [lawyers, setLawyers] = useState([]);
   const [externals, setExternals] = useState([]);
@@ -75,7 +76,11 @@ function FinanceTab({ caseId, clientType, clientId }) {
     { key: 'date',         label: 'Ημερομηνία',    type: 'date',   required: true },
     { key: 'dikigoros_id', label: 'Δικηγόρος',     type: 'select', options: lawyerOptions },
     { key: 'ores',         label: 'Ώρες',          type: 'number', step: '0.25', triggersCalc: true },
-    { key: 'timi_oras',    label: 'Χρέωση/ώρα (€)', type: 'number', step: '0.01', virtual: true, triggersCalc: true },
+    // Η χρέωση του ΠΕΛΑΤΗ, προσυμπληρωμένη. Ορίζεται μία φορά στην
+    // καρτέλα του και ισχύει σε κάθε υπόθεσή του· αλλάζει ελεύθερα εδώ.
+    { key: 'timi_oras',    label: 'Χρέωση/ώρα (€)', type: 'number', step: '0.01',
+      virtual: true, triggersCalc: true, defaultValue: clientRate || undefined,
+      hint: clientRate ? `Χρέωση πελάτη: ${clientRate} €/ώρα` : undefined },
     { key: 'amount',       label: 'Ποσό (€)',      type: 'number', step: '0.01', computed: true },
     { key: 'perigrafi',    label: 'Περιγραφή',     type: 'textarea' },
   ];
@@ -386,7 +391,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
     }
     initForm[f.key] = initial?.[f.key] != null
       ? (f.type === 'date' ? toDateInput(initial[f.key]) : String(initial[f.key]))
-      : '';
+      : (initial ? '' : (f.defaultValue != null ? String(f.defaultValue) : ''));
   });
   // Auto-calc timi_oras on load if editing (amount / ores)
   if (initial?.ores && initial?.amount && !initForm.timi_oras) {
@@ -486,9 +491,26 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
                   {amountAutoCalc ? '(αυτόματο)' : '(χειροκίνητο)'}
                 </span>
               )}
+              {f.hint && (
+                <span style={{ marginLeft: 8, fontSize: 12, color: '#4c51bf', fontWeight: 'normal' }}>
+                  {f.hint}
+                </span>
+              )}
             </label>
             {f.type === 'textarea' ? (
-              <textarea rows="3" value={form[f.key] || ''} onChange={e => setField(f.key, e.target.value)} />
+              /* Στο πεδίο περιγραφής μπαίνουν προτάσεις: προεπιλογές του
+                 γραφείου και ό,τι έχει ήδη γραφτεί στον ίδιο πόρο.
+                 Τα υπόλοιπα κείμενα μένουν απλά. */
+              f.key === 'perigrafi' ? (
+                <DescriptionSuggest
+                  resource={resource}
+                  value={form[f.key] || ''}
+                  onChange={v => setField(f.key, v)}
+                  rows={3}
+                />
+              ) : (
+                <textarea rows="3" value={form[f.key] || ''} onChange={e => setField(f.key, e.target.value)} />
+              )
             ) : f.type === 'select' ? (
               <>
                 <select value={form[f.key] || ''} onChange={e => setField(f.key, e.target.value)}>

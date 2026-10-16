@@ -29,6 +29,7 @@ function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
   //
   // Τα ονόματα είναι σταθερά, όχι αριθμοί: αν αλλάξει η σειρά των
   // καρτελών, οι υπάρχοντες σύνδεσμοι συνεχίζουν να δουλεύουν.
+
   const [searchParams] = useSearchParams();
   const TAB_INDEX = {
     case: 0, court: 1, tasks: 2, persons: 3, files: 4, finance: 5, invoices: 6,
@@ -105,7 +106,8 @@ function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
           { label: 'Αρχεία',               badge: docs.length,         content: <DocsTab caseId={id} rows={docs} onChange={() => loadAll(false)} /> },
           { label: 'Οικονομικά',           content: <FinanceTab caseId={id}
               clientType={caseData?.nomiko_prosopo_id ? 'nomiko' : 'fysiko'}
-              clientId={caseData?.nomiko_prosopo_id || caseData?.fysiko_prosopo_id} /> },
+              clientId={caseData?.nomiko_prosopo_id || caseData?.fysiko_prosopo_id}
+              clientRate={caseData?.client_xreosi_ora || null} /> },
           { label: 'Τιμολόγια',            content: <CaseInvoicesTab caseId={id} /> },
         ]}/>
       </div>
@@ -138,6 +140,7 @@ function CaseTab({ caseData, onSave, saving }) {
   const [thesiOptions, setThesiOptions] = useState([]);
   const [fysikaList, setFysikaList] = useState([]);
   const [nomikaList, setNomikaList] = useState([]);
+
   const [sameClientCases, setSameClientCases] = useState([]);
   const [showInactiveLawyers, setShowInactiveLawyers] = useState(false);
 

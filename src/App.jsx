@@ -45,6 +45,7 @@ import BulkTemplatesImport from './pages/BulkTemplatesImport';
 import ReportPending from './pages/ReportPending';
 import ReportHearings from './pages/ReportHearings';
 import ReportTasks from './pages/ReportTasks';
+import ReportFinanceAll from './pages/ReportFinanceAll';
 import ReportTaxProperty from './pages/ReportTaxProperty';
 
 function App() {
@@ -157,6 +158,7 @@ function App() {
         <Route path="/reports/pending" element={guard(ReportPending)} />
         <Route path="/reports/hearings" element={guard(ReportHearings)} />
         <Route path="/reports/tasks" element={guard(ReportTasks)} />
+        <Route path="/reports/finance" element={guard(ReportFinanceAll)} />
         <Route path="/reports/calendar-court"   element={guard(CourtActionsCalendar)} />
         <Route path="/reports/calendar-tasks"   element={guard(TaskActionsCalendar)} />
 
