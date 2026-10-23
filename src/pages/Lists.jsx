@@ -19,6 +19,8 @@ const LIST_TYPES = [
   // ανά έτος, οπότε τις συντηρεί το γραφείο και δεν είναι στον κώδικα.
   // Προεπιλεγμένα κείμενα για τα πεδία περιγραφής των οικονομικών
   { key: 'perigrafes_oikonomikon',         label: 'Περιγραφές οικονομικών', fields: [{key:'name', label:'Κείμενο'}, {key:'perigrafi', label:'Σημείωση'}] },
+  // Τράπεζες του γραφείου — προτείνονται στις προκαταβολές
+  { key: 'trapezes',                       label: 'Τράπεζες',               fields: [{key:'name', label:'Ονομασία'}] },
   { key: 'grammatia_katigories',           label: 'Κατηγορίες γραμματίων',  fields: [{key:'name', label:'Ονομασία'}, {key:'perigrafi', label:'Περιγραφή'}] },
   { key: 'amoives',                        label: 'Αμοιβές (τύποι)',        fields: [{key:'name', label:'Ονομασία'}, {key:'amount', label:'Ποσό (€)', type:'number', step:'0.01'}] },
   { key: 'cities',                         label: 'Πόλεις',                 fields: [{key:'name', label:'Ονομασία'}] },

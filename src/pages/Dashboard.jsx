@@ -15,6 +15,7 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   const [error, setError] = useState('');
   const [monthCursor, setMonthCursor] = useState(() => new Date());
   const [monthHearings, setMonthHearings] = useState([]);
+  const [monthTasks, setMonthTasks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [showProtoSearch, setShowProtoSearch] = useState(false);
 
@@ -50,20 +51,26 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
     return () => { cancelled = true; };
   }, []);
 
-  // Load hearings for the visible month
+  // Δικάσιμοι ΚΑΙ λοιπές ενέργειες του ορατού μήνα.
+  // Οι δύο κλήσεις είναι ανεξάρτητες: αν αποτύχει η μία, η άλλη εμφανίζεται κανονικά.
   useEffect(() => {
+    let cancelled = false;
     const y = monthCursor.getFullYear();
     const m = monthCursor.getMonth();
     // Τοπική ώρα — το toISOString() γύριζε στην προηγούμενη μέρα και
     // έκοβε την τελευταία δικάσιμο κάθε μήνα.
     const from = toISODate(new Date(y, m, 1));
     const to   = toISODate(new Date(y, m + 1, 0));
+    const unwrap = (d) => (Array.isArray(d) ? d : (d?.data || []));
     reports.upcomingHearings(from, to)
-      .then(d => {
-        const list = Array.isArray(d) ? d : (d?.data || []);
-        setMonthHearings(list);
-      })
-      .catch(() => setMonthHearings([]));
+      .then(d => { if (!cancelled) setMonthHearings(unwrap(d)); })
+      .catch(() => { if (!cancelled) setMonthHearings([]); });
+    // all: και οι ολοκληρωμένες του μήνα — εμφανίζονται αχνές, όπως το
+    // ημερολόγιο δείχνει και τις δικασίμους που πέρασαν.
+    reports.pendingTasks({ from, to, all: true })
+      .then(d => { if (!cancelled) setMonthTasks(unwrap(d)); })
+      .catch(() => { if (!cancelled) setMonthTasks([]); });
+    return () => { cancelled = true; };
   }, [monthCursor]);
 
   return (
@@ -99,6 +106,7 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
           cursor={monthCursor}
           setCursor={setMonthCursor}
           hearings={monthHearings}
+          tasks={monthTasks}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
         />
@@ -166,6 +174,7 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
                   <th style={{ width: 110 }}>Προθεσμία</th>
                   <th>Ενέργεια</th>
                   <th>Πρωτόκολλο</th>
+                  <th>Χειριστής</th>
                 </tr>
               </thead>
               <tbody>
@@ -184,6 +193,7 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
                             {t.xeirokinito_id || '(χωρίς πρωτόκολλο)'}
                           </Link>
                         : (t.xeirokinito_id || '—')}</td>
+                      <td>{handlerOf(t) || '—'}</td>
                     </tr>
                   );
                 })}
@@ -234,8 +244,30 @@ function handlerShort(e) {
     .join(', ');
 }
 
-function MonthCalendar({ cursor, setCursor, hearings, selectedDate, setSelectedDate }) {
+// Ημερολόγιο μήνα: δικάσιμοι (μωβ) και λοιπές ενέργειες (πορτοκαλί).
+// Οι δύο πηγές ενοποιούνται σε ένα σχήμα ώστε κελί, tooltip και πίνακας
+// ημέρας να τις χειρίζονται με τον ίδιο κώδικα.
+function toCalEvent(src, kind) {
+  const isCourt = kind === 'court';
+  return {
+    kind,
+    key: `${kind}:${src.aa ?? src.id ?? ''}`,
+    date: isCourt ? src.date : src.date_dead_line,
+    xeirokinito_id: src.xeirokinito_id,
+    ypothesi_id: src.ypothesi_id,
+    pelatis: src.pelatis,
+    handler: handlerOf(src),
+    handlerShort: handlerShort(src),
+    // Δικάσιμος: το δικαστήριο. Ενέργεια: η περιγραφή της.
+    label: isCourt ? (src.dikastirio_name || src.perigrafi || '') : (src.perigrafi_energias || ''),
+    done: !isCourt && src.ekkremis === false,
+  };
+}
+
+function MonthCalendar({ cursor, setCursor, hearings, tasks = [], selectedDate, setSelectedDate }) {
   const navigate = useNavigate();
+  const [showCourt, setShowCourt] = useState(true);
+  const [showTasks, setShowTasks] = useState(true);
   const y = cursor.getFullYear();
   const m = cursor.getMonth();
   const monthName = cursor.toLocaleDateString('el-GR', { month: 'long', year: 'numeric' });
@@ -245,44 +277,58 @@ function MonthCalendar({ cursor, setCursor, hearings, selectedDate, setSelectedD
   const mondayOffset = (firstDay + 6) % 7; // days before day 1
   const daysInMonth = new Date(y, m + 1, 0).getDate();
 
-  // Group hearings by day-of-month
+  const events = [
+    ...(showCourt ? hearings.map(h => toCalEvent(h, 'court')) : []),
+    ...(showTasks ? tasks.map(t => toCalEvent(t, 'task')) : []),
+  ];
+
+  // Ανά ημέρα του μήνα. Μέσα στην ημέρα: πρώτα οι δικάσιμοι, μετά οι
+  // εκκρεμείς ενέργειες, τελευταίες οι ολοκληρωμένες.
+  const rank = (e) => (e.kind === 'court' ? 0 : (e.done ? 2 : 1));
   const byDay = {};
-  hearings.forEach(h => {
-    const d = h.date ? new Date(h.date) : null;
+  events.forEach(e => {
+    const d = e.date ? new Date(e.date) : null;
     if (!d || isNaN(d.getTime())) return;
     if (d.getMonth() !== m || d.getFullYear() !== y) return;
     const day = d.getDate();
     if (!byDay[day]) byDay[day] = [];
-    byDay[day].push(h);
+    byDay[day].push(e);
   });
+  Object.values(byDay).forEach(list => list.sort((a, b) => rank(a) - rank(b)));
 
   const today = new Date();
   const isToday = (day) => today.getDate() === day && today.getMonth() === m && today.getFullYear() === y;
+  const openEvent = (e) => {
+    if (!e.ypothesi_id) return;
+    navigate(`/cases/${e.ypothesi_id}?tab=${e.kind === 'court' ? 'court' : 'tasks'}`);
+  };
+  const kindLabel = (e) => (e.kind === 'court' ? 'Δικάσιμος' : (e.done ? 'Ενέργεια ✓' : 'Ενέργεια'));
 
   const cells = [];
   for (let i = 0; i < mondayOffset; i++) cells.push(<div key={`e${i}`} className="cal-cell cal-empty" />);
   for (let day = 1; day <= daysInMonth; day++) {
-    const events = byDay[day] || [];
+    const dayEvents = byDay[day] || [];
     const isSel = selectedDate && selectedDate.getDate() === day && selectedDate.getMonth() === m && selectedDate.getFullYear() === y;
     cells.push(
       <div
         key={day}
-        className={`cal-cell ${isToday(day) ? 'cal-today' : ''} ${events.length ? 'cal-has-events' : ''} ${isSel ? 'cal-selected' : ''}`}
+        className={`cal-cell ${isToday(day) ? 'cal-today' : ''} ${dayEvents.length ? 'cal-has-events' : ''} ${isSel ? 'cal-selected' : ''}`}
         onClick={() => setSelectedDate(new Date(y, m, day))}
       >
         <div className="cal-day-num">{day}</div>
-        {events.slice(0, 2).map((e, i) => (
+        {dayEvents.slice(0, 2).map(e => (
           <div
-            key={i}
-            className="cal-event"
-            title={`${e.xeirokinito_id || ''} ${e.dikastirio_name || ''} ${handlerOf(e) ? '— ' + handlerOf(e) : ''} ${e.perigrafi || ''}`.trim()}
-            onClick={(ev) => { ev.stopPropagation(); if (e.ypothesi_id) navigate(`/cases/${e.ypothesi_id}`); }}
+            key={e.key}
+            className={`cal-event ${e.kind === 'task' ? 'cal-event-task' : ''} ${e.done ? 'cal-event-done' : ''}`}
+            title={[kindLabel(e), e.xeirokinito_id, e.label, e.handler && `— ${e.handler}`]
+              .filter(Boolean).join(' ')}
+            onClick={(ev) => { ev.stopPropagation(); openEvent(e); }}
           >
             <span className="cal-event-proto">{e.xeirokinito_id || '•'}</span>
-            {handlerShort(e) && <span className="cal-event-handler">{handlerShort(e)}</span>}
+            {e.handlerShort && <span className="cal-event-handler">{e.handlerShort}</span>}
           </div>
         ))}
-        {events.length > 2 && <div className="cal-event-more">+{events.length - 2}</div>}
+        {dayEvents.length > 2 && <div className="cal-event-more">+{dayEvents.length - 2}</div>}
       </div>
     );
   }
@@ -299,6 +345,18 @@ function MonthCalendar({ cursor, setCursor, hearings, selectedDate, setSelectedD
           <button className="btn btn-secondary btn-sm" onClick={() => setCursor(new Date(y, m + 1, 1))}>Επόμ. ›</button>
         </div>
       </div>
+      <div className="cal-legend">
+        <label className="cal-legend-item">
+          <input type="checkbox" checked={showCourt} onChange={e => setShowCourt(e.target.checked)} />
+          <span className="cal-legend-swatch cal-legend-court" />
+          Δικάσιμοι
+        </label>
+        <label className="cal-legend-item">
+          <input type="checkbox" checked={showTasks} onChange={e => setShowTasks(e.target.checked)} />
+          <span className="cal-legend-swatch cal-legend-task" />
+          Λοιπές ενέργειες
+        </label>
+      </div>
       <div className="cal-grid">
         {['Δευ','Τρι','Τετ','Πεμ','Παρ','Σαβ','Κυρ'].map(d => <div key={d} className="cal-header">{d}</div>)}
         {cells}
@@ -306,17 +364,30 @@ function MonthCalendar({ cursor, setCursor, hearings, selectedDate, setSelectedD
       {selectedDate && selectedEvents.length > 0 && (
         <div style={{ marginTop: 14, padding: 12, background: '#f7fafc', borderRadius: 6 }}>
           <h3 style={{ marginBottom: 8, fontSize: 14 }}>
-            Δικάσιμοι στις {selectedDate.toLocaleDateString('el-GR')}
+            Ενέργειες στις {selectedDate.toLocaleDateString('el-GR')}
           </h3>
           <table className="table" style={{ marginBottom: 0 }}>
-            <thead><tr><th>Πρωτόκολλο</th><th>Δικαστήριο</th><th>Πελάτης</th><th>Χειριστής</th></tr></thead>
+            <thead>
+              <tr>
+                <th style={{ width: 110 }}>Είδος</th>
+                <th>Πρωτόκολλο</th>
+                <th>Δικαστήριο / Ενέργεια</th>
+                <th>Πελάτης</th>
+                <th>Χειριστής</th>
+              </tr>
+            </thead>
             <tbody>
-              {selectedEvents.map((e, i) => (
-                <tr key={i} className="clickable" onClick={() => e.ypothesi_id && navigate(`/cases/${e.ypothesi_id}`)}>
+              {selectedEvents.map(e => (
+                <tr key={e.key} className="clickable" onClick={() => openEvent(e)}
+                    style={e.done ? { color: '#a0aec0' } : undefined}>
+                  <td>
+                    <span className={`cal-legend-swatch ${e.kind === 'court' ? 'cal-legend-court' : 'cal-legend-task'}`} />
+                    {kindLabel(e)}
+                  </td>
                   <td>{e.xeirokinito_id || '—'}</td>
-                  <td>{e.dikastirio_name || '—'}</td>
+                  <td>{e.label || '—'}</td>
                   <td>{e.pelatis || '—'}</td>
-                  <td>{handlerOf(e) || '—'}</td>
+                  <td>{e.handler || '—'}</td>
                 </tr>
               ))}
             </tbody>

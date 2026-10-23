@@ -47,6 +47,8 @@ import ReportHearings from './pages/ReportHearings';
 import ReportTasks from './pages/ReportTasks';
 import ReportFinanceAll from './pages/ReportFinanceAll';
 import ReportTaxProperty from './pages/ReportTaxProperty';
+import ReportClientsNationality from './pages/ReportClientsNationality';
+import ReportBillingAnalysis from './pages/ReportBillingAnalysis';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -174,6 +176,8 @@ function App() {
         <Route path="/cases/:id/access" element={guard(CaseAccess)} />
         <Route path="/reports/courts" element={guard(CourtsReport)} />
         <Route path="/reports/tax-property" element={guard(ReportTaxProperty)} />
+        <Route path="/reports/clients-nationality" element={guard(ReportClientsNationality)} />
+        <Route path="/reports/billing-analysis" element={guard(ReportBillingAnalysis)} />
         <Route path="/settings/gdpr" element={guard(GdprSettings)} />
         <Route path="/platform"            element={guard(PlatformAdmin)} />
         <Route path="/invoices"     element={guard(InvoicesList)} />

@@ -26,6 +26,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
   const [pagiaDefs, setPagiaDefs] = useState([]);
   const [related, setRelated] = useState([]);
   const [grammatiaDefs, setGrammatiaDefs] = useState([]);
+  const [bankDefs, setBankDefs] = useState([]);
 
   useEffect(() => {
     people.lawyers.list()
@@ -47,6 +48,9 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
       .catch(() => {});
     lists.get('pagia_exoda')
       .then(d => setPagiaDefs(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => {});
+    lists.get('trapezes')
+      .then(d => setBankDefs(Array.isArray(d) ? d : (d?.data || [])))
       .catch(() => {});
   }, []);
 
@@ -85,6 +89,11 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     { key: 'perigrafi',    label: 'Περιγραφή',     type: 'textarea' },
   ];
 
+  const plironeiField = { key: 'plironei', label: 'Πληρώνει', type: 'person',
+    personCols: { dikigoros: 'plironei_dikigoros_id', sxetiko: 'plironei_sxetiko_id' },
+    nameField: 'plironei_name', roleField: 'plironei_role' };
+  const parastatikoField = { key: 'parastatiko_document_id', label: 'Παραστατικό', type: 'document' };
+
   // ΠΡΟΚΑΤΑΒΟΛΕΣ — χρήματα που έχει ήδη λάβει το γραφείο.
   // Ο αποστολέας είναι ελεύθερο κείμενο: συχνά πληρώνει τρίτος που δεν
   // υπάρχει στο μητρώο.
@@ -100,20 +109,21 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     { key: 'dikigoros_id',           label: 'Δικηγόρος',  type: 'select', options: lawyerOptions },
     { key: 'amount',                 label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
     { key: 'perigrafi',              label: 'Σημειώσεις', type: 'textarea' },
+    { ...parastatikoField, label: 'Γραμμάτιο (αρχείο)' },
   ];
 
   const prokatavolesFields = [
     { key: 'date',       label: 'Ημερομηνία', type: 'date',   required: true },
-    { key: 'trapeza',    label: 'Τράπεζα',    type: 'text' },
+    // Οι τράπεζες του γραφείου προτείνονται (Επεξεργασία λιστών → Τράπεζες),
+    // αλλά γράφεται και άλλη ελεύθερα: η στήλη μένει κείμενο.
+    { key: 'trapeza',    label: 'Τράπεζα',    type: 'combo',
+      options: bankDefs.map(b => b.name).filter(Boolean) },
     { key: 'apostoleas', label: 'Αποστολέας', type: 'text' },
     { key: 'amount',     label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
     { key: 'perigrafi',  label: 'Σημειώσεις', type: 'textarea' },
+    { ...parastatikoField, label: 'Παραστατικό τράπεζας' },
   ];
 
-  const plironeiField = { key: 'plironei', label: 'Πληρώνει', type: 'person',
-    personCols: { dikigoros: 'plironei_dikigoros_id', sxetiko: 'plironei_sxetiko_id' },
-    nameField: 'plironei_name', roleField: 'plironei_role' };
-  const parastatikoField = { key: 'parastatiko_document_id', label: 'Παραστατικό', type: 'document' };
 
   const pagiaFields = [
     { key: 'date',                      label: 'Ημερομηνία',   type: 'date',   required: true },
@@ -533,6 +543,20 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
                 value={form[f.key] || ''}
                 onChange={(v) => setField(f.key, v)}
               />
+            ) : f.type === 'combo' ? (
+              <>
+                <input
+                  type="text"
+                  list={`combo-${f.key}`}
+                  value={form[f.key] || ''}
+                  onChange={e => setField(f.key, e.target.value)}
+                  placeholder={(f.options || []).length ? 'Επίλεξε ή γράψε…' : ''}
+                  autoComplete="off"
+                />
+                <datalist id={`combo-${f.key}`}>
+                  {(f.options || []).map(o => <option key={o} value={o} />)}
+                </datalist>
+              </>
             ) : f.type === 'date' ? (
               <DateInput
                 value={form[f.key] || ''}

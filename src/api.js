@@ -219,7 +219,7 @@ async function request(endpoint, options = {}, _retried = false) {
 // --- Λήψη αρχείου με auth (π.χ. αναφορές σε Word) ---
 // Δέχεται είτε endpoint ('/api/reports/x?format=docx') είτε πλήρες URL.
 // Το filename είναι προαιρετικό — αν λείπει, το παίρνει από τα headers.
-export async function downloadFile(endpointOrUrl, filename) {
+export async function downloadFile(endpointOrUrl, filename, fallbackName) {
   const token = localStorage.getItem('token');
   const url = /^https?:\/\//i.test(endpointOrUrl)
     ? endpointOrUrl
@@ -247,10 +247,12 @@ export async function downloadFile(endpointOrUrl, filename) {
   let name = filename;
   if (!name) {
     const cd = res.headers.get('content-disposition') || '';
-    const m = cd.match(/filename\*?=(?:UTF-8'')?\"?([^\";]+)/i);
-    if (m) { try { name = decodeURIComponent(m[1]); } catch (_) { name = m[1]; } }
+    // Προτιμάται το filename*= (UTF-8, RFC 5987) — το απλό filename= έχει
+    // τα ελληνικά ως κάτω παύλες.
+    const m = cd.match(/filename\*=UTF-8''([^;]+)/i) || cd.match(/filename="?([^";]+)/i);
+    if (m) { try { name = decodeURIComponent(m[1].trim()); } catch (_) { name = m[1].trim(); } }
   }
-  if (!name) name = 'download';
+  if (!name) name = fallbackName || 'download';
 
   const blob = await res.blob();
   const objectUrl = URL.createObjectURL(blob);
@@ -528,9 +530,25 @@ export const reports = {
     if (to)   p.push(`to=${to}`);
     return api.get('/api/reports/upcoming-hearings' + (p.length ? `?${p.join('&')}` : ''));
   },
-  pendingTasks:     ()                 => api.get('/api/reports/pending-tasks'),
+  // Χωρίς ορίσματα: μόνο οι εκκρεμείς, όπως πριν.
+  // Με { from, to, all: true }: όλες οι ενέργειες του διαστήματος, και οι
+  // ολοκληρωμένες — για το ημερολόγιο του Πίνακα Ελέγχου.
+  pendingTasks:     ({ from = '', to = '', all = false } = {}) => {
+    const p = [];
+    if (from) p.push(`from=${from}`);
+    if (to)   p.push(`to=${to}`);
+    if (all)  p.push('ekkremis=false');
+    return api.get('/api/reports/pending-tasks' + (p.length ? `?${p.join('&')}` : ''));
+  },
   // Δικάσιμοι και προθεσμίες που έφτασαν ή πέρασαν, ακόμα εκκρεμείς
   dueActions:       ()                 => api.get('/api/reports/due-actions'),
+  // Πελατεία ανά υπηκοότητα και ανάλυση τιμολόγησης (από αναλυτικούς λογαριασμούς)
+  clientsByNationalityUrl: (p = {}) => '/api/reports/clients-by-nationality?'
+    + new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(),
+  clientsByNationality: (p = {}) => api.get(reports.clientsByNationalityUrl(p)),
+  billingAnalysisUrl: (p = {}) => '/api/reports/billing-analysis?'
+    + new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(),
+  billingAnalysis: (p = {}) => api.get(reports.billingAnalysisUrl(p)),
   // Αναλυτικός λογαριασμός πελάτη — JSON και έντυπο Word
   clientAccount:    (type, id, from, to) =>
     api.get(`/api/reports/client-account?clientType=${type}&clientId=${id}`
@@ -567,7 +585,8 @@ export const finance = {
     + (from ? `&from=${from}` : '') + (to ? `&to=${to}` : ''),
   // Προτάσεις περιγραφής ανά πόρο
   templates: (resource, q = '') =>
-    api.get(`/api/finance/${resource}/templates` + (q ? `?q=${encodeURIComponent(q)}` : '')),
+    api.get(`/api/finance/${resource}/templates` + (q ? `?q=${encodeURIComponent(q)}` : '')),
+
   list:   (resource, caseId)          => api.get(`/api/finance/${resource}?ypothesi_id=${caseId}`),
   create: (resource, payload)         => api.post(`/api/finance/${resource}`, payload),
   update: (resource, id, payload)     => api.put(`/api/finance/${resource}/${id}`, payload),

@@ -6,6 +6,7 @@ import ClientCredentialsSection from '../../components/ClientCredentialsSection'
 import ClientAccountsPanel from '../../components/ClientAccountsPanel';
 import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { nomika } from '../../api';
+import { COUNTRY_OPTIONS } from '../../utils/countries';
 
 // Backend fields (from routes/nomika.js FIELDS list):
 const emptyForm = {
@@ -142,8 +143,13 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
           <input type="text" value={form.poli} onChange={onChange('poli')} />
         </div>
         <div className="form-group">
-          <label>Χώρα</label>
-          <input type="text" value={form.xora} onChange={onChange('xora')} />
+          <label>Χώρα (έδρα)</label>
+          {/* Ελεύθερο κείμενο με προτάσεις: η αναφορά «Πελατεία ανά
+              υπηκοότητα» αναγνωρίζει το ελληνικό όνομα της χώρας. */}
+          <input type="text" list="nomika-xores" value={form.xora} onChange={onChange('xora')} />
+          <datalist id="nomika-xores">
+            {COUNTRY_OPTIONS.map(c => <option key={c.code} value={c.el} />)}
+          </datalist>
         </div>
       </div>
     </div>

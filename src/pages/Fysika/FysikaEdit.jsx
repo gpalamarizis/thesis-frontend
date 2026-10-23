@@ -7,6 +7,7 @@ import ClientAccountsPanel from '../../components/ClientAccountsPanel';
 import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { fysika } from '../../api';
 import { toDateInput } from '../../utils/format';
+import { COUNTRY_OPTIONS } from '../../utils/countries';
 
 import DateInput from '../../components/DateInput';
 // Backend fields (from routes/fysika.js FIELDS list):
@@ -14,7 +15,7 @@ const emptyForm = {
   eponymo: '', onoma: '', onoma_patros: '',
   eponymo_syzygou: '', onoma_syzygou: '',
   date_gennisis: '', afm: '', doy: '', adt: '', ekdousa_arxi: '',
-  email: '', web_site: '', energos: true,
+  email: '', web_site: '', energos: true, ypikootita: '',
   odos_oikias: '', arithmos_oikias: '', tk_oikias: '', poli_oikias: '', xora_oikias: '',
   odos_grafeiou: '', arithmos_grafeiou: '', tk_grafeiou: '', poli_grafeiou: '', xora_grafeiou: '',
   tilefono_oikias_1: '', tilefono_oikias_2: '', tilefono_oikias_3: '',
@@ -159,7 +160,7 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
           <input type="text" value={form.ekdousa_arxi} onChange={onChange('ekdousa_arxi')} />
         </div>
       </div>
-      <div className="form-grid-2">
+      <div className="form-grid-3">
         <div className="form-group">
           <label>Α.Φ.Μ.</label>
           <input type="text" value={form.afm} onChange={onChange('afm')} />
@@ -167,6 +168,16 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
         <div className="form-group">
           <label>Δ.Ο.Υ.</label>
           <input type="text" value={form.doy} onChange={onChange('doy')} />
+        </div>
+        {/* ΥΠΗΚΟΟΤΗΤΑ — κωδικός χώρας. Στα υπάρχοντα πρόσωπα είναι κενή και
+            συμπληρώνεται σταδιακά· δεν προκύπτει από τη χώρα κατοικίας. */}
+        <div className="form-group">
+          <label>Υπηκοότητα</label>
+          <select value={form.ypikootita || ''} onChange={onChange('ypikootita')}
+                  style={{ backgroundColor: '#fff', height: 41 }}>
+            <option value="">— Δεν έχει συμπληρωθεί —</option>
+            {COUNTRY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.el}</option>)}
+          </select>
         </div>
       </div>
       <div className="form-grid-2">

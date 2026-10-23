@@ -81,7 +81,8 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId }) {
       await downloadFile(
         reports.clientAccountDocxUrl(clientType, clientId, lang, currentCaseId,
           ids, from, to, issue),
-        'Logariasmos.docx');
+        // Το όνομα το δίνει ο server: logariasmos<α/α πελάτη>.<α/α γραφείου>
+        null, issue ? 'logariasmos.docx' : 'logariasmos-proxeiro.docx');
     } catch (e) {
       setError(e.message || 'Η παραγωγή απέτυχε.');
     } finally { setBusy(false); }
