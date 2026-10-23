@@ -29,7 +29,8 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
     setLoading(true);
     reports.clientAccount(clientType, clientId, from || null, to || null)
       .then(d => { if (alive) setData(d?.data || d || null); })
-      .catch(e => { if (alive) setError(e.message || 'Αποτυχία φόρτωσης'); })
+      // Χωρίς δικαίωμα οικονομικών η ενότητα απλώς δεν εμφανίζεται
+      .catch(e => { if (alive && e.status !== 403) setError(e.message || 'Αποτυχία φόρτωσης'); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [clientType, clientId, from, to]);

@@ -20,11 +20,12 @@ const dmy = (v) => (v ? String(v).slice(0, 10).split('-').reverse().join('/') : 
 const NUM = { textAlign: 'right', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
 const pad2 = (n) => String(n).padStart(2, '0');
 
-function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded, emptyMessage }) {
+function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded, emptyMessage, hideIfForbidden = false }) {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(null);
+  const [forbidden, setForbidden] = useState(false);
   const key = JSON.stringify(filter);
 
   useEffect(() => {
@@ -37,7 +38,11 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
         setRows(list);
         if (onLoaded) onLoaded(list.length);
       })
-      .catch(e => { if (alive) setError(e.message || 'Η φόρτωση απέτυχε.'); })
+      .catch(e => {
+        if (!alive) return;
+        if (e.status === 403) { setForbidden(true); if (onLoaded) onLoaded(0); }
+        setError(e.message || 'Η φόρτωση απέτυχε.');
+      })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
     // eslint-disable-next-line
@@ -52,6 +57,7 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
   };
 
   if (loading) return <div className="empty-state">Φόρτωση...</div>;
+  if (forbidden && hideIfForbidden) return null;
 
   return (
     <div>

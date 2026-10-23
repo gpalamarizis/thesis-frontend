@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Tabs from '../../components/Tabs';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { finance, people, lists, reports, downloadFile } from '../../api';
+import { finance, people, lists, reports, downloadFile, ocr } from '../../api';
 import { fmtDate, fmtCurrency, toDateInput } from '../../utils/format';
 
 import DateInput from '../../components/DateInput';
@@ -175,7 +175,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     try {
       await downloadFile(
         reports.clientAccountDocxUrl(clientType, clientId, accLang, caseId),
-        'Logariasmos.docx');
+        null, 'logariasmos-proxeiro.docx');
     } catch (err) {
       setExportError(err.message || 'Η παραγωγή απέτυχε.');
     } finally {
@@ -233,7 +233,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
           Εκδοθέντες λογαριασμοί ({accCount}) {showAcc ? '▾' : '▸'}
         </button>
         <div style={{ marginTop: 10, display: showAcc ? 'block' : 'none' }}>
-          <AccountsList filter={{ ypothesi_id: caseId }} reloadKey={accReload} onLoaded={setAccCount} />
+          <AccountsList filter={{ ypothesi_id: caseId }} reloadKey={accReload} onLoaded={setAccCount} hideIfForbidden />
         </div>
       </div>
 
@@ -464,6 +464,57 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
   const [error, setError] = useState('');
   const [amountAutoCalc, setAmountAutoCalc] = useState(true);
 
+  // ΑΝΑΓΝΩΣΗ ΠΑΡΑΣΤΑΤΙΚΟΥ — μόνο στις προκαταβολές και στα γραμμάτια.
+  // Οι τιμές μπαίνουν μόνο σε ΚΕΝΑ πεδία· όπου υπάρχει ήδη τιμή και το
+  // παραστατικό γράφει άλλη, φαίνεται ως πρόταση κάτω από το πεδίο.
+  // Τίποτα δεν αποθηκεύεται χωρίς «Αποθήκευση».
+  const ocrKind = { prokatavoles: 'prokatavoli', grammatia: 'grammatio' }[resource];
+  const [ocrOn, setOcrOn] = useState(false);
+  const [ocrBusy, setOcrBusy] = useState(false);
+  const [ocrMsg, setOcrMsg] = useState('');
+  const [ocrHints, setOcrHints] = useState({});
+  useEffect(() => {
+    if (!ocrKind) return;
+    let alive = true;
+    ocr.status().then(d => { if (alive) setOcrOn(!!d?.enabled); }).catch(() => {});
+    return () => { alive = false; };
+  }, [ocrKind]);
+
+  const runOcr = async () => {
+    const docId = form.parastatiko_document_id;
+    if (!docId) return;
+    setOcrBusy(true); setOcrMsg(''); setError('');
+    try {
+      const d = await ocr.extract(Number(docId), ocrKind);
+      const sug = d?.suggestion || {};
+      const filled = [];
+      const hints = {};
+      const labelOf = (k) => (fields.find(f => f.key === k) || {}).label || k;
+      // Υπολογίζεται από την τρέχουσα φόρμα, ώστε το μήνυμα να λέει σωστά
+      // τι συμπληρώθηκε (το setForm εκτελείται αργότερα).
+      const updates = {};
+      for (const f of fields) {
+        const v = sug[f.key];
+        if (v == null || v === '') continue;
+        const sv = String(v);
+        const cur = form[f.key];
+        if (cur == null || cur === '') { updates[f.key] = sv; filled.push(labelOf(f.key)); }
+        else if (String(cur) !== sv) hints[f.key] = sv;
+      }
+      setForm(prev => ({ ...prev, ...updates }));
+      // Κατηγορία γραμματίου που δεν βρέθηκε στη λίστα: φαίνεται ως κείμενο
+      if (ocrKind === 'grammatio' && !sug.grammatio_katigoria_id && sug.katigoria_text) {
+        hints.grammatio_katigoria_id = `«${sug.katigoria_text}» — δεν υπάρχει στη λίστα κατηγοριών`;
+      }
+      setOcrHints(hints);
+      setOcrMsg(filled.length
+        ? `Συμπληρώθηκαν από το παραστατικό: ${filled.join(', ')}. Ελέγξτε τα πριν την αποθήκευση.`
+        : 'Δεν βρέθηκαν νέα στοιχεία για κενά πεδία.');
+    } catch (e) {
+      setError(e.message || 'Η αναγνώριση απέτυχε.');
+    } finally { setOcrBusy(false); }
+  };
+
   const setField = (k, v) => {
     setForm(f => {
       const next = { ...f, [k]: v };
@@ -588,11 +639,23 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
                   setField(f.key, { dikigoros: dilosi_dikigoros_id, sxetiko: dilosi_sxetiko_id })}
               />
             ) : f.type === 'document' ? (
-              <DocumentPicker
-                caseId={caseId}
-                value={form[f.key] || ''}
-                onChange={(v) => setField(f.key, v)}
-              />
+              <>
+                <DocumentPicker
+                  caseId={caseId}
+                  value={form[f.key] || ''}
+                  onChange={(v) => setField(f.key, v)}
+                />
+                {ocrKind && ocrOn && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
+                    <button type="button" className="btn btn-sm btn-secondary"
+                            disabled={!form[f.key] || ocrBusy} onClick={runOcr}
+                            title={form[f.key] ? '' : 'Επιλέξτε ή ανεβάστε πρώτα το παραστατικό'}>
+                      {ocrBusy ? 'Ανάγνωση…' : '🔎 Συμπλήρωση από το παραστατικό'}
+                    </button>
+                    {ocrMsg && <small style={{ color: '#2f855a' }}>{ocrMsg}</small>}
+                  </div>
+                )}
+              </>
             ) : f.type === 'combo' ? (
               <>
                 <input
@@ -621,6 +684,19 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
                 onChange={e => f.key === 'amount' ? handleAmountChange(e.target.value) : setField(f.key, e.target.value)}
                 required={f.required}
               />
+            )}
+            {ocrHints[f.key] && (
+              <small style={{ display: 'block', marginTop: 4, color: '#b7791f' }}>
+                Το παραστατικό γράφει: {f.type === 'select'
+                  ? (((f.options || []).find(op => String(op.value) === String(ocrHints[f.key])) || {}).label || ocrHints[f.key])
+                  : ocrHints[f.key]}
+                {f.type !== 'select' || (f.options || []).some(op => String(op.value) === String(ocrHints[f.key])) ? (
+                  <button type="button" className="btn btn-sm btn-secondary" style={{ marginLeft: 8, padding: '1px 8px' }}
+                          onClick={() => { setField(f.key, ocrHints[f.key]); setOcrHints(h => { const n = { ...h }; delete n[f.key]; return n; }); }}>
+                    Χρήση
+                  </button>
+                ) : null}
+              </small>
             )}
           </div>
         );

@@ -209,7 +209,9 @@ async function request(endpoint, options = {}, _retried = false) {
       // επιστρέφουμε σφάλμα στη σελίδα, χωρίς αποσύνδεση.
     }
     const msg = (data && (data.error || data.message)) || `Σφάλμα (${res.status})`;
-    throw new Error(msg);
+    const e = new Error(msg);
+    e.status = res.status;   // π.χ. 403: χωρίς δικαίωμα — η σελίδα μπορεί να κρύψει την ενότητα
+    throw e;
   }
 
 
@@ -455,6 +457,12 @@ export const invoiceSeries = {
   create: (payload) => api.post('/api/invoice-series', payload),
   update: (id, payload) => api.put(`/api/invoice-series/${id}`, payload),
   remove: (id) => api.delete(`/api/invoice-series/${id}`),
+};
+
+// Αναγνώριση παραστατικού (προκαταβολή / γραμμάτιο) — μόνο ΠΡΟΤΑΣΗ τιμών
+export const ocr = {
+  status:  ()               => api.get('/api/ocr/status'),
+  extract: (documentId, kind) => api.post('/api/ocr/extract', { document_id: documentId, kind }),
 };
 
 export const invoices = {
