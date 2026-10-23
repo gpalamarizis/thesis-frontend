@@ -9,6 +9,7 @@ import DateInput from '../../components/DateInput';
 import FilerPicker from '../../components/FilerPicker';
 import DocumentPicker from '../../components/DocumentPicker';
 import ClientAccountPanel from '../../components/ClientAccountPanel';
+import AccountsList from '../../components/AccountsList';
 import DescriptionSuggest from '../../components/DescriptionSuggest';
 /**
  * FinanceTab — Backend schema:
@@ -20,6 +21,13 @@ import DescriptionSuggest from '../../components/DescriptionSuggest';
  * "virtual: true" fields are shown in UI but NOT sent to backend (used for calc only).
  */
 function FinanceTab({ caseId, clientType, clientId, clientRate }) {
+  // Εκδοθέντες λογαριασμοί της υπόθεσης και ανανέωση μετά από έκδοση —
+  // η έκδοση σημειώνει εγγραφές ως εξοφλημένες, άρα ξαναφορτώνονται κι αυτές.
+  const [accCount, setAccCount] = useState(0);
+  const [accReload, setAccReload] = useState(0);
+  const [showAcc, setShowAcc] = useState(false);
+  const [finReload, setFinReload] = useState(0);
+
   const [counts, setCounts] = useState({ ores: 0, 'pagia-exoda': 0, amoives: 0, 'exoda-synergati': 0 });
   const [lawyers, setLawyers] = useState([]);
   const [externals, setExternals] = useState([]);
@@ -216,13 +224,24 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
         </div>
       </div>
       {/* Ό,τι εκκρεμεί από ΟΛΕΣ τις υποθέσεις του πελάτη */}
-      <ClientAccountPanel clientType={clientType} clientId={clientId} currentCaseId={caseId} />
+      <ClientAccountPanel clientType={clientType} clientId={clientId} currentCaseId={caseId}
+                          onIssued={() => { setAccReload(k => k + 1); setFinReload(k => k + 1); }} />
+
+      {/* Εκδοθέντες λογαριασμοί που περιλαμβάνουν αυτή την υπόθεση */}
+      <div style={{ marginBottom: 18, display: accCount ? 'block' : 'none' }}>
+        <button type="button" className="btn btn-sm btn-secondary" onClick={() => setShowAcc(v => !v)}>
+          Εκδοθέντες λογαριασμοί ({accCount}) {showAcc ? '▾' : '▸'}
+        </button>
+        <div style={{ marginTop: 10, display: showAcc ? 'block' : 'none' }}>
+          <AccountsList filter={{ ypothesi_id: caseId }} reloadKey={accReload} onLoaded={setAccCount} />
+        </div>
+      </div>
 
       {exportError && (
         <div className="error-message" style={{ marginBottom: 12 }}>{exportError}</div>
       )}
       <Tabs tabs={[
-        { label: 'Αμοιβή με ωριαία απασχόληση', badge: counts.ores,                content: <FinanceResource caseId={caseId} resource="ores"            fields={oresFields}      onCountChange={n => bumpCount('ores', n)} /> },
+        { label: 'Αμοιβή με ωριαία απασχόληση', badge: counts.ores,                content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="ores"            fields={oresFields}      onCountChange={n => bumpCount('ores', n)} /> },
         // Πάγια και έξοδα συνεργάτη ενώθηκαν σε μία καρτέλα με δύο
         // ενότητες. Τα δεδομένα μένουν σε χωριστούς πίνακες: το ένα δείχνει
         // σε είδος εξόδου από λίστα, το άλλο σε πρόσωπο.
@@ -234,7 +253,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
               <p style={{ fontSize: 13, color: '#718096', margin: '0 0 12px' }}>
                 Έξοδα που δεν υπάγονται σε ΦΠΑ — παράβολα, τέλη, αποζημιώσεις.
               </p>
-              <FinanceResource caseId={caseId} resource="pagia-exoda" fields={pagiaFields}
+              <FinanceResource reloadKey={finReload} caseId={caseId} resource="pagia-exoda" fields={pagiaFields}
                 onCountChange={n => bumpCount('pagia-exoda', n)} />
 
               <div style={{ borderTop: '1px solid #e2e8f0', margin: '24px 0 0', paddingTop: 20 }}>
@@ -243,20 +262,20 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
                   Έξοδα που υπάγονται σε ΦΠΑ, με παραστατικό από συνεργάτη —
                   δικηγόρο γραφείου ή σχετικό πρόσωπο.
                 </p>
-                <FinanceResource caseId={caseId} resource="exoda-synergati" fields={synergatiFields}
+                <FinanceResource reloadKey={finReload} caseId={caseId} resource="exoda-synergati" fields={synergatiFields}
                   onCountChange={n => bumpCount('exoda-synergati', n)} />
               </div>
             </div>
           ) },
-        { label: 'Γραμμάτια',       badge: counts.grammatia,           content: <FinanceResource caseId={caseId} resource="grammatia"      fields={grammatiaFields}    onCountChange={n => bumpCount('grammatia', n)} /> },
-        { label: 'Προκαταβολές',    badge: counts.prokatavoles,        content: <FinanceResource caseId={caseId} resource="prokatavoles"   fields={prokatavolesFields} onCountChange={n => bumpCount('prokatavoles', n)} /> },
-        { label: 'Πάγιες αμοιβές',  badge: counts.amoives,             content: <FinanceResource caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
+        { label: 'Γραμμάτια',       badge: counts.grammatia,           content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="grammatia"      fields={grammatiaFields}    onCountChange={n => bumpCount('grammatia', n)} /> },
+        { label: 'Προκαταβολές',    badge: counts.prokatavoles,        content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="prokatavoles"   fields={prokatavolesFields} onCountChange={n => bumpCount('prokatavoles', n)} /> },
+        { label: 'Πάγιες αμοιβές',  badge: counts.amoives,             content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
       ]} />
     </div>
   );
 }
 
-function FinanceResource({ caseId, resource, fields, onCountChange }) {
+function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 0 }) {
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -264,6 +283,9 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [confirmDel, setConfirmDel] = useState(null);
+  // Τα εξοφλημένα (μπήκαν σε εκδοθέντα λογαριασμό) εμφανίζονται χωριστά,
+  // συμπτυγμένα — η οθόνη δείχνει πρώτα ό,τι είναι ακόμα ανοιχτό.
+  const [showSettled, setShowSettled] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -280,7 +302,7 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [caseId, resource]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [caseId, resource, reloadKey]);
 
   const doDelete = async (r) => {
     try { await finance.remove(resource, r.aa || r.id); load(); }
@@ -322,11 +344,47 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
   // In the list, hide virtual fields (like timi_oras) and textarea (too long)
   const listColumns = fields.filter(f => f.type !== 'textarea' && !f.virtual);
 
+  const openRows = rows.filter(r => !r.settled_at);
+  const settledRows = rows.filter(r => r.settled_at);
+  const sumOf = (list) => list.reduce((a, r) => a + (Number(r.amount) || 0), 0);
+
+  const renderTable = (list, settled) => (
+    <table className="table" style={settled ? { opacity: 0.75 } : undefined}>
+      <thead>
+        <tr>
+          {listColumns.map(f => <th key={f.key}>{f.label}</th>)}
+          {settled && <th style={{ whiteSpace: 'nowrap' }}>Λογαριασμός</th>}
+          <th style={{ width: 1 }}></th>
+        </tr>
+      </thead>
+      <tbody>
+        {list.map(r => (
+          <tr key={r.aa || r.id}>
+            {listColumns.map(f => (
+              <td key={f.key}>{renderCell(r, f)}</td>
+            ))}
+            {settled && <td style={{ whiteSpace: 'nowrap' }}>{r.settled_doc || '✓'}</td>}
+            <td style={{ whiteSpace: 'nowrap' }}>
+              <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
+              {' '}
+              <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
   return (
     <div>
       {error && <div className="error">{error}</div>}
       <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
-        <div style={{ color: '#4a5568' }}>{rows.length} εγγραφές — Σύνολο: <strong>{fmtCurrency(total)}</strong></div>
+        <div style={{ color: '#4a5568' }}>
+          {openRows.length} ανοιχτές — Σύνολο: <strong>{fmtCurrency(settledRows.length ? sumOf(openRows) : total)}</strong>
+          {settledRows.length > 0 && (
+            <span style={{ color: '#a0aec0' }}> · εξοφλημένα {fmtCurrency(sumOf(settledRows))}</span>
+          )}
+        </div>
         <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέα εγγραφή</button>
       </div>
 
@@ -335,28 +393,20 @@ function FinanceResource({ caseId, resource, fields, onCountChange }) {
       ) : rows.length === 0 ? (
         <div className="empty-state">Δεν υπάρχουν εγγραφές.</div>
       ) : (
-        <table className="table">
-          <thead>
-            <tr>
-              {listColumns.map(f => <th key={f.key}>{f.label}</th>)}
-              <th style={{ width: 1 }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map(r => (
-              <tr key={r.aa || r.id}>
-                {listColumns.map(f => (
-                  <td key={f.key}>{renderCell(r, f)}</td>
-                ))}
-                <td>
-                  <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
-                  {' '}
-                  <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <>
+          {openRows.length === 0
+            ? <div className="empty-state">Δεν υπάρχουν ανοιχτές εγγραφές.</div>
+            : renderTable(openRows, false)}
+          {settledRows.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <button type="button" className="btn btn-sm btn-secondary"
+                      onClick={() => setShowSettled(v => !v)}>
+                Εξοφλημένα ({settledRows.length}) {showSettled ? '▾' : '▸'}
+              </button>
+              {showSettled && <div style={{ marginTop: 10 }}>{renderTable(settledRows, true)}</div>}
+            </div>
+          )}
+        </>
       )}
 
       {showModal && (

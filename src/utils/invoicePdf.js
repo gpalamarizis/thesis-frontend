@@ -51,7 +51,7 @@ const T = {
     vat: 'ΦΠΑ', withhold: 'Παρακράτηση', stamp: 'Χαρτόσημο',
     tn: 'Ταμείο Νομικών', oga: 'ΟΓΑ',
     payable: 'ΠΛΗΡΩΤΕΟ ΠΟΣΟ', terms: 'Όροι πληρωμής', notes: 'Σημειώσεις',
-    bankAccount: 'Τραπεζικός λογαριασμός',
+    bankAccount: 'Τραπεζικός λογαριασμός', bankAccounts: 'Τραπεζικοί λογαριασμοί', accountNo: 'Αρ. λογαριασμού',
     print: 'Εκτύπωση / Αποθήκευση ως PDF',
     draft: 'Πρόχειρο', issued: 'Εκδοθέν', cancelled: 'Ακυρωμένο',
     cancelledMark: 'ΑΚΥΡΩΘΗΚΕ', cancelling: 'Ακυρωτικό',
@@ -71,7 +71,7 @@ const T = {
     vat: 'VAT', withhold: 'Withholding tax', stamp: 'Stamp duty',
     tn: "Lawyers' Fund", oga: 'OGA levy',
     payable: 'AMOUNT PAYABLE', terms: 'Payment terms', notes: 'Notes',
-    bankAccount: 'Bank account',
+    bankAccount: 'Bank account', bankAccounts: 'Bank accounts', accountNo: 'Account No',
     print: 'Print / Save as PDF',
     draft: 'Draft', issued: 'Issued', cancelled: 'Cancelled',
     cancelledMark: 'CANCELLED', cancelling: 'Cancellation',
@@ -91,7 +91,7 @@ const T = {
     vat: 'TVA', withhold: 'Retenue à la source', stamp: 'Droit de timbre',
     tn: 'Caisse des avocats', oga: 'Contribution OGA',
     payable: 'MONTANT À PAYER', terms: 'Conditions de paiement', notes: 'Remarques',
-    bankAccount: 'Compte bancaire',
+    bankAccount: 'Compte bancaire', bankAccounts: 'Comptes bancaires', accountNo: 'N° de compte',
     print: 'Imprimer / Enregistrer en PDF',
     draft: 'Brouillon', issued: 'Émise', cancelled: 'Annulée',
     cancelledMark: 'ANNULÉE', cancelling: 'Annulation',
@@ -108,6 +108,21 @@ function buildHtml(invoice, orgData, lang = 'el') {
     : ((orgData || {})[`${base}_${lang}`] || (orgData || {})[base] || ''));
   const isIssued = invoice.status === 'issued';
   const isCancelled = invoice.status === 'cancelled';
+
+  // ΤΡΑΠΕΖΙΚΟΙ ΛΟΓΑΡΙΑΣΜΟΙ — ίδια πηγή με τον αναλυτικό λογαριασμό:
+  // το πεδίο «bank_accounts» των ρυθμίσεων, ένας ανά γραμμή
+  // «Τράπεζα | Αριθμός | IBAN | SWIFT». Αν είναι κενό, τα μονά πεδία.
+  const bankRows = [];
+  const multi = String((orgData || {}).bank_accounts || '').split('\n').map(x => x.trim()).filter(Boolean);
+  if (multi.length) {
+    for (const row of multi) {
+      const [name, acc, iban, swift] = row.split('|').map(x => (x || '').trim());
+      if (name || acc || iban || swift) bankRows.push({ name, acc, iban, swift });
+    }
+  } else if (orgData && (orgData.iban || orgData.bank_account_no)) {
+    bankRows.push({ name: orgData.trapeza || '', acc: orgData.bank_account_no || '',
+                    iban: orgData.iban || '', swift: orgData.swift || '' });
+  }
   const isDraft = invoice.status === 'draft';
 
   const issuer = {
@@ -282,7 +297,7 @@ function buildHtml(invoice, orgData, lang = 'el') {
         ${(invoice.lines || []).map((l, i) => `
           <tr>
             <td>${i + 1}</td>
-            <td>${esc(l.description)}</td>
+            <td>${esc((lang === 'en' && l.description_en) || (lang === 'fr' && l.description_fr) || l.description)}</td>
             <td class="num">${num(l.quantity)}</td>
             <td class="num">${money(l.unit_price)}</td>
             <td class="num">${num(l.vat_rate)}%</td>
@@ -305,14 +320,15 @@ function buildHtml(invoice, orgData, lang = 'el') {
       </table>
     </div>
 
-    ${(invoice.notes || invoice.payment_terms || orgData?.iban) ? `
+    ${(invoice.notes || invoice.payment_terms || bankRows.length) ? `
     <div class="footer-info">
       <div>
         ${invoice.notes ? `<div class="box"><h4>${t.notes}</h4>${esc(invoice.notes).replace(/\n/g, '<br>')}</div>` : ''}
         ${invoice.payment_terms ? `<div class="box" style="margin-top:3mm"><h4>${t.terms}</h4>${esc(invoice.payment_terms).replace(/\n/g, '<br>')}</div>` : ''}
       </div>
       <div>
-        ${orgData?.iban ? `<div class="box"><h4>${t.bankAccount}</h4>${esc(orgData.trapeza || '')}<br>IBAN: <strong>${esc(orgData.iban)}</strong></div>` : ''}
+        ${bankRows.length ? `<div class="box"><h4>${bankRows.length > 1 ? t.bankAccounts : t.bankAccount}</h4>${bankRows.map(b => `
+          <div style="margin-bottom:2mm">${esc(b.name)}${b.acc ? `<br>${t.accountNo}: ${esc(b.acc)}` : ''}${b.iban ? `<br>IBAN: <strong>${esc(b.iban)}</strong>` : ''}${b.swift ? `<br>SWIFT/BIC: ${esc(b.swift)}` : ''}</div>`).join('')}</div>` : ''}
       </div>
     </div>
     ` : ''}

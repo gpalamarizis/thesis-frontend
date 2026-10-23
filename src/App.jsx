@@ -49,6 +49,7 @@ import ReportFinanceAll from './pages/ReportFinanceAll';
 import ReportTaxProperty from './pages/ReportTaxProperty';
 import ReportClientsNationality from './pages/ReportClientsNationality';
 import ReportBillingAnalysis from './pages/ReportBillingAnalysis';
+import AccountsFolder from './pages/AccountsFolder';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -178,6 +179,7 @@ function App() {
         <Route path="/reports/tax-property" element={guard(ReportTaxProperty)} />
         <Route path="/reports/clients-nationality" element={guard(ReportClientsNationality)} />
         <Route path="/reports/billing-analysis" element={guard(ReportBillingAnalysis)} />
+        <Route path="/accounts" element={guard(AccountsFolder)} />
         <Route path="/settings/gdpr" element={guard(GdprSettings)} />
         <Route path="/platform"            element={guard(PlatformAdmin)} />
         <Route path="/invoices"     element={guard(InvoicesList)} />

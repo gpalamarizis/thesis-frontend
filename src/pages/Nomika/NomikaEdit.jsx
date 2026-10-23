@@ -4,6 +4,7 @@ import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
 import ClientCredentialsSection from '../../components/ClientCredentialsSection';
 import ClientAccountsPanel from '../../components/ClientAccountsPanel';
+import AccountsList from '../../components/AccountsList';
 import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { nomika } from '../../api';
 import { COUNTRY_OPTIONS } from '../../utils/countries';
@@ -203,6 +204,7 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
             { label: 'Έδρα',        content: tabAddress },
             { label: 'Επικοινωνία', content: tabPhones },
             { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="nomiko" ownerId={isNew ? null : Number(id)} accountsPanel={<ClientAccountsPanel ownerType="nomiko" ownerId={isNew ? null : Number(id)} />} /> },
+            ...(isNew ? [] : [{ label: 'Λογαριασμοί', content: <AccountsList filter={{ clientType: 'nomiko', clientId: Number(id) }} showClient={false} /> }]),
           ]}/>
         </div>
         <div className="form-actions">

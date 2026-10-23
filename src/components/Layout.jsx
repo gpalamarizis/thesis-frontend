@@ -33,6 +33,7 @@ const menuGroups = [
       { path: '/reports/billing-analysis', label: 'Ανάλυση τιμολόγησης',     icon: '📈' },
   ]},
   { title: 'Τιμολόγηση', items: [
+      { path: '/accounts',                 label: 'Λογαριασμοί',        icon: '📑' },
       { path: '/invoices',                 label: 'Τιμολόγια',          icon: '🧾' },
       { path: '/invoices/new',             label: 'Νέο τιμολόγιο',      icon: '➕' },
       { path: '/settings/invoice-series',  label: 'Σειρές τιμολογίων',  icon: '🔢' },

@@ -4,6 +4,7 @@ import Layout from '../../components/Layout';
 import Tabs from '../../components/Tabs';
 import ClientCredentialsSection from '../../components/ClientCredentialsSection';
 import ClientAccountsPanel from '../../components/ClientAccountsPanel';
+import AccountsList from '../../components/AccountsList';
 import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { fysika } from '../../api';
 import { toDateInput } from '../../utils/format';
@@ -244,6 +245,7 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
             { label: 'Διευθύνσεις', content: tabAddresses },
             { label: 'Τηλέφωνα',    content: tabPhones },
             { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="fysiko" ownerId={isNew ? null : Number(id)} accountsPanel={<ClientAccountsPanel ownerType="fysiko" ownerId={isNew ? null : Number(id)} />} /> },
+            ...(isNew ? [] : [{ label: 'Λογαριασμοί', content: <AccountsList filter={{ clientType: 'fysiko', clientId: Number(id) }} showClient={false} /> }]),
           ]}/>
         </div>
         <div className="form-actions">

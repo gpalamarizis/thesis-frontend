@@ -10,7 +10,7 @@ import DateInput from './DateInput';
 // μπορεί να κρέμεται από άλλη υπόθεση. Εδώ τα βλέπει μαζί και διαλέγει
 // ποιες υποθέσεις θα μπουν στο έντυπο κάθε φορά.
 
-function ClientAccountPanel({ clientType, clientId, currentCaseId }) {
+function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -83,6 +83,8 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId }) {
           ids, from, to, issue),
         // Το όνομα το δίνει ο server: logariasmos<α/α πελάτη>.<α/α γραφείου>
         null, issue ? 'logariasmos.docx' : 'logariasmos-proxeiro.docx');
+      // Ο νέος λογαριασμός μπαίνει στον φάκελο· η λίστα ανανεώνεται
+      if (issue && onIssued) onIssued();
     } catch (e) {
       setError(e.message || 'Η παραγωγή απέτυχε.');
     } finally { setBusy(false); }

@@ -464,6 +464,8 @@ export const invoices = {
   create:    (payload)     => api.post('/api/invoices', payload),
   update:    (id, payload) => api.put(`/api/invoices/${id}`, payload),
   issue:     (id)          => api.post(`/api/invoices/${id}/issue`, {}),
+  // Μετάφραση περιγραφών γραμμών (EN/FR) — επιτρέπεται και μετά την έκδοση
+  translations: (id, lines) => api.put(`/api/invoices/${id}/translations`, { lines }),
   cancel:    (id, reason)  => api.post(`/api/invoices/${id}/cancel`, { reason }),
   remove:    (id)          => api.delete(`/api/invoices/${id}`),
   fromCase:  (caseId)      => api.post(`/api/invoices/from-case/${caseId}`, {}),
@@ -542,6 +544,10 @@ export const reports = {
   },
   // Δικάσιμοι και προθεσμίες που έφτασαν ή πέρασαν, ακόμα εκκρεμείς
   dueActions:       ()                 => api.get('/api/reports/due-actions'),
+  // Γενικός φάκελος εκδοθέντων λογαριασμών και λήψη του Word τους
+  accounts: (p = {}) => api.get('/api/reports/accounts?'
+    + new URLSearchParams(Object.entries(p).filter(([, v]) => v != null && v !== '')).toString()),
+  accountFileUrl: (aa) => `/api/reports/accounts/${aa}/file`,
   // Πελατεία ανά υπηκοότητα και ανάλυση τιμολόγησης (από αναλυτικούς λογαριασμούς)
   clientsByNationalityUrl: (p = {}) => '/api/reports/clients-by-nationality?'
     + new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(),
@@ -579,10 +585,16 @@ export const finance = {
   // Όλα τα έξοδα μιας υπόθεσης σε Excel, πάγια και συνεργάτη μαζί
   exportExodaXlsx: (caseId) => `/api/finance/export/xlsx?ypothesi_id=${caseId}`,
   // Συγκεντρωτική κατάσταση από ΟΛΕΣ τις υποθέσεις
-  exportAllXlsx: ({ from, to, status } = {}) =>
-    '/api/finance/export/all-xlsx'
-    + `?status=${status || 'all'}`
-    + (from ? `&from=${from}` : '') + (to ? `&to=${to}` : ''),
+  // Συγκεντρωτικά: status=unsettled (προεπιλογή) | settled (αρχείο) | all
+  // katigoria: ores | amoives | exoda_xoris | exoda_me | grammatia | prokatavoles
+  exportAllXlsx: ({ from, to, status, katigoria, q } = {}) =>
+    '/api/finance/export/all-xlsx?'
+    + new URLSearchParams(Object.entries({ status: status || 'unsettled', from, to, katigoria, q })
+        .filter(([, v]) => v)).toString(),
+  all: ({ from, to, status, katigoria, q } = {}) =>
+    api.get('/api/finance/export/all?'
+      + new URLSearchParams(Object.entries({ status: status || 'unsettled', from, to, katigoria, q })
+          .filter(([, v]) => v)).toString()),
   // Προτάσεις περιγραφής ανά πόρο
   templates: (resource, q = '') =>
     api.get(`/api/finance/${resource}/templates` + (q ? `?q=${encodeURIComponent(q)}` : '')),

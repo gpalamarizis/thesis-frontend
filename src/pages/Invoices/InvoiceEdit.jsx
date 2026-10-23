@@ -46,6 +46,9 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [showTr, setShowTr] = useState(false);
+  const [trSaving, setTrSaving] = useState(false);
+  const [trMsg, setTrMsg] = useState('');
   const [error, setError] = useState('');
   const [issuing, setIssuing] = useState(false);
   const [confirmIssue, setConfirmIssue] = useState(false);
@@ -154,6 +157,8 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
           lines: (inv.lines || []).map(l => ({
             aa: l.aa,
             description: l.description,
+            description_en: l.description_en || '',
+            description_fr: l.description_fr || '',
             quantity: Number(l.quantity),
             unit_price: Number(l.unit_price),
             vat_rate: Number(l.vat_rate),
@@ -209,6 +214,8 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
         due_date: form.due_date || null,
         lines: form.lines.map((l, idx) => ({
           description: l.description,
+          description_en: l.description_en || null,
+          description_fr: l.description_fr || null,
           quantity: Number(l.quantity),
           unit_price: Number(l.unit_price),
           vat_rate: Number(l.vat_rate),
@@ -233,6 +240,8 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
           lines: (inv.lines || []).map(l => ({
             aa: l.aa,
             description: l.description,
+            description_en: l.description_en || '',
+            description_fr: l.description_fr || '',
             quantity: Number(l.quantity),
             unit_price: Number(l.unit_price),
             vat_rate: Number(l.vat_rate),
@@ -244,6 +253,19 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
     } finally {
       setSaving(false);
     }
+  };
+
+  // Μεταφράσεις περιγραφών: σε πρόχειρο αποθηκεύονται με το «Αποθήκευση
+  // draft», σε εκδοθέν με δικό τους κουμπί.
+  const saveTranslations = async () => {
+    setTrSaving(true); setTrMsg(''); setError('');
+    try {
+      await invoices.translations(form.aa, form.lines
+        .filter(l => l.aa)
+        .map(l => ({ aa: l.aa, description_en: l.description_en || null, description_fr: l.description_fr || null })));
+      setTrMsg('Αποθηκεύτηκαν.');
+    } catch (e) { setError(e.message); }
+    finally { setTrSaving(false); }
   };
 
   const doIssue = async () => {
@@ -424,7 +446,14 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
       <div className="section">
         <div className="section-header" style={{ padding: 0, marginBottom: 12 }}>
           <h2>Γραμμές τιμολογίου</h2>
-          {!isReadOnly && <button className="btn btn-sm" onClick={addLine}>+ Νέα γραμμή</button>}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button type="button" className={`btn btn-sm ${showTr ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={() => setShowTr(v => !v)}
+                    title="Μετάφραση των περιγραφών για το αγγλικό και το γαλλικό PDF">
+              🌐 Μετάφραση EN/FR
+            </button>
+            {!isReadOnly && <button className="btn btn-sm" onClick={addLine}>+ Νέα γραμμή</button>}
+          </div>
         </div>
         <table className="table">
           <thead><tr>
@@ -442,21 +471,40 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
               const computed = totals.lines[i] || {};
               return (
                 <tr key={i}>
-                  <td>
-                    <input
-                      type="text"
-                      value={l.description}
-                      onChange={e => setLine(i, 'description', e.target.value)}
-                      disabled={isReadOnly}
-                      placeholder="Περιγραφή υπηρεσίας/προϊόντος"
-                      style={{ width: '100%' }}
-                    />
+                  <td style={{ minWidth: 280 }}>
+                    {/* Με ανοιχτή τη μετάφραση οι τρεις γλώσσες στοιχίζονται
+                        στην ίδια στήλη, με ετικέτα μπροστά από την καθεμία.
+                        Η μετάφραση αλλάζει και σε εκδοθέν τιμολόγιο — δεν είναι
+                        φορολογικό στοιχείο, το ελληνικό μένει το επίσημο. */}
+                    <div style={showTr ? { display: 'grid', gridTemplateColumns: '24px 1fr', gap: '6px 8px', alignItems: 'center' } : undefined}>
+                      {showTr && <span style={{ fontSize: 12, color: '#718096' }}>EL</span>}
+                      <input
+                        type="text"
+                        value={l.description}
+                        onChange={e => setLine(i, 'description', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Περιγραφή υπηρεσίας/προϊόντος"
+                        style={{ width: '100%' }}
+                      />
+                      {showTr && (
+                        <>
+                          <span style={{ fontSize: 12, color: '#718096' }}>EN</span>
+                          <input type="text" value={l.description_en || ''} style={{ width: '100%' }}
+                                 onChange={e => setLine(i, 'description_en', e.target.value)}
+                                 placeholder="English description" />
+                          <span style={{ fontSize: 12, color: '#718096' }}>FR</span>
+                          <input type="text" value={l.description_fr || ''} style={{ width: '100%' }}
+                                 onChange={e => setLine(i, 'description_fr', e.target.value)}
+                                 placeholder="Description en français" />
+                        </>
+                      )}
+                    </div>
                   </td>
                   <td>
-                    <input type="number" step="0.01" value={l.quantity} onChange={e => setLine(i, 'quantity', e.target.value)} disabled={isReadOnly} style={{ textAlign: 'right' }} />
+                    <input type="number" step="0.01" value={l.quantity} onChange={e => setLine(i, 'quantity', e.target.value)} disabled={isReadOnly} style={{ textAlign: 'right', width: '100%', boxSizing: 'border-box' }} />
                   </td>
                   <td>
-                    <input type="number" step="0.01" value={l.unit_price} onChange={e => setLine(i, 'unit_price', e.target.value)} disabled={isReadOnly} style={{ textAlign: 'right' }} />
+                    <input type="number" step="0.01" value={l.unit_price} onChange={e => setLine(i, 'unit_price', e.target.value)} disabled={isReadOnly} style={{ textAlign: 'right', width: '100%', boxSizing: 'border-box' }} />
                   </td>
                   <td>
                     <select value={l.vat_rate} onChange={e => setLine(i, 'vat_rate', e.target.value)} disabled={isReadOnly}>
@@ -481,6 +529,14 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
             })}
           </tbody>
         </table>
+        {showTr && isReadOnly && form.aa && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 10, marginTop: 10 }}>
+            {trMsg && <span style={{ color: '#2f855a', fontSize: 13 }}>{trMsg}</span>}
+            <button type="button" className="btn btn-sm" disabled={trSaving} onClick={saveTranslations}>
+              {trSaving ? 'Αποθήκευση…' : 'Αποθήκευση μεταφράσεων'}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Adjustments + Totals */}
