@@ -2,7 +2,7 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { invoices, invoiceSeries, orgSettings, fysika, nomika, cases } from '../../api';
+import { invoices, invoiceSeries, orgSettings, fysika, nomika, cases, finance } from '../../api';
 import { fmtDate, fmtCurrency, toDateInput, toISODate } from '../../utils/format';
 import { generateInvoicePdf } from '../../utils/invoicePdf';
 import MyDataPanel from './MyDataPanel';
@@ -49,6 +49,8 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
   const [showTr, setShowTr] = useState(false);
   const [trSaving, setTrSaving] = useState(false);
   const [trMsg, setTrMsg] = useState('');
+  const [trAuto, setTrAuto] = useState(false);
+  const [trBusy, setTrBusy] = useState(false);
   const [error, setError] = useState('');
   const [issuing, setIssuing] = useState(false);
   const [confirmIssue, setConfirmIssue] = useState(false);
@@ -80,6 +82,10 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
     due_date: '',
     full_number: '',
     issued_at: null,
+    // 26/10: σημείωση απαλλαγής ΦΠΑ, έξοδα πελάτη ως σημείωση, αρ. λογαριασμού
+    vat_exemption: false,
+    client_expenses: '',
+    account_ref: '',
     lines: [
       { description: '', quantity: 1, unit_price: 0, vat_rate: 24 },
     ],
@@ -143,6 +149,9 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
           notes:         inv.notes || '',
           payment_terms: inv.payment_terms || '',
           due_date:      toDateInput(inv.due_date),
+          vat_exemption: !!inv.vat_exemption,
+          client_expenses: inv.client_expenses != null ? String(Number(inv.client_expenses)) : '',
+          account_ref:   inv.account_ref || '',
           full_number:   inv.full_number || '',
           issued_at:     inv.issued_at || null,
           issuer_afm:       inv.issuer_afm,
@@ -212,6 +221,9 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
         notes: form.notes || null,
         payment_terms: form.payment_terms || null,
         due_date: form.due_date || null,
+        vat_exemption: !!form.vat_exemption,
+        client_expenses: form.client_expenses === '' ? null : Number(form.client_expenses),
+        account_ref: form.account_ref || null,
         lines: form.lines.map((l, idx) => ({
           description: l.description,
           description_en: l.description_en || null,
@@ -253,6 +265,44 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
     } finally {
       setSaving(false);
     }
+  };
+
+  // ΑΥΤΟΜΑΤΗ ΜΕΤΑΦΡΑΣΗ — συμπληρώνει μόνο τα κενά EN/FR. Αν η ελληνική
+  // περιγραφή είναι γραμμένη σε άλλη γλώσσα (π.χ. γαλλικά) και το
+  // τιμολόγιο είναι πρόχειρο, παίρνει και ελληνική απόδοση. Οι μεταφράσεις
+  // φυλάσσονται στη μνήμη του γραφείου και ξαναχρησιμοποιούνται.
+  useEffect(() => {
+    finance.translations.status().then(d => setTrAuto(!!d?.auto)).catch(() => {});
+  }, []);
+  const autoTranslate = async () => {
+    setTrBusy(true); setError(''); setTrMsg('');
+    const GREEK = /[\u0370-\u03FF\u1F00-\u1FFF]/;
+    const withText = form.lines.filter(l => (l.description || '').trim());
+    const pick = (cond) => withText.filter(cond).map(l => l.description.trim());
+    const none = Promise.resolve({ map: {} });
+    try {
+      const needEn = pick(l => !l.description_en);
+      const needFr = pick(l => !l.description_fr);
+      const needEl = isReadOnly ? [] : pick(l => !GREEK.test(l.description));
+      const [en, fr, el] = await Promise.all([
+        needEn.length ? finance.translations.auto('en', needEn) : none,
+        needFr.length ? finance.translations.auto('fr', needFr) : none,
+        needEl.length ? finance.translations.auto('el', needEl) : none,
+      ]);
+      const n = (t) => String(t || '').trim().replace(/\s+/g, ' ');
+      setForm(f => ({ ...f, lines: f.lines.map(l => {
+        const k = n(l.description);
+        return {
+          ...l,
+          description_en: l.description_en || (en?.map || {})[k] || '',
+          description_fr: l.description_fr || (fr?.map || {})[k] || '',
+          description: (!isReadOnly && !GREEK.test(l.description || '') && (el?.map || {})[k]) || l.description,
+        };
+      }) }));
+      setShowTr(true);
+      setTrMsg(isReadOnly ? 'Συμπληρώθηκαν — πατήστε «Αποθήκευση μεταφράσεων».' : 'Συμπληρώθηκαν — αποθηκεύονται με το «Αποθήκευση draft».');
+    } catch (e) { setError(e.message || 'Η αυτόματη μετάφραση απέτυχε.'); }
+    finally { setTrBusy(false); }
   };
 
   // Μεταφράσεις περιγραφών: σε πρόχειρο αποθηκεύονται με το «Αποθήκευση
@@ -452,14 +502,19 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
                     title="Μετάφραση των περιγραφών για το αγγλικό και το γαλλικό PDF">
               🌐 Μετάφραση EN/FR
             </button>
+            {trAuto && (
+              <button type="button" className="btn btn-sm btn-secondary" disabled={trBusy} onClick={autoTranslate}
+                      title="Αυτόματη μετάφραση των κενών περιγραφών">
+                {trBusy ? 'Μετάφραση…' : '✨ Αυτόματη μετάφραση'}
+              </button>
+            )}
             {!isReadOnly && <button className="btn btn-sm" onClick={addLine}>+ Νέα γραμμή</button>}
           </div>
         </div>
         <table className="table">
           <thead><tr>
             <th>Περιγραφή</th>
-            <th style={{width:80,textAlign:'right'}}>Ποσότητα</th>
-            <th style={{width:120,textAlign:'right'}}>Τιμή/μονάδα (€)</th>
+            <th style={{width:130,textAlign:'right'}}>Ποσό (€)</th>
             <th style={{width:80,textAlign:'right'}}>ΦΠΑ %</th>
             <th style={{width:110,textAlign:'right'}}>Καθαρή αξία</th>
             <th style={{width:110,textAlign:'right'}}>ΦΠΑ</th>
@@ -500,11 +555,14 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
                       )}
                     </div>
                   </td>
+                  {/* Ποσότητα και τιμή μονάδας δεν έχουν νόημα σε δικηγορική αμοιβή
+                      (Μαύρος 26/10): ένα ποσό ανά γραμμή, ποσότητα πάντα 1. Παλιά
+                      γραμμή με άλλη ποσότητα εμφανίζεται ως το γινόμενο. */}
                   <td>
-                    <input type="number" step="0.01" value={l.quantity} onChange={e => setLine(i, 'quantity', e.target.value)} disabled={isReadOnly} style={{ textAlign: 'right', width: '100%', boxSizing: 'border-box' }} />
-                  </td>
-                  <td>
-                    <input type="number" step="0.01" value={l.unit_price} onChange={e => setLine(i, 'unit_price', e.target.value)} disabled={isReadOnly} style={{ textAlign: 'right', width: '100%', boxSizing: 'border-box' }} />
+                    <input type="number" step="0.01"
+                           value={Number(l.quantity) === 1 ? l.unit_price : Math.round(Number(l.quantity) * Number(l.unit_price) * 100) / 100}
+                           onChange={e => setForm(f => ({ ...f, lines: f.lines.map((x, idx) => idx === i ? { ...x, quantity: 1, unit_price: e.target.value } : x) }))}
+                           disabled={isReadOnly} style={{ textAlign: 'right', width: '100%', boxSizing: 'border-box' }} />
                   </td>
                   <td>
                     <select value={l.vat_rate} onChange={e => setLine(i, 'vat_rate', e.target.value)} disabled={isReadOnly}>
@@ -567,6 +625,23 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
               <label>Σημειώσεις</label>
               <textarea rows="3" value={form.notes} onChange={e => setField('notes', e.target.value)} disabled={isReadOnly} />
             </div>
+            <div className="form-grid-2">
+              <div className="form-group">
+                <label>Έξοδα για λογαριασμό του πελάτη (€)</label>
+                <input type="number" step="0.01" value={form.client_expenses}
+                       onChange={e => setField('client_expenses', e.target.value)} disabled={isReadOnly}
+                       placeholder="μόνο ως σημείωση" style={{ textAlign: 'right' }} />
+              </div>
+              <div className="form-group">
+                <label>Αναλυτικός λογαριασμός</label>
+                <input type="text" value={form.account_ref} onChange={e => setField('account_ref', e.target.value)}
+                       disabled={isReadOnly} placeholder="π.χ. 01.03" />
+              </div>
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isReadOnly ? 'default' : 'pointer' }}>
+              <input type="checkbox" checked={!!form.vat_exemption} onChange={e => setField('vat_exemption', e.target.checked)} disabled={isReadOnly} />
+              <span>Σημείωση απαλλαγής ΦΠΑ (Άρθρο 14 παρ. 2α Ν. 2859/2000 — ενδοκοινοτική)</span>
+            </label>
           </div>
         </div>
 

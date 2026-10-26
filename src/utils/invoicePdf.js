@@ -58,6 +58,9 @@ const T = {
     sentTo: 'Διαβιβάστηκε στο', aade: 'ΑΑΔΕ', sentDate: 'Ημερομηνία διαβίβασης',
     created: 'Δημιουργήθηκε',
     courtesy: null,
+    accountRef: 'Αναλυτικός λογαριασμός δαπανών και αμοιβών',
+    vatExempt: 'Απαλλαγή ΦΠΑ βάσει του Άρθρου 14 παρ. 2α του Ν. 2859/2000',
+    expensesNote: (a) => `Έξοδα ${a} που καταβλήθηκαν για λογαριασμό του πελάτη (μη υπαγόμενα σε ΦΠΑ, δεν περιλαμβάνονται στο τιμολόγιο).`,
   },
   en: {
     invoiceService: 'Invoice for Services', invoiceSale: 'Sales Invoice',
@@ -78,6 +81,9 @@ const T = {
     sentTo: 'Transmitted to', aade: 'AADE', sentDate: 'Transmission date',
     created: 'Created',
     courtesy: 'Courtesy translation. The Greek invoice is the official tax document.',
+    accountRef: 'Statement of fees and expenses',
+    vatExempt: 'VAT exempt – Article 14 §2a of the Greek VAT Code (Law 2859/2000) – Reverse charge',
+    expensesNote: (a) => `Expenses of ${a} paid on behalf of the client (not subject to VAT, not included in this invoice).`,
   },
   fr: {
     invoiceService: 'Facture de prestation de services', invoiceSale: 'Facture de vente',
@@ -98,6 +104,9 @@ const T = {
     sentTo: 'Transmise à', aade: 'AADE', sentDate: 'Date de transmission',
     created: 'Créée',
     courtesy: 'Traduction de courtoisie. La facture grecque est le document fiscal officiel.',
+    accountRef: 'Compte détaillé de frais et honoraires',
+    vatExempt: 'Exonéré de TVA – Article 14 §2a du Code TVA grec (loi 2859/2000) – Autoliquidation',
+    expensesNote: (a) => `Frais de ${a} payés pour le compte du client (non soumis à la TVA, non inclus dans la présente facture).`,
   },
 };
 
@@ -131,7 +140,8 @@ function buildHtml(invoice, orgData, lang = 'el') {
     eponymia:           (lang === 'el'
                           ? (invoice.issuer_eponymia || pick('eponymia'))
                           : (pick('eponymia') || invoice.issuer_eponymia)) || '—',
-    diakritikos_titlos: orgData?.diakritikos_titlos || '',
+    // «ΔΙΚΗΓΟΡΙΚΗ ΕΤΑΙΡΕΙΑ» στη γλώσσα του εντύπου (LAW FIRM / SCPA)
+    diakritikos_titlos: pick('diakritikos_titlos') || '',
     afm:                invoice.issuer_afm        || orgData?.afm || '',
     doy:                invoice.issuer_doy        || orgData?.doy || '',
     odos:               (lang === 'el' ? (invoice.issuer_odos || pick('odos'))
@@ -148,12 +158,17 @@ function buildHtml(invoice, orgData, lang = 'el') {
     logo_url:           orgData?.logo_url || '',
   };
 
+  // Λήπτης: το αποτύπωμα της έκδοσης· στο πρόχειρο, τα στοιχεία της
+  // καρτέλας του (πριν έβγαινε «—», Μαύρος 26/10)
   const recipient = {
-    name:              invoice.recipient_name    || '—',
-    afm:               invoice.recipient_afm     || '',
-    doy:               invoice.recipient_doy     || '',
-    address:           invoice.recipient_address || '',
+    name:              invoice.recipient_name    || invoice.recipient_display_name || '—',
+    afm:               invoice.recipient_afm     || invoice.live_afm || '',
+    doy:               invoice.recipient_doy     || invoice.live_doy || '',
+    address:           invoice.recipient_address || invoice.live_address || '',
+    email:             invoice.recipient_email   || invoice.live_email || '',
   };
+  const clientExpenses = Number(invoice.client_expenses || 0);
+  const hasExempt = !!invoice.vat_exemption;
 
   // ΠΡΟΣΟΧΗ: η μεταβλητή του τύπου παραστατικού ΔΕΝ λέγεται t, γιατί
   // σκιάζει το λεξικό μεταφράσεων.
@@ -210,6 +225,7 @@ function buildHtml(invoice, orgData, lang = 'el') {
     table.lines { width: 100%; border-collapse: collapse; margin-bottom: 5mm; }
     table.lines th { background: #2b6cb0; color: white; padding: 3mm; text-align: left; font-size: 9pt; }
     table.lines th.num, table.lines td.num { text-align: right; }
+    table.lines td.num { white-space: nowrap; }
     table.lines td { padding: 3mm; border-bottom: 1px solid #e2e8f0; font-size: 10pt; }
     .totals { display: flex; justify-content: flex-end; margin-bottom: 6mm; }
     .totals table { min-width: 90mm; border-collapse: collapse; }
@@ -236,7 +252,7 @@ function buildHtml(invoice, orgData, lang = 'el') {
   </style>
 </head>
 <body>
-  ${isCancelled ? '<div class="watermark cancelled">${t.cancelledMark}</div>' : ''}
+  ${isCancelled ? `<div class="watermark cancelled">${t.cancelledMark}</div>` : ''}
   ${isDraft ? '<div class="watermark draft">DRAFT</div>' : ''}
 
   ${t.courtesy ? `<div class="courtesy">${esc(t.courtesy)}</div>` : ''}
@@ -277,7 +293,9 @@ function buildHtml(invoice, orgData, lang = 'el') {
         <div class="name">${esc(recipient.name)}</div>
         ${recipient.address ? `<div class="row">${esc(recipient.address)}</div>` : ''}
         ${recipient.afm ? `<div class="row">${t.afm}: <strong>${esc(recipient.afm)}</strong>${recipient.doy ? ` · ${t.doy}: ${esc(recipient.doy)}` : ''}</div>` : ''}
+        ${recipient.email ? `<div class="row">Email: ${esc(recipient.email)}</div>` : ''}
         ${invoice.case_protocol ? `<div class="row" style="margin-top:2mm">${t.caseRef}: <code>${esc(invoice.case_protocol)}</code></div>` : ''}
+        ${invoice.account_ref ? `<div class="row">${t.accountRef}: <strong>${esc(invoice.account_ref)}</strong></div>` : ''}
       </div>
     </div>
 
@@ -286,11 +304,9 @@ function buildHtml(invoice, orgData, lang = 'el') {
         <tr>
           <th style="width:10mm">#</th>
           <th>${t.descr}</th>
-          <th class="num" style="width:15mm">${t.qty}</th>
-          <th class="num" style="width:22mm">${t.unitPrice}</th>
-          <th class="num" style="width:12mm">${t.vatPct}</th>
-          <th class="num" style="width:22mm">${t.net}</th>
-          <th class="num" style="width:22mm">${t.total}</th>
+          <th class="num" style="width:18mm">${t.vatPct}</th>
+          <th class="num" style="width:28mm">${t.net}</th>
+          <th class="num" style="width:28mm">${t.total}</th>
         </tr>
       </thead>
       <tbody>
@@ -298,9 +314,7 @@ function buildHtml(invoice, orgData, lang = 'el') {
           <tr>
             <td>${i + 1}</td>
             <td>${esc((lang === 'en' && l.description_en) || (lang === 'fr' && l.description_fr) || l.description)}</td>
-            <td class="num">${num(l.quantity)}</td>
-            <td class="num">${money(l.unit_price)}</td>
-            <td class="num">${num(l.vat_rate)}%</td>
+            <td class="num">${num(l.vat_rate)}%${hasExempt && Number(l.vat_rate) === 0 ? ' *' : ''}</td>
             <td class="num">${money(l.subtotal)}</td>
             <td class="num">${money(l.line_total)}</td>
           </tr>
@@ -320,10 +334,12 @@ function buildHtml(invoice, orgData, lang = 'el') {
       </table>
     </div>
 
-    ${(invoice.notes || invoice.payment_terms || bankRows.length) ? `
+    ${hasExempt ? `<div style="font-weight:bold;margin:0 0 4mm 0">* ${esc(t.vatExempt)}</div>` : ''}
+
+    ${(invoice.notes || invoice.payment_terms || bankRows.length || clientExpenses > 0) ? `
     <div class="footer-info">
       <div>
-        ${invoice.notes ? `<div class="box"><h4>${t.notes}</h4>${esc(invoice.notes).replace(/\n/g, '<br>')}</div>` : ''}
+        ${(invoice.notes || clientExpenses > 0) ? `<div class="box"><h4>${t.notes}</h4>${clientExpenses > 0 ? `<div>${esc(t.expensesNote(money(clientExpenses)))}</div>` : ''}${invoice.notes ? esc(invoice.notes).replace(/\n/g, '<br>') : ''}</div>` : ''}
         ${invoice.payment_terms ? `<div class="box" style="margin-top:3mm"><h4>${t.terms}</h4>${esc(invoice.payment_terms).replace(/\n/g, '<br>')}</div>` : ''}
       </div>
       <div>

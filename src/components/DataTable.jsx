@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 /**
  * DataTable — reusable table with:
@@ -16,11 +16,27 @@ import { useState, useMemo } from 'react';
  *   searchable: bool (default true)
  *   pageSize: number (default 25)
  *   onRowClick: (row) => void
+ *   stateKey: string — πού φυλάσσονται αναζήτηση, ταξινόμηση και σελίδα.
+ *             Προεπιλογή: η διαδρομή της σελίδας + οι στήλες.
+ *
+ * Η αναζήτηση, η ταξινόμηση και η σελίδα θυμούνται (sessionStorage): όταν ο
+ * χρήστης ανοίγει μια εγγραφή και γυρίζει πίσω, βρίσκεται εκεί που ήταν —
+ * όχι στην πρώτη σελίδα (παρατήρηση Μαύρου 26/10, στην καταχώρηση
+ * υπηκοότητας σε 1.970 φυσικά πρόσωπα).
  */
-function DataTable({ columns, rows, rowKey, actions, emptyMessage = 'Δεν υπάρχουν εγγραφές.', searchable = true, pageSize = 25, onRowClick }) {
-  const [q, setQ] = useState('');
-  const [sort, setSort] = useState({ key: null, dir: 'asc' });
-  const [page, setPage] = useState(0);
+function readState(key) {
+  try { return JSON.parse(sessionStorage.getItem(key) || 'null') || {}; } catch { return {}; }
+}
+function DataTable({ columns, rows, rowKey, actions, emptyMessage = 'Δεν υπάρχουν εγγραφές.', searchable = true, pageSize = 25, onRowClick, stateKey }) {
+  const key = 'dt:' + (stateKey || `${window.location.pathname}|${columns.map(c => c.key).join(',')}`);
+  const saved = useMemo(() => readState(key), [key]);
+  const [q, setQ] = useState(saved.q || '');
+  const [sort, setSort] = useState(saved.sort || { key: null, dir: 'asc' });
+  const [page, setPage] = useState(Number.isInteger(saved.page) ? saved.page : 0);
+
+  useEffect(() => {
+    try { sessionStorage.setItem(key, JSON.stringify({ q, sort, page })); } catch { /* ιδιωτική περιήγηση */ }
+  }, [key, q, sort, page]);
 
   const getKey = rowKey || ((r) => r.id ?? r.aa);
   const getValue = (row, col) => (typeof col.value === 'function' ? col.value(row) : row[col.key]);

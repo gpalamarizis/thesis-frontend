@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import ShareTable from '../components/ShareTable';
 import { reports, downloadFile } from '../api';
@@ -54,9 +55,12 @@ function ReportClientsNationality({ user, onLogout, onOpenCaseSearch }) {
       <div className="section">
         <div className="section-header">
           <h2>Πελατεία ανά υπηκοότητα</h2>
-          <button type="button" className="btn btn-secondary" disabled={busy || loading} onClick={doExport}>
-            {busy ? 'Εξαγωγή…' : 'Εξαγωγή σε Excel'}
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Link to="/fysika/ypikootita" className="btn btn-secondary" style={{ textDecoration: 'none' }}>🌍 Συμπλήρωση υπηκοότητας</Link>
+            <button type="button" className="btn btn-secondary" disabled={busy || loading} onClick={doExport}>
+              {busy ? 'Εξαγωγή…' : 'Εξαγωγή σε Excel'}
+            </button>
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: 20, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>

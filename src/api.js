@@ -477,6 +477,8 @@ export const invoices = {
   cancel:    (id, reason)  => api.post(`/api/invoices/${id}/cancel`, { reason }),
   remove:    (id)          => api.delete(`/api/invoices/${id}`),
   fromCase:  (caseId)      => api.post(`/api/invoices/from-case/${caseId}`, {}),
+  // Από εκδοθέντα αναλυτικό λογαριασμό: οι αμοιβές του γίνονται γραμμές
+  fromAccount: (aa)         => api.post(`/api/invoices/from-account/${aa}`, {}),
 };
 
 export const templates = {
@@ -557,7 +559,14 @@ export const reports = {
   // Γενικός φάκελος εκδοθέντων λογαριασμών και λήψη του Word τους
   accounts: (p = {}) => api.get('/api/reports/accounts?'
     + new URLSearchParams(Object.entries(p).filter(([, v]) => v != null && v !== '')).toString()),
-  accountFileUrl: (aa) => `/api/reports/accounts/${aa}/file`,
+  accountFileUrl: (aa, original = false) => `/api/reports/accounts/${aa}/file${original ? '?original=1' : ''}`,
+  // Διορθωμένο Word μετά την έκδοση: γίνεται το επίσημο του φακέλου
+  uploadAccountFile: (aa, file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return api.post(`/api/reports/accounts/${aa}/file`, fd);
+  },
+  revertAccountFile: (aa) => api.delete(`/api/reports/accounts/${aa}/file`),
   // Πελατεία ανά υπηκοότητα και ανάλυση τιμολόγησης (από αναλυτικούς λογαριασμούς)
   clientsByNationalityUrl: (p = {}) => '/api/reports/clients-by-nationality?'
     + new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(),
@@ -571,12 +580,14 @@ export const reports = {
       + (from ? `&from=${from}` : '') + (to ? `&to=${to}` : '')),
   // caseId: ο αριθμός υπόθεσης γίνεται αριθμός λογαριασμού στο έντυπο
   // cases: ποιες υποθέσεις μπαίνουν στο έντυπο. Κενό = όλες του πελάτη.
+  // exclude: ['finance_ores:12', …] — εγγραφές που βγήκαν στην προεπισκόπηση
   clientAccountDocxUrl: (type, id, lang = 'el', caseId = null, cases = null,
-                         from = null, to = null, issue = false) =>
+                         from = null, to = null, issue = false, exclude = null) =>
     `/api/reports/client-account/docx?clientType=${type}&clientId=${id}&lang=${lang}`
     + (caseId ? `&ypothesi_id=${caseId}` : '')
     + (cases && cases.length ? `&cases=${cases.join(',')}` : '')
     + (from ? `&from=${from}` : '') + (to ? `&to=${to}` : '')
+    + (exclude && exclude.length ? `&exclude=${encodeURIComponent(exclude.join(','))}` : '')
     // issue: δίνει αύξοντα αριθμό και καταγράφει την έκδοση
     + (issue ? '&issue=1' : ''),
 
@@ -601,9 +612,10 @@ export const finance = {
     '/api/finance/export/all-xlsx?'
     + new URLSearchParams(Object.entries({ status: status || 'unsettled', from, to, katigoria, q })
         .filter(([, v]) => v)).toString(),
-  all: ({ from, to, status, katigoria, q } = {}) =>
+  // show: μόνο οι N πιο πρόσφατες γραμμές (τα σύνολα μένουν πλήρη)
+  all: ({ from, to, status, katigoria, q, show } = {}) =>
     api.get('/api/finance/export/all?'
-      + new URLSearchParams(Object.entries({ status: status || 'unsettled', from, to, katigoria, q })
+      + new URLSearchParams(Object.entries({ status: status || 'unsettled', from, to, katigoria, q, show })
           .filter(([, v]) => v)).toString()),
   // Προτάσεις περιγραφής ανά πόρο
   templates: (resource, q = '') =>
@@ -612,6 +624,13 @@ export const finance = {
   list:   (resource, caseId)          => api.get(`/api/finance/${resource}?ypothesi_id=${caseId}`),
   create: (resource, payload)         => api.post(`/api/finance/${resource}`, payload),
   update: (resource, id, payload)     => api.put(`/api/finance/${resource}/${id}`, payload),
+  // Μνήμη μεταφράσεων περιγραφών (για τα ξενόγλωσσα έντυπα)
+  translations: {
+    status: ()                  => api.get('/api/finance/translations/status'),
+    lookup: (lang, texts)       => api.post('/api/finance/translations/lookup', { lang, texts }),
+    save:   (lang, src, txt)    => api.put('/api/finance/translations', { lang, src, txt }),
+    auto:   (lang, texts)       => api.post('/api/finance/translations/auto', { lang, texts }),
+  },
   remove: (resource, id)              => api.delete(`/api/finance/${resource}/${id}`),
 };
 

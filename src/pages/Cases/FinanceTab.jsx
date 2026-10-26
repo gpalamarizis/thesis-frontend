@@ -84,6 +84,10 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
   ];
   const pagiaOptions = pagiaDefs.map(p => ({ value: p.aa, label: p.name }));
 
+  // Απαλλαγή ΦΠΑ για ενδοκοινοτική συναλλαγή (Μαύρος 26/10): στον λογαριασμό
+  // και στο τιμολόγιο ΦΠΑ 0 και η σημείωση του Άρθρου 14 παρ. 2α Ν. 2859/2000
+  const xorisFpaField = { key: 'xoris_fpa', label: 'Χωρίς ΦΠΑ — ενδοκοινοτική συναλλαγή', type: 'checkbox',
+    listLabel: 'ΦΠΑ' };
   const oresFields = [
     { key: 'date',         label: 'Ημερομηνία',    type: 'date',   required: true },
     { key: 'dikigoros_id', label: 'Δικηγόρος',     type: 'select', options: lawyerOptions },
@@ -95,6 +99,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
       hint: clientRate ? `Χρέωση πελάτη: ${clientRate} €/ώρα` : undefined },
     { key: 'amount',       label: 'Ποσό (€)',      type: 'number', step: '0.01', computed: true },
     { key: 'perigrafi',    label: 'Περιγραφή',     type: 'textarea' },
+    xorisFpaField,
   ];
 
   const plironeiField = { key: 'plironei', label: 'Πληρώνει', type: 'person',
@@ -117,6 +122,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     { key: 'dikigoros_id',           label: 'Δικηγόρος',  type: 'select', options: lawyerOptions },
     { key: 'amount',                 label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
     { key: 'perigrafi',              label: 'Σημειώσεις', type: 'textarea' },
+    xorisFpaField,
     { ...parastatikoField, label: 'Γραμμάτιο (αρχείο)' },
   ];
 
@@ -147,6 +153,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     { key: 'dikigoros_id', label: 'Δικηγόρος',  type: 'select', options: lawyerOptions },
     { key: 'amount',       label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
     { key: 'perigrafi',    label: 'Περιγραφή',  type: 'textarea' },
+    xorisFpaField,
   ];
 
   const synergatiFields = [
@@ -312,6 +319,7 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
   const renderCell = (r, f) => {
     const v = r[f.key];
     if (f.type === 'date')   return fmtDate(v);
+    if (f.type === 'checkbox') return v ? <span title="Απαλλαγή ΦΠΑ (ενδοκοινοτική)">0% *</span> : '';
     if (f.key === 'amount' || f.key === 'timi_oras') return fmtCurrency(v);
     if (f.personCols) {
       // Το όνομα έρχεται από τη βάση, όχι από τις επιλογές του browser
@@ -352,7 +360,7 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
     <table className="table" style={settled ? { opacity: 0.75 } : undefined}>
       <thead>
         <tr>
-          {listColumns.map(f => <th key={f.key}>{f.label}</th>)}
+          {listColumns.map(f => <th key={f.key}>{f.listLabel || f.label}</th>)}
           {settled && <th style={{ whiteSpace: 'nowrap' }}>Λογαριασμός</th>}
           <th style={{ width: 1 }}></th>
         </tr>
@@ -449,6 +457,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
       initForm[f.key] = col ? `${col}:${initial[col]}` : '';
       return;
     }
+    if (f.type === 'checkbox') { initForm[f.key] = initial?.[f.key] === true; return; }
     initForm[f.key] = initial?.[f.key] != null
       ? (f.type === 'date' ? toDateInput(initial[f.key]) : String(initial[f.key]))
       : (initial ? '' : (f.defaultValue != null ? String(f.defaultValue) : ''));
@@ -566,6 +575,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
           }
           return;
         }
+        if (f.type === 'checkbox') { payload[f.key] = !!form[f.key]; return; }
         let v = form[f.key];
         if (v === '') v = null;
         else if ((f.type === 'number' || f.key.endsWith('_id')) && v != null) v = Number(v);
@@ -608,7 +618,13 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
                 </span>
               )}
             </label>
-            {f.type === 'textarea' ? (
+            {f.type === 'checkbox' ? (
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 'normal', cursor: 'pointer', margin: 0 }}>
+                <input type="checkbox" checked={!!form[f.key]} onChange={e => setField(f.key, e.target.checked)}
+                       style={{ width: 16, height: 16, margin: 0 }} />
+                <span style={{ fontSize: 13, color: '#4a5568' }}>Απαλλαγή ΦΠΑ βάσει του Άρθρου 14 παρ. 2α του Ν. 2859/2000</span>
+              </label>
+            ) : f.type === 'textarea' ? (
               /* Στο πεδίο περιγραφής μπαίνουν προτάσεις: προεπιλογές του
                  γραφείου και ό,τι έχει ήδη γραφτεί στον ίδιο πόρο.
                  Τα υπόλοιπα κείμενα μένουν απλά. */

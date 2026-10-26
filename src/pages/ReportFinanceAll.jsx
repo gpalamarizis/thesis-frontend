@@ -42,6 +42,9 @@ function ReportFinanceAll({ user, onLogout, onOpenCaseSearch }) {
   const [q, setQ] = useState('');
   const [qApplied, setQApplied] = useState('');
   const [katigoria, setKatigoria] = useState('');
+  // Στην οθόνη μόνο οι πιο πρόσφατες γραμμές· «Όλες» κατ' επιλογή.
+  // Τα σύνολα και το Excel καλύπτουν πάντα όλες τις εγγραφές.
+  const [show, setShow] = useState(30);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState('');
@@ -75,12 +78,12 @@ function ReportFinanceAll({ user, onLogout, onOpenCaseSearch }) {
   useEffect(() => {
     if (status === 'settled' && !from && !to) return;
     setLoading(true); setError('');
-    finance.all(params)
+    finance.all({ ...params, show: show || null })
       .then(d => setData(d))
       .catch(e => setError(e.message || 'Η φόρτωση απέτυχε.'))
       .finally(() => setLoading(false));
     // eslint-disable-next-line
-  }, [status, from, to, katigoria, qApplied]);
+  }, [status, from, to, katigoria, qApplied, show]);
 
   const exportXlsx = async (kat) => {
     setBusy(kat || 'all'); setError('');
@@ -167,8 +170,14 @@ function ReportFinanceAll({ user, onLogout, onOpenCaseSearch }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                       gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
           <div style={{ color: '#4a5568' }}>
-            {loading ? 'Φόρτωση…' : `${data?.total ?? 0} ${(data?.total ?? 0) === 1 ? 'εγγραφή' : 'εγγραφές'}`}
-            {data?.truncated && ` — εμφανίζονται οι πρώτες ${rows.length}· το Excel τις περιέχει όλες`}
+            {loading ? 'Φόρτωση…' : `${(data?.total ?? 0).toLocaleString('el-GR')} ${(data?.total ?? 0) === 1 ? 'εγγραφή' : 'εγγραφές'}`}
+            {!loading && data?.truncated && ` — εμφανίζονται οι ${rows.length} πιο πρόσφατες· τα σύνολα και το Excel τις περιέχουν όλες`}
+            <select className="filter-select" value={show} onChange={e => setShow(Number(e.target.value))}
+                    style={{ marginLeft: 12 }}>
+              <option value={30}>Τελευταίες 30</option>
+              <option value={100}>Τελευταίες 100</option>
+              <option value={2000}>Όλες</option>
+            </select>
           </div>
           <button type="button" className="btn btn-primary" disabled={!!busy || loading}
                   onClick={() => exportXlsx(katigoria || null)}>

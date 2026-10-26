@@ -57,7 +57,10 @@ function FysikaList({ user, onLogout, onOpenCaseSearch }) {
       <div className="section">
         <div className="section-header">
           <h2>Φυσικά Πρόσωπα</h2>
-          <button className="btn" onClick={() => navigate('/fysika/new')}>+ Νέο Φυσικό Πρόσωπο</button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-secondary" onClick={() => navigate('/fysika/ypikootita')}>🌍 Συμπλήρωση υπηκοότητας</button>
+            <button className="btn" onClick={() => navigate('/fysika/new')}>+ Νέο Φυσικό Πρόσωπο</button>
+          </div>
         </div>
 
         {loading ? (

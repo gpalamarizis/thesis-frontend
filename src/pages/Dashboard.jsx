@@ -8,7 +8,7 @@ import { fmtDate, toISODate } from '../utils/format';
 import DueActionsPanel from '../components/DueActionsPanel';
 function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ total_cases: 0, pending_cases: 0, hearings_next_30d: 0, open_tasks: 0 });
+  const [stats, setStats] = useState({ total_cases: 0, pending_cases: 0, hearings_next_30d: 0, open_tasks: 0, max_protocol_no: 0 });
   const [hearings, setHearings] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +28,7 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
         const raw = (summary && summary.stats) ? summary.stats : (summary || {});
         setStats({
           total_cases:       raw.total_cases       ?? 0,
+          max_protocol_no:   raw.max_protocol_no   ?? 0,
           pending_cases:     raw.pending_cases     ?? 0,
           hearings_next_30d: raw.hearings_next_30d ?? 0,
           open_tasks:        raw.open_tasks        ?? 0,
@@ -95,7 +96,10 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
       <DueActionsPanel />
 
       <div className="stats">
-        <StatCard label="Υποθέσεις σύνολο"        value={stats.total_cases}       to="/cases" />
+        <StatCard label="Υποθέσεις σύνολο"        value={stats.total_cases}       to="/cases"
+                  note={stats.max_protocol_no > stats.total_cases
+                    ? `Τελ. αρ. πρωτοκόλλου …/${stats.max_protocol_no}`
+                    : null} />
         <StatCard label="Εκκρεμείς υποθέσεις"     value={stats.pending_cases}     to="/reports/pending" accent="open" />
         <StatCard label="Δικάσιμοι (30 ημερών)"   value={stats.hearings_next_30d} to="/reports/hearings" accent="warn" />
         <StatCard label="Εκκρεμείς ενέργειες"     value={stats.open_tasks}        to="/reports/tasks" />
@@ -503,14 +507,25 @@ function ProtocolSearchModal({ onClose }) {
   );
 }
 
-function StatCard({ label, value, to, accent }) {
+// note: μικρή επεξήγηση κάτω από τον αριθμό
+function StatCard({ label, value, to, accent, note }) {
   const accentClass =
     accent === 'open' ? 'stat-card-accent-green' :
     accent === 'warn' ? 'stat-card-accent-orange' : '';
   const card = (
     <div className={`stat-card ${accentClass}`}>
       <h3>{label}</h3>
-      <div className="value">{Number(value ?? 0).toLocaleString('el-GR')}</div>
+      {/* Η σημείωση στην ίδια γραμμή με τον αριθμό, ώστε η κάρτα να έχει
+          το ίδιο ύψος με τις υπόλοιπες */}
+      <div className="value" style={note ? { display: 'flex', alignItems: 'baseline', gap: 10 } : undefined}>
+        {Number(value ?? 0).toLocaleString('el-GR')}
+        {note && (
+          <span style={{ fontSize: 12, fontWeight: 400, color: '#718096', whiteSpace: 'nowrap' }}
+                title="Ο αριθμός πρωτοκόλλου δεν ξαναδίνεται. Όταν διαγράφονται υποθέσεις, το πλήθος μένει μικρότερο από τον τελευταίο αριθμό.">
+            {note}
+          </span>
+        )}
+      </div>
     </div>
   );
   return to ? <Link to={to} className="stat-card-link">{card}</Link> : card;

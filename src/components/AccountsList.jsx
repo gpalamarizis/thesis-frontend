@@ -11,8 +11,10 @@
 //
 // Λογαριασμοί που εκδόθηκαν πριν φυλάσσονται τα αρχεία δεν έχουν Word·
 // το πρόγραμμα τους αναπαράγει από τις εγγραφές τους, με σχετική ένδειξη.
-import { useState, useEffect } from 'react';
-import { reports, downloadFile } from '../api';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { reports, invoices, downloadFile } from '../api';
+import ConfirmDialog from './ConfirmDialog';
 
 const money = (n) => (n == null ? '—' : (Number(n) || 0).toLocaleString('el-GR',
   { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
@@ -26,6 +28,12 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(null);
   const [forbidden, setForbidden] = useState(false);
+  const [tick, setTick] = useState(0);
+  const [msg, setMsg] = useState('');
+  const [confirmRevert, setConfirmRevert] = useState(null);
+  const fileRef = useRef(null);
+  const uploadFor = useRef(null);
+  const navigate = useNavigate();
   const key = JSON.stringify(filter);
 
   useEffect(() => {
@@ -46,14 +54,48 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
     // eslint-disable-next-line
-  }, [key, reloadKey]);
+  }, [key, reloadKey, tick]);
 
-  const download = async (r) => {
-    setBusy(r.aa); setError('');
+  const download = async (r, original = false) => {
+    setBusy(r.aa); setError(''); setMsg('');
     try {
-      await downloadFile(reports.accountFileUrl(r.aa), null, r.filename);
+      await downloadFile(reports.accountFileUrl(r.aa, original), null,
+        original ? r.filename.replace(/\.docx$/, '-arxiko.docx') : r.filename);
     } catch (e) { setError(e.message || 'Η λήψη απέτυχε.'); }
     finally { setBusy(null); }
+  };
+
+  // Διορθωμένο Word: γίνεται το επίσημο του φακέλου, το αρχικό κρατιέται
+  const pickUpload = (r) => { uploadFor.current = r; if (fileRef.current) fileRef.current.click(); };
+  const onFile = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    const r = uploadFor.current;
+    if (!f || !r) return;
+    if (!/\.docx$/i.test(f.name)) { setError('Επιτρέπεται μόνο αρχείο Word (.docx).'); return; }
+    setBusy(r.aa); setError(''); setMsg('');
+    try {
+      await reports.uploadAccountFile(r.aa, f);
+      setMsg(`Ο λογαριασμός ${pad2(r.no_client)}.${pad2(r.no_org)} αντικαταστάθηκε με το διορθωμένο αρχείο.`);
+      setTick(t => t + 1);
+    } catch (err) { setError(err.message || 'Το ανέβασμα απέτυχε.'); }
+    finally { setBusy(null); }
+  };
+  const revert = async (r) => {
+    setConfirmRevert(null);
+    setBusy(r.aa); setError(''); setMsg('');
+    try { await reports.revertAccountFile(r.aa); setTick(t => t + 1); }
+    catch (err) { setError(err.message || 'Η επαναφορά απέτυχε.'); }
+    finally { setBusy(null); }
+  };
+  // Τιμολόγιο από τον λογαριασμό: οι αμοιβές του γίνονται γραμμές
+  const makeInvoice = async (r) => {
+    setBusy(r.aa); setError(''); setMsg('');
+    try {
+      const d = await invoices.fromAccount(r.aa);
+      const id = d?.data?.aa || d?.aa;
+      if (id) navigate(`/invoices/${id}`);
+    } catch (err) { setError(err.message || 'Η δημιουργία τιμολογίου απέτυχε.'); setBusy(null); }
   };
 
   if (loading) return <div className="empty-state">Φόρτωση...</div>;
@@ -61,7 +103,19 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
 
   return (
     <div>
+      <input ref={fileRef} type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+             style={{ display: 'none' }} onChange={onFile} />
       {error && <div className="error-message" style={{ marginBottom: 10 }}>{error}</div>}
+      {confirmRevert && (
+        <ConfirmDialog
+          title="Επαναφορά αρχικού λογαριασμού"
+          message="Το Word όπως εκδόθηκε θα ξαναγίνει το επίσημο του φακέλου. Το διορθωμένο αρχείο παύει να χρησιμοποιείται."
+          confirmLabel="Επαναφορά"
+          onConfirm={() => revert(confirmRevert)}
+          onClose={() => setConfirmRevert(null)}
+        />
+      )}
+      {msg && <div className="success-message" style={{ marginBottom: 10, color: '#2f855a' }}>{msg}</div>}
       {rows.length === 0 ? (
         <div className="empty-state">{emptyMessage || 'Δεν υπάρχουν εκδοθέντες λογαριασμοί.'}</div>
       ) : (
@@ -93,12 +147,26 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
                   </td>
                   <td style={NUM}>{money(r.amoives)}</td>
                   <td style={NUM}>{money(r.exoda)}</td>
-                  <td style={{ whiteSpace: 'nowrap' }}>
+                  <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                     <button type="button" className="btn btn-sm btn-secondary"
                             disabled={busy === r.aa} onClick={() => download(r)}
                             title={r.has_file ? r.filename : 'Θα αναπαραχθεί από τις εγγραφές του λογαριασμού'}>
                       {busy === r.aa ? '…' : (r.has_file ? '⬇ Word' : '⬇ Word*')}
                     </button>
+                    <div style={{ fontSize: 11.5, marginTop: 4, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      <a href="#" className="link-inline" onClick={e => { e.preventDefault(); if (busy !== r.aa) pickUpload(r); }}
+                         title="Ανέβασμα του Word που στάλθηκε, αν διορθώθηκε μετά την έκδοση">⬆ Διορθωμένο</a>
+                      {' · '}
+                      <a href="#" className="link-inline" onClick={e => { e.preventDefault(); if (busy !== r.aa) makeInvoice(r); }}
+                         title="Πρόχειρο τιμολόγιο από τις αμοιβές του λογαριασμού">🧾 Τιμολόγιο</a>
+                    </div>
+                    {r.corrected && (
+                      <div style={{ fontSize: 11.5, color: '#718096', marginTop: 4, textAlign: 'right' }}>
+                        Διορθωμένο{r.replaced_at ? ` ${r.replaced_at.slice(8, 10)}/${r.replaced_at.slice(5, 7)}/${r.replaced_at.slice(0, 4)}` : ''} ·{' '}
+                        <a href="#" onClick={e => { e.preventDefault(); download(r, true); }}>αρχικό</a> ·{' '}
+                        <a href="#" onClick={e => { e.preventDefault(); setConfirmRevert(r); }}>επαναφορά</a>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}

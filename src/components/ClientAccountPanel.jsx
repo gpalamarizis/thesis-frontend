@@ -4,6 +4,7 @@ import { reports, downloadFile } from '../api';
 import { fmtDate, fmtCurrency } from '../utils/format';
 
 import DateInput from './DateInput';
+import AccountLinesEditor from './AccountLinesEditor';
 // ΛΟΓΑΡΙΑΣΜΟΣ ΠΕΛΑΤΗ — ό,τι εκκρεμεί από ΟΛΕΣ τις υποθέσεις του.
 //
 // Ο δικηγόρος χρεώνει τον πελάτη συνολικά, όχι ανά φάκελο: το υπόλοιπο
@@ -22,6 +23,9 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
   const [to, setTo] = useState('');
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
+  // Εγγραφές που βγήκαν από τον λογαριασμό στην προεπισκόπηση
+  const [excluded, setExcluded] = useState(() => new Set());
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     if (!clientId) { setLoading(false); return; }
@@ -33,9 +37,11 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
       .catch(e => { if (alive && e.status !== 403) setError(e.message || 'Αποτυχία φόρτωσης'); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
-  }, [clientType, clientId, from, to]);
+  }, [clientType, clientId, from, to, reloadKey]);
 
-  if (!clientId || loading) return null;
+  // Μόνο η πρώτη φόρτωση κρύβει την ενότητα· οι ανανεώσεις μετά από
+  // διόρθωση γραμμής κρατούν τα πάντα στη θέση τους.
+  if (!clientId || (loading && !data)) return null;
   if (error) return <div className="error-message" style={{ marginBottom: 12 }}>{error}</div>;
   if (!data || !(data.cases || []).length) return null;
 
@@ -48,16 +54,18 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
     setChosen(next);
   };
 
-  const inSel = (rows) => (rows || []).filter(r => sel.has(r.ypothesi_id));
+  const inSel = (rows) => (rows || []).filter(r => sel.has(r.ypothesi_id)
+    && !excluded.has(`${r.src}:${r.aa}`));
   const sum = (rows) => inSel(rows).reduce((a, r) => a + (Number(r.amount) || 0), 0);
 
-  const amoives = sum(data.hours) + sum(data.fees);
+  // Τα γραμμάτια είναι πάγια αμοιβή (26/10)
+  const amoives = sum(data.hours) + sum(data.fees) + sum(data.grammatia);
   const exoda = sum(data.expenses);
   const prok = sum(data.advances);
   const ypoloipo = amoives + exoda - prok;
 
   // Πλήθος εγγραφών ανά υπόθεση, για να ξέρει τι αφήνει έξω
-  const countFor = (id) => ['hours', 'fees', 'expenses', 'advances']
+  const countFor = (id) => ['hours', 'fees', 'grammatia', 'expenses', 'advances']
     .reduce((a, k) => a + (data[k] || []).filter(r => r.ypothesi_id === id).length, 0);
 
   // Τρίμηνο σε ΤΟΠΙΚΗ ώρα: με toISOString η 1η του μήνα γίνεται 31η του
@@ -81,11 +89,15 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
       const ids = [...sel];
       await downloadFile(
         reports.clientAccountDocxUrl(clientType, clientId, lang, currentCaseId,
-          ids, from, to, issue),
+          ids, from, to, issue, [...excluded]),
         // Το όνομα το δίνει ο server: logariasmos<α/α πελάτη>.<α/α γραφείου>
         null, issue ? 'logariasmos.docx' : 'logariasmos-proxeiro.docx');
       // Ο νέος λογαριασμός μπαίνει στον φάκελο· η λίστα ανανεώνεται
-      if (issue && onIssued) onIssued();
+      if (issue) {
+        setExcluded(new Set());
+        setReloadKey(k => k + 1);
+        if (onIssued) onIssued();
+      }
     } catch (e) {
       setError(e.message || 'Η παραγωγή απέτυχε.');
     } finally { setBusy(false); }
@@ -181,12 +193,20 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
             </tbody>
           </table>
 
-          <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 14 }}>
+            <span style={{ color: '#4a5568', fontSize: 13 }}>Γλώσσα εντύπου:</span>
             <select value={lang} onChange={e => setLang(e.target.value)} style={{ width: 'auto' }}>
               <option value="el">Ελληνικά</option>
               <option value="en">English</option>
               <option value="fr">Français</option>
             </select>
+          </div>
+
+          <AccountLinesEditor data={data} selectedCases={sel} lang={lang}
+                              excluded={excluded} setExcluded={setExcluded}
+                              onChanged={() => setReloadKey(k => k + 1)} />
+
+          <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             <button type="button" className="btn btn-sm"
                     onClick={() => print(false)} disabled={busy || sel.size === 0}>
               {busy ? 'Παραγωγή…' : '👁 Προεπισκόπηση'}

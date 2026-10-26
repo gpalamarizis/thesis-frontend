@@ -15,6 +15,7 @@ import CaseEdit from './pages/Cases/CaseEdit';
 
 import FysikaList from './pages/Fysika/FysikaList';
 import FysikaEdit from './pages/Fysika/FysikaEdit';
+import FysikaYpikootita from './pages/Fysika/FysikaYpikootita';
 import NomikaList from './pages/Nomika/NomikaList';
 import NomikaEdit from './pages/Nomika/NomikaEdit';
 import PeopleList from './pages/People/PeopleList';
@@ -147,6 +148,7 @@ function App() {
 
         <Route path="/fysika"           element={guard(FysikaList)} />
         <Route path="/fysika/new"       element={guard(FysikaEdit)} />
+        <Route path="/fysika/ypikootita" element={guard(FysikaYpikootita)} />
         <Route path="/fysika/:id"       element={guard(FysikaEdit)} />
         <Route path="/nomika"           element={guard(NomikaList)} />
         <Route path="/nomika/new"       element={guard(NomikaEdit)} />

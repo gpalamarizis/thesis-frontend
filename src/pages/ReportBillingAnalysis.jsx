@@ -31,6 +31,8 @@ const COLUMNS_EISFORA = [
 
 function ReportBillingAnalysis({ user, onLogout, onOpenCaseSearch }) {
   const [group, setGroup] = useState('nationality');
+  // Πηγή: αναλυτικοί λογαριασμοί ή εκδοθέντα τιμολόγια (Μαύρος 26/10)
+  const [source, setSource] = useState('accounts');
   const [from, setFrom] = useState(`${new Date().getFullYear()}-01-01`);
   const [to, setTo] = useState('');
   const [data, setData] = useState(null);
@@ -45,16 +47,16 @@ function ReportBillingAnalysis({ user, onLogout, onOpenCaseSearch }) {
 
   useEffect(() => {
     setLoading(true); setError('');
-    reports.billingAnalysis({ group, from, to })
+    reports.billingAnalysis({ group, from, to, source })
       .then(d => setData(d))
       .catch(e => setError(e.message))
       .finally(() => setLoading(false));
-  }, [group, from, to]);
+  }, [group, from, to, source]);
 
   const doExport = async () => {
     setBusy(true); setError('');
     try {
-      await downloadFile(reports.billingAnalysisUrl({ group, from, to, format: 'xlsx' }),
+      await downloadFile(reports.billingAnalysisUrl({ group, from, to, source, format: 'xlsx' }),
         null, 'Analysi-timologisis.xlsx');
     } catch (e) { setError(e.message); }
     finally { setBusy(false); }
@@ -73,10 +75,24 @@ function ReportBillingAnalysis({ user, onLogout, onOpenCaseSearch }) {
           </button>
         </div>
 
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ color: '#4a5568', marginRight: 4 }}>Πηγή:</span>
+          <button type="button" className={`btn btn-sm ${source === 'accounts' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setSource('accounts')}>Αναλυτικοί λογαριασμοί</button>
+          <button type="button" className={`btn btn-sm ${source === 'invoices' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setSource('invoices')}>Τιμολόγια</button>
+        </div>
+
         <p style={{ color: '#718096', marginTop: 0, marginBottom: 16 }}>
-          Τα ποσά προέρχονται από τους εκδοθέντες αναλυτικούς λογαριασμούς,
-          με βάση την ημερομηνία έκδοσής τους. Αμοιβές = ώρες και πάγιες
-          αμοιβές· έξοδα = έξοδα με και χωρίς ΦΠΑ.
+          {source === 'accounts' ? (
+            <>Τα ποσά προέρχονται από τους εκδοθέντες αναλυτικούς λογαριασμούς,
+            με βάση την ημερομηνία έκδοσής τους. Αμοιβές = ώρες, πάγιες
+            αμοιβές και γραμμάτια· έξοδα = έξοδα με και χωρίς ΦΠΑ.</>
+          ) : (
+            <>Τα ποσά προέρχονται από τα εκδοθέντα τιμολόγια, με βάση την ημερομηνία
+            τους. Αμοιβές = καθαρή αξία· έξοδα = όσα σημειώθηκαν για λογαριασμό του
+            πελάτη. Τα πιστωτικά αφαιρούνται, τα ακυρωμένα δεν μετρούν.</>
+          )}
           {group === 'eisfora' && (
             <> Ανά δικηγόρο που εισέφερε την υπόθεση· «Υποθ. που εισέφερε» μετρά
             τις υποθέσεις του με ημερομηνία εισαγωγής μέσα στην περίοδο, ακόμα κι αν
@@ -114,10 +130,13 @@ function ReportBillingAnalysis({ user, onLogout, onOpenCaseSearch }) {
         {loading ? <div className="empty-state">Φόρτωση...</div> : (
           <ShareTable
             firstLabel={g.first}
-            columns={group === 'eisfora' ? COLUMNS_EISFORA : COLUMNS}
+            columns={(group === 'eisfora' ? COLUMNS_EISFORA : COLUMNS)
+              .map(c => (c.key === 'logariasmoi' && source === 'invoices' ? { ...c, label: 'Τιμολ.' } : c))}
             rows={data?.data || []}
             totals={data?.totals}
-            emptyMessage="Δεν υπάρχουν εκδοθέντες λογαριασμοί σε αυτή την περίοδο."
+            emptyMessage={source === 'invoices'
+              ? 'Δεν υπάρχουν εκδοθέντα τιμολόγια σε αυτή την περίοδο.'
+              : 'Δεν υπάρχουν εκδοθέντες λογαριασμοί σε αυτή την περίοδο.'}
           />
         )}
       </div>
