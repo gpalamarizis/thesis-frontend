@@ -15,6 +15,7 @@ import { entryKeyDown } from '../../utils/formKeys';
 import { toISODate } from '../../utils/format';
 import DateInput from '../../components/DateInput';
 import EisforaSelect from '../../components/EisforaSelect';
+import { loadPartnerLines, isPartner } from '../../utils/partners';
 const DRAFT_KEY = 'case-new';
 
 function CaseNew({ user, onLogout, onOpenCaseSearch }) {
@@ -213,7 +214,19 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
       .finally(() => setLoadingSameClient(false));
   }, [fysikoProsopoId, nomikoProsopoId]);
 
-  const visibleLawyers = lawyers.filter(l => showInactiveLawyers || l.energos !== false);
+  // Ίδια σειρά με την καρτέλα υπόθεσης: οι εταίροι του γραφείου πρώτοι,
+  // μετά αλφαβητικά. Η σειρά δεν αλλάζει όσο τσεκάρεις.
+  const [partnerLines, setPartnerLines] = useState([]);
+  useEffect(() => { loadPartnerLines().then(setPartnerLines); }, []);
+  const lawyerName = (l) => `${l.eponymo || ''} ${l.onoma || ''}`.trim();
+  const visibleLawyers = lawyers
+    .filter(l => showInactiveLawyers || l.energos !== false)
+    .slice()
+    .sort((a, b) => {
+      const aP = isPartner(a, partnerLines), bP = isPartner(b, partnerLines);
+      if (aP !== bP) return aP ? -1 : 1;
+      return lawyerName(a).localeCompare(lawyerName(b), 'el');
+    });
 
   const toggleXeiristis = (id) => {
     setXeiristesIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);

@@ -3,7 +3,11 @@
 import { useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 
-const roleLabel = { admin: 'Διαχειριστής', lawyer: 'Δικηγόρος', secretary: 'Γραμματέας' };
+const roleLabel = { owner: 'Διαχειριστής', admin: 'Διαχειριστής', lawyer: 'Δικηγόρος', secretary: 'Γραμματέας' };
+
+// Σελίδες που απαιτούν «Πρόσβαση στα Οικονομικά» (owner/admin ή can_view_finance).
+// Χωρίς αυτήν ο server απαντά 403 — δεν τις δείχνουμε καθόλου στο μενού.
+const hasFinance = (u) => !!u && (u.role === 'owner' || u.role === 'admin' || u.can_view_finance === true);
 
 const menuGroups = [
   { title: null, items: [{ path: '/dashboard', label: 'Πίνακας Ελέγχου', icon: '📊' }] },
@@ -29,13 +33,13 @@ const menuGroups = [
       { path: '/reports/courts',         label: 'Αναφορά Δικαστηρίων',           icon: '⚖️' },
       { path: '/reports/tax-property',   label: 'Φορολογικά & Ιδιοκτησία',       icon: '🏠' },
       { path: '/reports/clients-nationality', label: 'Πελατεία ανά υπηκοότητα', icon: '🌍' },
-      { path: '/reports/finance',        label: 'Συγκεντρωτικά οικονομικά',      icon: '💶' },
-      { path: '/reports/billing-analysis', label: 'Ανάλυση τιμολόγησης',     icon: '📈' },
+      { path: '/reports/finance',        label: 'Συγκεντρωτικά οικονομικά',      icon: '💶', finance: true },
+      { path: '/reports/billing-analysis', label: 'Ανάλυση τιμολόγησης',     icon: '📈', finance: true },
   ]},
   { title: 'Τιμολόγηση', items: [
-      { path: '/accounts',                 label: 'Λογαριασμοί',        icon: '📑' },
-      { path: '/invoices',                 label: 'Τιμολόγια',          icon: '🧾' },
-      { path: '/invoices/new',             label: 'Νέο τιμολόγιο',      icon: '➕' },
+      { path: '/accounts',                 label: 'Λογαριασμοί',        icon: '📑', finance: true },
+      { path: '/invoices',                 label: 'Τιμολόγια',          icon: '🧾', finance: true },
+      { path: '/invoices/new',             label: 'Νέο τιμολόγιο',      icon: '➕', finance: true },
       { path: '/settings/invoice-series',  label: 'Σειρές τιμολογίων',  icon: '🔢' },
       { path: '/settings/organization',    label: 'Στοιχεία γραφείου',  icon: '🏢' },
   ]},
@@ -131,7 +135,7 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
             <div className="sidebar-group" key={gi}>
               {group.title && <div className="sidebar-group-title">{group.title}</div>}
               <ul className="sidebar-menu">
-                {group.items.filter(item => !item.platformOnly || user.is_platform_admin).map(item => (
+                {group.items.filter(item => (!item.platformOnly || user.is_platform_admin) && (!item.finance || hasFinance(user))).map(item => (
                   <li key={item.path || item.href}>
                     {item.external ? (
                       <a href={item.href} target="_blank" rel="noopener noreferrer">

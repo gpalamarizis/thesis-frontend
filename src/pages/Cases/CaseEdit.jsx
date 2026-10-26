@@ -20,6 +20,7 @@ import CaseInvoicesTab from './CaseInvoicesTab';
 
 import DateInput from '../../components/DateInput';
 import EisforaSelect from '../../components/EisforaSelect';
+import { loadPartnerLines, isPartner } from '../../utils/partners';
 function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -35,7 +36,10 @@ function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
   const TAB_INDEX = {
     case: 0, court: 1, tasks: 2, persons: 3, files: 4, finance: 5, invoices: 6,
   };
-  const initialTab = TAB_INDEX[searchParams.get('tab')] ?? 0;
+  const isAdmin = user?.role === 'owner' || user?.role === 'admin';
+  const hasFinance = isAdmin || user?.can_view_finance === true;
+  const askedTab = TAB_INDEX[searchParams.get('tab')] ?? 0;
+  const initialTab = (askedTab === TAB_INDEX.invoices && !hasFinance) ? 0 : askedTab;
 
   const [caseData, setCaseData] = useState(null);
   const [courtActions, setCourtActions] = useState([]);
@@ -109,12 +113,17 @@ function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
               clientType={caseData?.nomiko_prosopo_id ? 'nomiko' : 'fysiko'}
               clientId={caseData?.nomiko_prosopo_id || caseData?.fysiko_prosopo_id}
               clientRate={caseData?.client_xreosi_ora || null} /> },
-          { label: 'Τιμολόγια',            content: <CaseInvoicesTab caseId={id} /> },
+          // Τα τιμολόγια θέλουν «Πρόσβαση στα Οικονομικά» (όπως και στον server)
+          ...(hasFinance ? [{ label: 'Τιμολόγια', content: <CaseInvoicesTab caseId={id} /> }] : []),
         ]}/>
       </div>
 
       <div className="form-actions">
         <button type="button" className="btn btn-secondary" onClick={() => navigate('/cases')}>← Πίσω στη λίστα</button>
+        {/* Ιδιωτική λειτουργία: ο διαχειριστής ορίζει ποιοι χρήστες βλέπουν την υπόθεση */}
+        {isAdmin && user?.visibility_mode === 'private' && (
+          <button type="button" className="btn btn-secondary" onClick={() => navigate(`/cases/${id}/access`)}>🔒 Πρόσβαση χρηστών</button>
+        )}
       </div>
     </Layout>
   );
@@ -154,6 +163,8 @@ function CaseTab({ caseData, onSave, saving }) {
   // Δικηγόρος που ΕΙΣΕΦΕΡΕ την υπόθεση — ξεχωριστά από τους χειριστές
   const [eisforaIds, setEisforaIds] = useState(Array.isArray(caseData.eisfora_ids) ? caseData.eisfora_ids : []);
   const [lawyers, setLawyers] = useState([]);
+  const [partnerLines, setPartnerLines] = useState([]);
+  useEffect(() => { loadPartnerLines().then(setPartnerLines); }, []);
   const [opponents, setOpponents] = useState([]);
   const [loadErr, setLoadErr] = useState('');
   const [quickCreate, setQuickCreate] = useState(null);
@@ -429,10 +440,11 @@ function CaseTab({ caseData, onSave, saving }) {
                   const bChecked = xeiristesIds.includes(bId);
                   if (aChecked !== bChecked) return aChecked ? -1 : 1;
                 } else {
-                  // Δεν υπάρχουν επιλογές: Μαύροι πρώτα, μετά αλφαβητικά όλοι οι υπόλοιποι
-                  const aMavros = /^μα[υύ]ρ/i.test((a.eponymo || '').trim());
-                  const bMavros = /^μα[υύ]ρ/i.test((b.eponymo || '').trim());
-                  if (aMavros !== bMavros) return aMavros ? -1 : 1;
+                  // Δεν υπάρχουν επιλογές: οι εταίροι του γραφείου πρώτοι
+                  // («Στοιχεία γραφείου» → «Εταίροι»), μετά αλφαβητικά οι υπόλοιποι
+                  const aP = isPartner(a, partnerLines);
+                  const bP = isPartner(b, partnerLines);
+                  if (aP !== bP) return aP ? -1 : 1;
                 }
                 // Αλφαβητικά μέσα στο group
                 const aName = `${a.eponymo || ''} ${a.onoma || ''}`.trim();

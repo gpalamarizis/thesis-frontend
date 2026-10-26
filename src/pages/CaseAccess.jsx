@@ -79,14 +79,15 @@ function CaseAccess({ user, onLogout, onOpenCaseSearch }) {
           )}
 
           <div style={{ padding: 16, background: '#ebf8ff', border: '1px solid #90cdf4', borderRadius: 6, marginBottom: 20, fontSize: 14 }}>
-            <strong>ℹ️ Πώς λειτουργεί:</strong> Σε mode <em>partnership_private</em>, οι δικηγόροι-συνεργάτες βλέπουν
-            μόνο τις δικές τους υποθέσεις (όπου είναι στους χειριστές). Εδώ μπορείς να δώσεις σε άλλους χρήστες
-            του γραφείου <em>ρητή</em> πρόσβαση σε αυτή την υπόθεση.
+            <strong>ℹ️ Πώς λειτουργεί:</strong> Σε ιδιωτική λειτουργία κάθε χρήστης που δεν είναι διαχειριστής
+            βλέπει <em>μόνο</em> τις υποθέσεις στις οποίες του έχει δοθεί πρόσβαση εδώ. Το ότι κάποιος δικηγόρος
+            είναι χειριστής της υπόθεσης δεν δίνει από μόνο του πρόσβαση στον λογαριασμό χρήστη του — πρόσθεσέ τον
+            παρακάτω.
           </div>
 
           <h3>Χρήστες με πρόσβαση ({allowlist.length})</h3>
           {allowlist.length === 0 ? (
-            <div className="empty-state">Κανείς extra χρήστης — μόνο owner + οι χειριστές δικηγόροι βλέπουν αυτή την υπόθεση.</div>
+            <div className="empty-state">Κανένας χρήστης — αυτή την υπόθεση τη βλέπουν μόνο οι διαχειριστές του γραφείου.</div>
           ) : (
             <table className="table" style={{ marginBottom: 20 }}>
               <thead><tr><th>Χρήστης</th><th>Ρόλος</th><th>Δικαίωμα</th><th>Δόθηκε από</th><th></th></tr></thead>
