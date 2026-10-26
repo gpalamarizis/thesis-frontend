@@ -160,7 +160,7 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
 
         <div className="section">
           <div className="section-header">
-            <h2>Εκκρεμείς λοιπές ενέργειες</h2>
+            <h2>Εκκρεμείς ενέργειες</h2>
             <Link to="/reports/tasks" className="link-inline">Όλες →</Link>
           </div>
           {loading && <div className="empty-state">Φόρτωση...</div>}
@@ -179,21 +179,29 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
               </thead>
               <tbody>
                 {tasks.map((t, i) => {
-                  // Οδηγεί στις Λοιπές ενέργειες της υπόθεσης
-                  const to = t.ypothesi_id ? `/cases/${t.ypothesi_id}?tab=tasks` : null;
+                  // Λοιπή ενέργεια → Λοιπές ενέργειες της υπόθεσης·
+                  // ενέργεια δικασίμου → Δικαστικές ενέργειες
+                  const to = t.ypothesi_id ? `/cases/${t.ypothesi_id}?tab=${tabOf(t)}` : null;
                   return (
-                    <tr key={t.aa || t.id || i}
+                    <tr key={`${t.kind || 'task'}:${t.aa || t.id || i}`}
                         onClick={to ? () => navigate(to) : undefined}
                         style={to ? { cursor: 'pointer' } : undefined}
                         title={to ? 'Άνοιγμα υπόθεσης' : undefined}>
                       <td>{fmtDate(t.date_dead_line)}</td>
-                      <td>{t.perigrafi_energias || '—'}</td>
+                      <td>
+                        {t.perigrafi_energias || '—'}
+                        {t.kind === 'court_sub' && (
+                          <div style={{ fontSize: 12, color: '#718096' }}>
+                            Δικάσιμος {fmtDate(t.dikasimos_date)}{t.dikastirio_name ? ` · ${t.dikastirio_name}` : ''}
+                          </div>
+                        )}
+                      </td>
                       <td>{to
                         ? <Link to={to} className="link-inline" onClick={e => e.stopPropagation()}>
                             {t.xeirokinito_id || '(χωρίς πρωτόκολλο)'}
                           </Link>
                         : (t.xeirokinito_id || '—')}</td>
-                      <td>{handlerOf(t) || '—'}</td>
+                      <td><HandlerCell e={t} /></td>
                     </tr>
                   );
                 })}
@@ -216,8 +224,29 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
 //
 // Πριν ήταν ανάποδα: έδειχνε δικηγόρους που είχαν κολλήσει σε δικάσιμους
 // από τη μετάπτωση, ανενεργούς και ποτέ ανατεθειμένους στην υπόθεση.
+//
+// ΕΝΕΡΓΕΙΕΣ (λοιπές και δικασίμων): ο δικηγόρος που καταχωρήθηκε ΣΤΗΝ
+// ΕΝΕΡΓΕΙΑ — το backend τον στέλνει έτοιμο ως «xeiristis» (αίτημα Μαύρου
+// 26/10). Ο χειριστής της υπόθεσης μόνο αν η ενέργεια δεν έχει δικηγόρο,
+// και τότε φαίνεται αχνός.
 function handlerOf(e) {
+  if (e.xeiristis !== undefined) return e.xeiristis || '';
   return e.xeiristes || e.dikigoroi_energeias || '';
+}
+function HandlerCell({ e }) {
+  const name = handlerOf(e);
+  if (!name) return '—';
+  if (!e.xeiristis_apo_ypothesi) return name;
+  return (
+    <span style={{ color: '#a0aec0' }}
+          title="Η ενέργεια δεν έχει δικηγόρο — εμφανίζεται ο χειριστής της υπόθεσης">
+      {name}
+    </span>
+  );
+}
+// Καρτέλα της υπόθεσης όπου ζει η ενέργεια
+function tabOf(e) {
+  return e.kind === 'court_sub' ? 'court' : 'tasks';
 }
 // Σύντομη μορφή για το πλακίδιο του ημερολογίου: «Επώνυμο Α.»
 //
@@ -249,9 +278,12 @@ function handlerShort(e) {
 // ημέρας να τις χειρίζονται με τον ίδιο κώδικα.
 function toCalEvent(src, kind) {
   const isCourt = kind === 'court';
+  const isSub = src.kind === 'court_sub';
   return {
     kind,
-    key: `${kind}:${src.aa ?? src.id ?? ''}`,
+    sub: isSub,
+    tab: isCourt || isSub ? 'court' : 'tasks',
+    key: `${isSub ? 'sub' : kind}:${src.aa ?? src.id ?? ''}`,
     date: isCourt ? src.date : src.date_dead_line,
     xeirokinito_id: src.xeirokinito_id,
     ypothesi_id: src.ypothesi_id,
@@ -300,9 +332,10 @@ function MonthCalendar({ cursor, setCursor, hearings, tasks = [], selectedDate, 
   const isToday = (day) => today.getDate() === day && today.getMonth() === m && today.getFullYear() === y;
   const openEvent = (e) => {
     if (!e.ypothesi_id) return;
-    navigate(`/cases/${e.ypothesi_id}?tab=${e.kind === 'court' ? 'court' : 'tasks'}`);
+    navigate(`/cases/${e.ypothesi_id}?tab=${e.tab}`);
   };
-  const kindLabel = (e) => (e.kind === 'court' ? 'Δικάσιμος' : (e.done ? 'Ενέργεια ✓' : 'Ενέργεια'));
+  const kindLabel = (e) => (e.kind === 'court' ? 'Δικάσιμος'
+    : `${e.sub ? 'Ενέργεια δικασίμου' : 'Ενέργεια'}${e.done ? ' ✓' : ''}`);
 
   const cells = [];
   for (let i = 0; i < mondayOffset; i++) cells.push(<div key={`e${i}`} className="cal-cell cal-empty" />);
@@ -354,7 +387,7 @@ function MonthCalendar({ cursor, setCursor, hearings, tasks = [], selectedDate, 
         <label className="cal-legend-item">
           <input type="checkbox" checked={showTasks} onChange={e => setShowTasks(e.target.checked)} />
           <span className="cal-legend-swatch cal-legend-task" />
-          Λοιπές ενέργειες
+          Ενέργειες
         </label>
       </div>
       <div className="cal-grid">
@@ -369,7 +402,7 @@ function MonthCalendar({ cursor, setCursor, hearings, tasks = [], selectedDate, 
           <table className="table" style={{ marginBottom: 0 }}>
             <thead>
               <tr>
-                <th style={{ width: 110 }}>Είδος</th>
+                <th style={{ width: 160 }}>Είδος</th>
                 <th>Πρωτόκολλο</th>
                 <th>Δικαστήριο / Ενέργεια</th>
                 <th>Πελάτης</th>

@@ -1,5 +1,7 @@
 // src/pages/ReportTasks.jsx
-// Αναφορά: Εκκρεμείς Λοιπές Ενέργειες (Ημερολόγιο tasks)
+// Αναφορά: Εκκρεμείς Ενέργειες — λοιπές ΚΑΙ ενέργειες δικασίμων.
+// Χειριστής = ο δικηγόρος που καταχωρήθηκε στην ενέργεια· της υπόθεσης
+// (αχνός) μόνο όταν η ενέργεια δεν έχει δικηγόρο.
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -53,7 +55,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
       const params = buildParams();
       params.set('format', 'docx');
       await downloadFile('/api/reports/pending-tasks?' + params.toString(),
-                         'Loipes-Energeies.docx');
+                         'Ekkremeis-Energeies.docx');
     } catch (e) {
       setError(e.message || 'Η εξαγωγή απέτυχε');
     } finally {
@@ -100,7 +102,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Εκκρεμείς Λοιπές Ενέργειες">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Εκκρεμείς Ενέργειες">
       <div className="section">
         <div className="section-header">
           <h2>Αναφορά ({total})</h2>
@@ -207,7 +209,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
         {loading ? (
           <div className="empty-state">Φόρτωση...</div>
         ) : items.length === 0 ? (
-          <div className="empty-state">Δεν βρέθηκαν λοιπές ενέργειες.</div>
+          <div className="empty-state">Δεν βρέθηκαν ενέργειες.</div>
         ) : (
           <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 4 }}>
             <table className="table" style={{ fontSize: 13 }}>
@@ -219,15 +221,16 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                   <th style={{ width: 130 }}>Πρωτόκολλο</th>
                   <th>Πελάτης</th>
                   <th style={{ width: 160 }}>Είδος υπόθεσης</th>
-                  <th style={{ width: 180 }}>Χειριστές</th>
+                  <th style={{ width: 180 }}>Χειριστής ενέργειας</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map(r => {
                   const overdue = r.ekkremis && isPast(r.date_dead_line);
+                  const tab = r.kind === 'court_sub' ? 'court' : 'tasks';
                   return (
-                    <tr key={r.aa}
-                        onClick={r.ypothesi_id ? () => navigate(`/cases/${r.ypothesi_id}?tab=tasks`) : undefined}
+                    <tr key={`${r.kind || 'task'}:${r.aa}`}
+                        onClick={r.ypothesi_id ? () => navigate(`/cases/${r.ypothesi_id}?tab=${tab}`) : undefined}
                         title={r.ypothesi_id ? 'Άνοιγμα υπόθεσης' : undefined}
                         style={{
                           ...(overdue ? { backgroundColor: '#feebc8' } : {}),
@@ -258,10 +261,18 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                           </span>
                         )}
                       </td>
-                      <td>{r.perigrafi_energias || '—'}</td>
+                      <td>
+                        {r.perigrafi_energias || '—'}
+                        {r.kind === 'court_sub' && (
+                          <div style={{ fontSize: 12, color: '#718096' }}>
+                            Ενέργεια δικασίμου {r.dikasimos_date ? new Date(r.dikasimos_date).toLocaleDateString('el-GR') : ''}
+                            {r.dikastirio_name ? ` · ${r.dikastirio_name}` : ''}
+                          </div>
+                        )}
+                      </td>
                       <td>
                         {r.ypothesi_id ? (
-                          <Link to={`/cases/${r.ypothesi_id}?tab=tasks`} onClick={e => e.stopPropagation()}
+                          <Link to={`/cases/${r.ypothesi_id}?tab=${tab}`} onClick={e => e.stopPropagation()}
                                 style={{ fontWeight: 'bold', color: '#3182ce' }}>
                             {r.xeirokinito_id || `#${r.ypothesi_id}`}
                           </Link>
@@ -269,7 +280,13 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                       </td>
                       <td>{r.pelatis?.trim() || '—'}</td>
                       <td>{r.onomasia_name || '—'}</td>
-                      <td>{r.xeiristes || r.dikigoroi_energeias || '—'}</td>
+                      <td>
+                        {r.xeiristis
+                          ? (r.xeiristis_apo_ypothesi
+                              ? <span style={{ color: '#a0aec0' }} title="Η ενέργεια δεν έχει δικηγόρο — εμφανίζεται ο χειριστής της υπόθεσης">{r.xeiristis}</span>
+                              : r.xeiristis)
+                          : '—'}
+                      </td>
                     </tr>
                   );
                 })}

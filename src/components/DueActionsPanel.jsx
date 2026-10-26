@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { reports, actions } from '../api';
+import { reports, actions, courtSubActions } from '../api';
 import { fmtDate } from '../utils/format';
 import DateInput from './DateInput';
 
@@ -39,8 +39,12 @@ function DueActionsPanel() {
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
   const keyOf = (r) => `${r.kind}:${r.aa}`;
-  const apiFor = (kind) => (kind === 'court' ? actions.court : actions.task);
-  const dateField = (kind) => (kind === 'court' ? 'date' : 'date_dead_line');
+  // Τρία είδη: δικάσιμος, λοιπή ενέργεια, ενέργεια δικασίμου (court_sub)
+  const apiFor = (kind) => (kind === 'court' ? actions.court
+    : kind === 'court_sub' ? courtSubActions : actions.task);
+  const dateField = (kind) => (kind === 'task' ? 'date_dead_line' : 'date');
+  const kindLabel = (kind) => (kind === 'court' ? 'Δικάσιμος'
+    : kind === 'court_sub' ? 'Ενέργεια δικασίμου' : 'Προθεσμία');
 
   // Η γραμμή φεύγει αμέσως από τη λίστα· αν αποτύχει, επανέρχεται.
   const applyChange = async (r, payload) => {
@@ -89,7 +93,7 @@ function DueActionsPanel() {
         <thead>
           <tr>
             <th style={{ width: 120 }}>Ημερομηνία</th>
-            <th style={{ width: 110 }}>Είδος</th>
+            <th style={{ width: 150 }}>Είδος</th>
             <th>Ενέργεια</th>
             <th style={{ width: 150 }}>Υπόθεση</th>
             <th style={{ width: 320 }}></th>
@@ -99,7 +103,7 @@ function DueActionsPanel() {
           {rows.map(r => {
             const k = keyOf(r);
             const late = daysLate(r.date);
-            const tab = r.kind === 'court' ? 'court' : 'tasks';
+            const tab = r.kind === 'task' ? 'tasks' : 'court';
             return (
               <tr key={k} style={late > 0 ? { backgroundColor: '#fffaf0' } : undefined}>
                 <td style={{ fontWeight: 500 }}>
@@ -113,11 +117,13 @@ function DueActionsPanel() {
                     <div style={{ fontSize: 12, color: '#2f855a' }}>σήμερα</div>
                   )}
                 </td>
-                <td>{r.kind === 'court' ? 'Δικάσιμος' : 'Προθεσμία'}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>{kindLabel(r.kind)}</td>
                 <td>
                   {r.perigrafi}
-                  {r.pelatis && (
-                    <div style={{ fontSize: 12, color: '#718096' }}>{r.pelatis}</div>
+                  {(r.pelatis || r.xeiristis) && (
+                    <div style={{ fontSize: 12, color: '#718096' }}>
+                      {[r.pelatis, r.xeiristis && `Χειριστής: ${r.xeiristis}`].filter(Boolean).join(' · ')}
+                    </div>
                   )}
                 </td>
                 <td>

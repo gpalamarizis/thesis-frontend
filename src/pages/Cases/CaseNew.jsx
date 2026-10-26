@@ -14,6 +14,7 @@ import { entryKeyDown } from '../../utils/formKeys';
 
 import { toISODate } from '../../utils/format';
 import DateInput from '../../components/DateInput';
+import EisforaSelect from '../../components/EisforaSelect';
 const DRAFT_KEY = 'case-new';
 
 function CaseNew({ user, onLogout, onOpenCaseSearch }) {
@@ -29,6 +30,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   const [thesi, setThesi] = useState('');
   const [diadikosId, setDiadikosId] = useState('');
   const [xeiristesIds, setXeiristesIds] = useState([]);
+  const [eisforaId, setEisforaId] = useState('');   // δικηγόρος που έφερε την υπόθεση
   const [perilipsi, setPerilipsi] = useState('');
   const [dateEnarxis, setDateEnarxis] = useState(() => toISODate(new Date()));
   const [dateTelous, setDateTelous] = useState('');
@@ -81,10 +83,10 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   // ---- Μη αποθηκευμένη καταχώρηση: παρακολούθηση + προσωρινή φύλαξη ----
   const snapshot = useMemo(() => ({
     fysikoProsopoId, nomikoProsopoId, onomasiaId, thesi, diadikosId,
-    xeiristesIds, perilipsi, dateEnarxis, dateTelous, ekkremis,
+    xeiristesIds, eisforaId, perilipsi, dateEnarxis, dateTelous, ekkremis,
     onomasiaFakelou, thesiArxeiothetisisId, oldKod,
   }), [fysikoProsopoId, nomikoProsopoId, onomasiaId, thesi, diadikosId,
-       xeiristesIds, perilipsi, dateEnarxis, dateTelous, ekkremis,
+       xeiristesIds, eisforaId, perilipsi, dateEnarxis, dateTelous, ekkremis,
        onomasiaFakelou, thesiArxeiothetisisId, oldKod]);
 
   const initialSnapshot = useRef(JSON.stringify(snapshot));
@@ -128,6 +130,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
     setThesi(v.thesi || '');
     setDiadikosId(v.diadikosId || '');
     setXeiristesIds(Array.isArray(v.xeiristesIds) ? v.xeiristesIds : []);
+    setEisforaId(v.eisforaId || '');
     setPerilipsi(v.perilipsi || '');
     setDateEnarxis(v.dateEnarxis || '');
     setDateTelous(v.dateTelous || '');
@@ -256,6 +259,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
         thesi: thesi ? Number(thesi) : null,
         diadikos_id: diadikosId ? Number(diadikosId) : null,
         xeiristes_ids: xeiristesIds.map(Number),
+        eisfora_dikigoros_id: eisforaId ? Number(eisforaId) : null,
         perilipsi: perilipsi || null,
         date_eisagogis: dateEnarxis || null,
         date_telous: dateTelous || null,
@@ -603,6 +607,16 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                     </label>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* -------- Εισφορά υπόθεσης -------- */}
+            <div className="section">
+              <h3 style={{ margin: '0 0 8px' }}>Εισφορά υπόθεσης</h3>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label>Δικηγόρος γραφείου που έφερε την υπόθεση</label>
+                <EisforaSelect lawyers={lawyers} value={eisforaId} onChange={setEisforaId} />
+                <small style={{ color: '#a0aec0' }}>Χρησιμοποιείται στην «Ανάλυση τιμολόγησης» ανά δικηγόρο εισφοράς.</small>
               </div>
             </div>
 

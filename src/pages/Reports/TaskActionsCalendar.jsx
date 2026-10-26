@@ -31,10 +31,12 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
 
   useEffect(() => {
     setLoading(true);
-    reports.pendingTasks()
+    // Το φίλτρο δικηγόρου γίνεται στον server: κοιτά τον δικηγόρο της
+    // ενέργειας (πριν σύγκρινε πεδίο που δεν υπήρχε και δεν έβγαζε τίποτα).
+    // Για «όλες» / «ολοκληρώθηκαν» ζητάμε και τις κλειστές.
+    reports.pendingTasks({ all: filters.ekkremis !== 'true', dikigoros_id: filters.dikigoros_id })
       .then(d => {
         let list = Array.isArray(d) ? d : (d?.data || []);
-        if (filters.dikigoros_id) list = list.filter(e => String(e.dikigoros_id) === filters.dikigoros_id);
         if (filters.ekkremis !== '') list = list.filter(e =>
           filters.ekkremis === 'true' ? e.ekkremis !== false : e.ekkremis === false
         );
@@ -87,12 +89,12 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
               className="cal-event cal-event-task"
               style={{ flex: 1 }}
               title={`${e.perigrafi_energias || ''} - ${e.pelatis || ''}`}
-              onClick={(ev) => { ev.stopPropagation(); if (e.ypothesi_id) navigate(`/cases/${e.ypothesi_id}`); }}
+              onClick={(ev) => { ev.stopPropagation(); if (e.ypothesi_id) navigate(`/cases/${e.ypothesi_id}?tab=${e.kind === 'court_sub' ? 'court' : 'tasks'}`); }}
             >
               {trunc(e.perigrafi_energias, 15) || '•'}
             </div>
             <span onClick={ev => ev.stopPropagation()}>
-              <CalendarExportButton event={eventFromTaskAction(e)} filename={`prothesmia-${e.aa || e.id}.ics`} />
+              <CalendarExportButton event={eventFromTaskAction(e)} filename={`prothesmia-${e.kind === 'court_sub' ? 'd' : ''}${e.aa || e.id}.ics`} />
             </span>
           </div>
         ))}
@@ -104,7 +106,7 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
   const selectedEvents = selectedDate ? (byDay[selectedDate.getDate()] || []) : [];
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Ημερολόγιο Λοιπών Ενεργειών">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Ημερολόγιο Ενεργειών">
       {error && <div className="error">{error}</div>}
 
       <div className="section" style={{ marginBottom: 20 }}>
@@ -151,7 +153,7 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
               <thead><tr><th>Πρωτόκολλο</th><th>Περιγραφή</th><th>Πελάτης</th><th style={{width:100}}>Κατάσταση</th><th style={{width:60}}></th></tr></thead>
               <tbody>
                 {selectedEvents.map((e, i) => (
-                  <tr key={i} className="clickable" onClick={() => e.ypothesi_id && navigate(`/cases/${e.ypothesi_id}`)}>
+                  <tr key={i} className="clickable" onClick={() => e.ypothesi_id && navigate(`/cases/${e.ypothesi_id}?tab=${e.kind === 'court_sub' ? 'court' : 'tasks'}`)}>
                     <td><strong>{e.xeirokinito_id || '—'}</strong></td>
                     <td>{trunc(e.perigrafi_energias, 60) || '—'}</td>
                     <td>{e.pelatis || '—'}</td>
@@ -161,7 +163,7 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
                       </span>
                     </td>
                     <td onClick={ev => ev.stopPropagation()}>
-                      <CalendarExportButton event={eventFromTaskAction(e)} filename={`prothesmia-${e.aa || e.id}.ics`} />
+                      <CalendarExportButton event={eventFromTaskAction(e)} filename={`prothesmia-${e.kind === 'court_sub' ? 'd' : ''}${e.aa || e.id}.ics`} />
                     </td>
                   </tr>
                 ))}

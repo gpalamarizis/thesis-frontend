@@ -13,6 +13,7 @@ const GROUPS = [
   { key: 'nationality', label: 'Υπηκοότητα', first: 'Υπηκοότητα / χώρα' },
   { key: 'eidos',       label: 'Είδος υπόθεσης', first: 'Είδος υπόθεσης' },
   { key: 'client',      label: 'Πελάτης', first: 'Πελάτης' },
+  { key: 'eisfora',     label: 'Δικηγόρος εισφοράς', first: 'Δικηγόρος εισφοράς' },
 ];
 
 const COLUMNS = [
@@ -20,6 +21,12 @@ const COLUMNS = [
   { key: 'exoda',   label: 'Έξοδα',   money: true },
   { key: 'synolo',  label: 'Σύνολο',  money: true },
   { key: 'logariasmoi', label: 'Λογαρ.' },
+];
+// Ανά δικηγόρο εισφοράς: και πόσες υποθέσεις έφερε ο καθένας
+const COLUMNS_EISFORA = [
+  ...COLUMNS,
+  { key: 'ypotheseis_xreosis',  label: 'Υποθ. με χρέωση' },
+  { key: 'ypotheseis_eisforas', label: 'Υποθ. που εισέφερε' },
 ];
 
 function ReportBillingAnalysis({ user, onLogout, onOpenCaseSearch }) {
@@ -70,6 +77,11 @@ function ReportBillingAnalysis({ user, onLogout, onOpenCaseSearch }) {
           Τα ποσά προέρχονται από τους εκδοθέντες αναλυτικούς λογαριασμούς,
           με βάση την ημερομηνία έκδοσής τους. Αμοιβές = ώρες και πάγιες
           αμοιβές· έξοδα = έξοδα με και χωρίς ΦΠΑ.
+          {group === 'eisfora' && (
+            <> Ανά δικηγόρο που εισέφερε την υπόθεση· «Υποθ. που εισέφερε» μετρά
+            τις υποθέσεις του με ημερομηνία εισαγωγής μέσα στην περίοδο, ακόμα κι αν
+            δεν έχουν τιμολογηθεί.</>
+          )}
         </p>
 
         <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -102,7 +114,7 @@ function ReportBillingAnalysis({ user, onLogout, onOpenCaseSearch }) {
         {loading ? <div className="empty-state">Φόρτωση...</div> : (
           <ShareTable
             firstLabel={g.first}
-            columns={COLUMNS}
+            columns={group === 'eisfora' ? COLUMNS_EISFORA : COLUMNS}
             rows={data?.data || []}
             totals={data?.totals}
             emptyMessage="Δεν υπάρχουν εκδοθέντες λογαριασμοί σε αυτή την περίοδο."

@@ -19,6 +19,7 @@ import RelatedCasesPanel from './RelatedCasesPanel';
 import CaseInvoicesTab from './CaseInvoicesTab';
 
 import DateInput from '../../components/DateInput';
+import EisforaSelect from '../../components/EisforaSelect';
 function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -150,6 +151,8 @@ function CaseTab({ caseData, onSave, saving }) {
     : [];
   const [xeiristesIds, setXeiristesIds] = useState(initialXeiristes);
   const [diadikosId, setDiadikosId] = useState(caseData.diadikos_id || '');
+  // Δικηγόρος που ΕΙΣΕΦΕΡΕ την υπόθεση — ξεχωριστά από τους χειριστές
+  const [eisforaId, setEisforaId] = useState(caseData.eisfora_dikigoros_id || '');
   const [lawyers, setLawyers] = useState([]);
   const [opponents, setOpponents] = useState([]);
   const [loadErr, setLoadErr] = useState('');
@@ -208,11 +211,12 @@ function CaseTab({ caseData, onSave, saving }) {
     setArithmosEisagogikou(caseData.arithmos_eisagogikou || '');
     setXeiristesIds(Array.isArray(caseData.xeiristes) ? caseData.xeiristes.map(x => x.aa || x.id).filter(Boolean) : []);
     setDiadikosId(caseData.diadikos_id || '');
+    setEisforaId(caseData.eisfora_dikigoros_id || '');
     setOnomasiaId(caseData.onomasia_id || '');
     setThesi(caseData.thesi || '');
     setFysikoProsopoId(caseData.fysiko_prosopo_id || '');
     setNomikoProsopoId(caseData.nomiko_prosopo_id || '');
-  }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou, caseData.thesi_arxeiothetisis_id, caseData.old_kod, caseData.diadikos_id, caseData.xeiristes, caseData.onomasia_id, caseData.thesi, caseData.fysiko_prosopo_id, caseData.nomiko_prosopo_id]);
+  }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou, caseData.thesi_arxeiothetisis_id, caseData.old_kod, caseData.diadikos_id, caseData.xeiristes, caseData.onomasia_id, caseData.thesi, caseData.fysiko_prosopo_id, caseData.nomiko_prosopo_id, caseData.eisfora_dikigoros_id]);
 
   const toggleXeiristis = (id) => {
     setXeiristesIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -254,6 +258,7 @@ function CaseTab({ caseData, onSave, saving }) {
     ekkremis:                ekkremis,
     diadikos_id:             diadikosId ? Number(diadikosId) : null,
     xeiristes_ids:           xeiristesIds.map(Number),
+    eisfora_dikigoros_id:    eisforaId ? Number(eisforaId) : null,
     onomasia_id:             onomasiaId ? Number(onomasiaId) : null,
     thesi:                   thesi ? Number(thesi) : null,
     fysiko_prosopo_id:       fysikoProsopoId ? Number(fysikoProsopoId) : null,
@@ -486,6 +491,13 @@ function CaseTab({ caseData, onSave, saving }) {
             })()}
           </div>
           <small style={{ color: '#a0aec0' }}>Ο δικηγόρος αντιδίκου, ο δικαστής και ο γραμματέας ορίζονται ξεχωριστά σε κάθε δικαστική ενέργεια.</small>
+        </div>
+
+        {/* --- Εισφορά υπόθεσης --- */}
+        <div className="form-group" style={{ marginTop: 12 }}>
+          <label>Εισφορά υπόθεσης (δικηγόρος γραφείου που έφερε την υπόθεση)</label>
+          <EisforaSelect lawyers={lawyers} value={eisforaId} onChange={setEisforaId} />
+          <small style={{ color: '#a0aec0' }}>Χρησιμοποιείται στην «Ανάλυση τιμολόγησης» ανά δικηγόρο εισφοράς.</small>
         </div>
 
         <div style={{ textAlign: 'right', marginTop: 20 }}>
@@ -1060,7 +1072,7 @@ function SubActionModal({ courtActionId, initial, lawyers, energeiaOptions, onCl
             <input type="checkbox" checked={form.ekkremis} onChange={c('ekkremis')} />
             <span>Εκκρεμής</span>
           </label>
-          <small style={{ color: '#a0aec0' }}>Αυτόματα κλείνει όταν παρέλθει η ημερομηνία.</small>
+          <small style={{ color: '#a0aec0' }}>Μένει εκκρεμής μέχρι να σημειωθεί ολοκληρωμένη· εμφανίζεται στον Πίνακα Ελέγχου.</small>
         </div>
       </div>
     </Modal>

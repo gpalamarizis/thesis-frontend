@@ -193,7 +193,8 @@ export function eventFromTaskAction(task) {
     end,
     description: parts.join('\n'),
     location: '',
-    uid: `task-action-${task.aa}@thesis-app`,
+    // Ενέργεια δικασίμου: άλλος πίνακας, άλλη αρίθμηση — άλλο uid
+    uid: `${task.kind === 'court_sub' ? 'court-sub-action' : 'task-action'}-${task.aa}@thesis-app`,
     allDay: true,
   };
 }

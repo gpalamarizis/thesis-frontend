@@ -543,11 +543,13 @@ export const reports = {
   // Χωρίς ορίσματα: μόνο οι εκκρεμείς, όπως πριν.
   // Με { from, to, all: true }: όλες οι ενέργειες του διαστήματος, και οι
   // ολοκληρωμένες — για το ημερολόγιο του Πίνακα Ελέγχου.
-  pendingTasks:     ({ from = '', to = '', all = false } = {}) => {
+  // Περιλαμβάνει ΚΑΙ τις ενέργειες δικασίμων (kind = 'court_sub').
+  pendingTasks:     ({ from = '', to = '', all = false, dikigoros_id = '' } = {}) => {
     const p = [];
     if (from) p.push(`from=${from}`);
     if (to)   p.push(`to=${to}`);
     if (all)  p.push('ekkremis=false');
+    if (dikigoros_id) p.push(`dikigoros_id=${encodeURIComponent(dikigoros_id)}`);
     return api.get('/api/reports/pending-tasks' + (p.length ? `?${p.join('&')}` : ''));
   },
   // Δικάσιμοι και προθεσμίες που έφτασαν ή πέρασαν, ακόμα εκκρεμείς

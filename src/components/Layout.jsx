@@ -23,9 +23,9 @@ const menuGroups = [
   { title: 'Αναφορές', items: [
       { path: '/reports/pending',        label: 'Εκκρεμείς υποθέσεις',           icon: '📋' },
       { path: '/reports/hearings',       label: 'Προσεχείς δικάσιμοι',           icon: '📆' },
-      { path: '/reports/tasks',          label: 'Λοιπές ενέργειες',              icon: '📝' },
+      { path: '/reports/tasks',          label: 'Εκκρεμείς ενέργειες',            icon: '📝' },
       { path: '/reports/calendar-court', label: 'Ημερολόγιο δικαστικών ενεργ.',  icon: '🗓️' },
-      { path: '/reports/calendar-tasks', label: 'Ημερολόγιο λοιπών ενεργειών',   icon: '📅' },
+      { path: '/reports/calendar-tasks', label: 'Ημερολόγιο ενεργειών',          icon: '📅' },
       { path: '/reports/courts',         label: 'Αναφορά Δικαστηρίων',           icon: '⚖️' },
       { path: '/reports/tax-property',   label: 'Φορολογικά & Ιδιοκτησία',       icon: '🏠' },
       { path: '/reports/clients-nationality', label: 'Πελατεία ανά υπηκοότητα', icon: '🌍' },

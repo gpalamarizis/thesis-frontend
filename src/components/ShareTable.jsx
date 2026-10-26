@@ -19,7 +19,8 @@ const NUM = { textAlign: 'right', fontVariantNumeric: 'tabular-nums', whiteSpace
 function ShareTable({ firstLabel, columns, rows, totals, emptyMessage, unknownCode = '__' }) {
   if (!rows.length) return <div className="empty-state">{emptyMessage}</div>;
   const max = Math.max(...rows.map(r => Number(r.pososto) || 0), 1);
-  const fmt = (c, v) => (c.money ? fmtMoney(v) : fmtInt(v));
+  // null = δεν έχει νόημα για τη γραμμή (π.χ. «χωρίς δικηγόρο εισφοράς»)
+  const fmt = (c, v) => (v == null ? '—' : c.money ? fmtMoney(v) : fmtInt(v));
 
   return (
     <div className="data-table">
