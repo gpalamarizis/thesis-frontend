@@ -5,6 +5,7 @@ import DataTable from '../../components/DataTable';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { people } from '../../api';
+import { transliterate } from '../../utils/translit';
 
 // Backend fields per kind (from routes/people.js):
 const KIND_CONFIG = {
@@ -13,6 +14,12 @@ const KIND_CONFIG = {
     fields: [
       { key: 'eponymo',       label: 'Επώνυμο *',       type: 'text', required: true },
       { key: 'onoma',         label: 'Όνομα',           type: 'text' },
+      // Για τα αγγλικά/γαλλικά έντυπα (λογαριασμός). Κενά = αυτόματη μεταγραφή,
+      // που φαίνεται ως πρόταση μέσα στο πεδίο.
+      { key: 'eponymo_latin', label: 'Επώνυμο με λατινικά (EN/FR έντυπα)', type: 'text',
+        placeholder: (fm) => transliterate(fm.eponymo) },
+      { key: 'onoma_latin',   label: 'Όνομα με λατινικά (EN/FR έντυπα)',   type: 'text',
+        placeholder: (fm) => transliterate(fm.onoma) },
       { key: 'onoma_patros',  label: 'Πατρός',          type: 'text' },
       { key: 'date_gennisis', label: 'Ημ/νία γέννησης', type: 'date' },
       { key: 'ar_mitroou',    label: 'Αρ. μητρώου',     type: 'text' },
@@ -235,7 +242,8 @@ function PersonModal({ kind, config, initial, onClose, onSaved }) {
           ) : (
             <>
               <label>{f.label}</label>
-              <input type={f.type} value={form[f.key] || ''} onChange={c(f.key, false)} required={f.required} />
+              <input type={f.type} value={form[f.key] || ''} onChange={c(f.key, false)} required={f.required}
+                     placeholder={typeof f.placeholder === 'function' ? f.placeholder(form) : f.placeholder} />
             </>
           )}
         </div>

@@ -30,7 +30,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   const [thesi, setThesi] = useState('');
   const [diadikosId, setDiadikosId] = useState('');
   const [xeiristesIds, setXeiristesIds] = useState([]);
-  const [eisforaId, setEisforaId] = useState('');   // δικηγόρος που έφερε την υπόθεση
+  const [eisforaIds, setEisforaIds] = useState([]);   // δικηγόροι που έφεραν την υπόθεση
   const [perilipsi, setPerilipsi] = useState('');
   const [dateEnarxis, setDateEnarxis] = useState(() => toISODate(new Date()));
   const [dateTelous, setDateTelous] = useState('');
@@ -83,10 +83,10 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   // ---- Μη αποθηκευμένη καταχώρηση: παρακολούθηση + προσωρινή φύλαξη ----
   const snapshot = useMemo(() => ({
     fysikoProsopoId, nomikoProsopoId, onomasiaId, thesi, diadikosId,
-    xeiristesIds, eisforaId, perilipsi, dateEnarxis, dateTelous, ekkremis,
+    xeiristesIds, eisforaIds, perilipsi, dateEnarxis, dateTelous, ekkremis,
     onomasiaFakelou, thesiArxeiothetisisId, oldKod,
   }), [fysikoProsopoId, nomikoProsopoId, onomasiaId, thesi, diadikosId,
-       xeiristesIds, eisforaId, perilipsi, dateEnarxis, dateTelous, ekkremis,
+       xeiristesIds, eisforaIds, perilipsi, dateEnarxis, dateTelous, ekkremis,
        onomasiaFakelou, thesiArxeiothetisisId, oldKod]);
 
   const initialSnapshot = useRef(JSON.stringify(snapshot));
@@ -130,7 +130,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
     setThesi(v.thesi || '');
     setDiadikosId(v.diadikosId || '');
     setXeiristesIds(Array.isArray(v.xeiristesIds) ? v.xeiristesIds : []);
-    setEisforaId(v.eisforaId || '');
+    setEisforaIds(Array.isArray(v.eisforaIds) ? v.eisforaIds : (v.eisforaId ? [Number(v.eisforaId)] : []));
     setPerilipsi(v.perilipsi || '');
     setDateEnarxis(v.dateEnarxis || '');
     setDateTelous(v.dateTelous || '');
@@ -259,7 +259,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
         thesi: thesi ? Number(thesi) : null,
         diadikos_id: diadikosId ? Number(diadikosId) : null,
         xeiristes_ids: xeiristesIds.map(Number),
-        eisfora_dikigoros_id: eisforaId ? Number(eisforaId) : null,
+        eisfora_ids: eisforaIds.map(Number),
         perilipsi: perilipsi || null,
         date_eisagogis: dateEnarxis || null,
         date_telous: dateTelous || null,
@@ -613,10 +613,12 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
             {/* -------- Εισφορά υπόθεσης -------- */}
             <div className="section">
               <h3 style={{ margin: '0 0 8px' }}>Εισφορά υπόθεσης</h3>
-              <div className="form-group" style={{ marginBottom: 0 }}>
-                <label>Δικηγόρος γραφείου που έφερε την υπόθεση</label>
-                <EisforaSelect lawyers={lawyers} value={eisforaId} onChange={setEisforaId} />
-                <small style={{ color: '#a0aec0' }}>Χρησιμοποιείται στην «Ανάλυση τιμολόγησης» ανά δικηγόρο εισφοράς.</small>
+              {/* Όχι μέσα σε .form-group: εκεί οι ετικέτες μικραίνουν και η λίστα
+                  δεν θα ήταν ίδια με αυτή των χειριστών από πάνω */}
+              <div>
+                <div style={{ color: '#4a5568', marginBottom: 8 }}>Δικηγόροι γραφείου που έφεραν την υπόθεση ({eisforaIds.length} επιλεγμένοι)</div>
+                <EisforaSelect lawyers={lawyers} value={eisforaIds} onChange={setEisforaIds} checkboxFirst />
+                <small style={{ display: 'block', marginTop: 6, color: '#a0aec0' }}>Χρησιμοποιείται στην «Ανάλυση τιμολόγησης» ανά δικηγόρο εισφοράς· με περισσότερους, το ποσό μοιράζεται ίσα.</small>
               </div>
             </div>
 

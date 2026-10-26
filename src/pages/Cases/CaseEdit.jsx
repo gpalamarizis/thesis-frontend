@@ -152,7 +152,7 @@ function CaseTab({ caseData, onSave, saving }) {
   const [xeiristesIds, setXeiristesIds] = useState(initialXeiristes);
   const [diadikosId, setDiadikosId] = useState(caseData.diadikos_id || '');
   // Δικηγόρος που ΕΙΣΕΦΕΡΕ την υπόθεση — ξεχωριστά από τους χειριστές
-  const [eisforaId, setEisforaId] = useState(caseData.eisfora_dikigoros_id || '');
+  const [eisforaIds, setEisforaIds] = useState(Array.isArray(caseData.eisfora_ids) ? caseData.eisfora_ids : []);
   const [lawyers, setLawyers] = useState([]);
   const [opponents, setOpponents] = useState([]);
   const [loadErr, setLoadErr] = useState('');
@@ -211,12 +211,12 @@ function CaseTab({ caseData, onSave, saving }) {
     setArithmosEisagogikou(caseData.arithmos_eisagogikou || '');
     setXeiristesIds(Array.isArray(caseData.xeiristes) ? caseData.xeiristes.map(x => x.aa || x.id).filter(Boolean) : []);
     setDiadikosId(caseData.diadikos_id || '');
-    setEisforaId(caseData.eisfora_dikigoros_id || '');
+    setEisforaIds(Array.isArray(caseData.eisfora_ids) ? caseData.eisfora_ids : []);
     setOnomasiaId(caseData.onomasia_id || '');
     setThesi(caseData.thesi || '');
     setFysikoProsopoId(caseData.fysiko_prosopo_id || '');
     setNomikoProsopoId(caseData.nomiko_prosopo_id || '');
-  }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou, caseData.thesi_arxeiothetisis_id, caseData.old_kod, caseData.diadikos_id, caseData.xeiristes, caseData.onomasia_id, caseData.thesi, caseData.fysiko_prosopo_id, caseData.nomiko_prosopo_id, caseData.eisfora_dikigoros_id]);
+  }, [caseData.aa, caseData.perilipsi, caseData.date_eisagogis, caseData.date_telous, caseData.ekkremis, caseData.onomasia_fakelou, caseData.thesi_arxeiothetisis_id, caseData.old_kod, caseData.diadikos_id, caseData.xeiristes, caseData.onomasia_id, caseData.thesi, caseData.fysiko_prosopo_id, caseData.nomiko_prosopo_id, caseData.eisfora_ids]);
 
   const toggleXeiristis = (id) => {
     setXeiristesIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -258,7 +258,7 @@ function CaseTab({ caseData, onSave, saving }) {
     ekkremis:                ekkremis,
     diadikos_id:             diadikosId ? Number(diadikosId) : null,
     xeiristes_ids:           xeiristesIds.map(Number),
-    eisfora_dikigoros_id:    eisforaId ? Number(eisforaId) : null,
+    eisfora_ids:             eisforaIds.map(Number),
     onomasia_id:             onomasiaId ? Number(onomasiaId) : null,
     thesi:                   thesi ? Number(thesi) : null,
     fysiko_prosopo_id:       fysikoProsopoId ? Number(fysikoProsopoId) : null,
@@ -495,9 +495,9 @@ function CaseTab({ caseData, onSave, saving }) {
 
         {/* --- Εισφορά υπόθεσης --- */}
         <div className="form-group" style={{ marginTop: 12 }}>
-          <label>Εισφορά υπόθεσης (δικηγόρος γραφείου που έφερε την υπόθεση)</label>
-          <EisforaSelect lawyers={lawyers} value={eisforaId} onChange={setEisforaId} />
-          <small style={{ color: '#a0aec0' }}>Χρησιμοποιείται στην «Ανάλυση τιμολόγησης» ανά δικηγόρο εισφοράς.</small>
+          <label>Εισφορά υπόθεσης — δικηγόροι γραφείου που έφεραν την υπόθεση ({eisforaIds.length} επιλεγμένοι)</label>
+          <EisforaSelect lawyers={lawyers} value={eisforaIds} onChange={setEisforaIds} />
+          <small style={{ color: '#a0aec0' }}>Χρησιμοποιείται στην «Ανάλυση τιμολόγησης» ανά δικηγόρο εισφοράς· με περισσότερους, το ποσό μοιράζεται ίσα.</small>
         </div>
 
         <div style={{ textAlign: 'right', marginTop: 20 }}>
