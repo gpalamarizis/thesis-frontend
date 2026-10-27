@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, subscriptions } from '../api';
+import { TERM } from '../utils/region';
 
 // ΑΓΟΡΑ ΑΠΕΥΘΕΙΑΣ ΑΠΟ ΤΟ SITE
 //
@@ -211,7 +212,7 @@ function Register({ onLogin }) {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="reg-afm">ΑΦΜ γραφείου</label>
+                <label htmlFor="reg-afm">{TERM.afm} γραφείου</label>
                 <input id="reg-afm" type="text" name="billing_afm" value={form.billing_afm}
                        onChange={upd('billing_afm')} autoComplete="off" />
               </div>

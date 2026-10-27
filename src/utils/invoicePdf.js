@@ -3,6 +3,7 @@
 // Greek-safe (uses system fonts), no external dependencies at runtime.
 // v2 additions: myDATA QR code block (compliance-friendly footer with MARK / UID / auth code).
 
+import { isCY, TERM } from './region';
 function money(n) {
   const val = Number(n || 0);
   return new Intl.NumberFormat('el-GR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val) + ' €';
@@ -109,6 +110,13 @@ const T = {
     expensesNote: (a) => `Frais de ${a} payés pour le compte du client (non soumis à la TVA, non inclus dans la présente facture).`,
   },
 };
+
+// Κύπρος: ΑΦΤ αντί ΑΦΜ, Αρ. Εγγραφής ΦΠΑ αντί ΔΟΥ, Έφορος Εταιρειών αντί ΓΕΜΗ
+if (isCY) {
+  Object.assign(T.el, { afm: TERM.afm, doy: TERM.doy, kad: 'NACE', gemi: 'Αρ. Εγγραφής' });
+  if (T.en) Object.assign(T.en, { afm: 'TIC', doy: 'VAT Reg. No', kad: 'NACE code', gemi: 'Company Reg. No' });
+  if (T.fr) Object.assign(T.fr, { afm: 'TIC', doy: 'No TVA', kad: 'Code NACE', gemi: 'No d\'enregistrement' });
+}
 
 function buildHtml(invoice, orgData, lang = 'el') {
   const t = T[lang] || T.el;

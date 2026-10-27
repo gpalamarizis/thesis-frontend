@@ -1,7 +1,9 @@
 ﻿// Thesis v3 — API client
 // Communicates with backend at Railway. JWT via localStorage.
 
-const API_URL = 'https://api.thesislegal.gr';
+// Η κυπριακή εγκατάσταση (appcy.thesislegal.gr) χτίζεται με
+// VITE_API_URL=https://apicy.thesislegal.gr — βλ. utils/region.js
+const API_URL = (import.meta.env.VITE_API_URL || 'https://api.thesislegal.gr').replace(/\/$/, '');
 
 // Λήξη συνεδρίας (401).
 // Κρατάμε πού βρισκόταν ο χειριστής ώστε να επιστρέψει εκεί μετά τη σύνδεση,

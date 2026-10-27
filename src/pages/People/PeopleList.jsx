@@ -6,6 +6,7 @@ import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { people } from '../../api';
 import { transliterate } from '../../utils/translit';
+import { TERM } from '../../utils/region';
 
 // Backend fields per kind (from routes/people.js):
 const KIND_CONFIG = {
@@ -24,8 +25,8 @@ const KIND_CONFIG = {
       { key: 'date_gennisis', label: 'Ημ/νία γέννησης', type: 'date' },
       { key: 'ar_mitroou',    label: 'Αρ. μητρώου',     type: 'text' },
       { key: 'syllogos',      label: 'Δικηγορικός σύλλογος', type: 'text' },
-      { key: 'afm',           label: 'ΑΦΜ',             type: 'text' },
-      { key: 'doy',           label: 'ΔΟΥ',             type: 'text' },
+      { key: 'afm',           label: TERM.afm,             type: 'text' },
+      { key: 'doy',           label: TERM.doy,             type: 'text' },
       { key: 'adt',           label: 'ΑΔΤ',             type: 'text' },
       { key: 'mobile',        label: 'Κινητό',          type: 'tel' },
       { key: 'email',         label: 'Email',           type: 'email' },
@@ -66,8 +67,8 @@ const KIND_CONFIG = {
       { key: 'onoma',              label: 'Όνομα',              type: 'text' },
       { key: 'eponymia',           label: 'Επωνυμία (αν είναι εταιρεία)', type: 'text' },
       { key: 'diakritikos_titlos', label: 'Διακριτικός τίτλος', type: 'text' },
-      { key: 'afm',                label: 'ΑΦΜ',                type: 'text' },
-      { key: 'doy',                label: 'ΔΟΥ',                type: 'text' },
+      { key: 'afm',                label: TERM.afm,                type: 'text' },
+      { key: 'doy',                label: TERM.doy,                type: 'text' },
       { key: 'email',              label: 'Email',              type: 'email' },
       { key: 'tilefono_kinito_1',  label: 'Κινητό',             type: 'tel' },
       { key: 'tilefono_grafeiou_1', label: 'Τηλέφωνο γραφείου', type: 'tel' },
@@ -77,7 +78,7 @@ const KIND_CONFIG = {
       { key: 'aa',                  label: 'Α/Α',    width: 60 },
       { key: 'eponymo',             label: 'Επώνυμο', render: r => r.eponymo || r.eponymia || '—' },
       { key: 'onoma',               label: 'Όνομα' },
-      { key: 'afm',                 label: 'ΑΦΜ',    width: 110 },
+      { key: 'afm',                 label: TERM.afm,    width: 110 },
       { key: 'tilefono_kinito_1',   label: 'Κινητό', width: 120 },
       { key: 'email',               label: 'Email' },
     ],

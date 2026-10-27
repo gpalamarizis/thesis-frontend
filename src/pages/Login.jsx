@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, clearAuthBounce } from '../api';
+import { SITE, isCY } from '../utils/region';
 
 function Login({ onLogin }) {
   const navigate = useNavigate();
@@ -92,6 +93,7 @@ function Login({ onLogin }) {
             letterSpacing: '-1.5px',
             color: '#F7FAFC',
           }}>Thesis</span>
+          {isCY && <span style={{ fontSize: 16, fontWeight: 600, color: '#F59E0B', marginLeft: 8, letterSpacing: 1 }}>ΚΥΠΡΟΣ</span>}
         </div>
 
         {/* Card */}
@@ -309,7 +311,7 @@ function Login({ onLogin }) {
           fontSize: 12,
           color: '#A0AEC0',
         }}>
-          Νομικό λογισμικό δικηγορικών γραφείων · <a href="https://www.thesislegal.gr" target="_blank" rel="noopener" style={{ color: '#A0AEC0' }}>thesislegal.gr</a>
+          Νομικό λογισμικό δικηγορικών γραφείων · <a href={SITE.url} target="_blank" rel="noopener" style={{ color: '#A0AEC0' }}>{SITE.label}</a>
         </p>
       </div>
     </div>

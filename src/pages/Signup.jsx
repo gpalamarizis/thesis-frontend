@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../api';
+import { TERM } from '../utils/region';
 
 const TYPES = [
   { code: 'solo',                label: 'Μεμονωμένος δικηγόρος',       desc: 'Δουλεύεις μόνος σου. 1 χρήστης.', icon: '👤' },
@@ -160,7 +161,7 @@ function Signup() {
               <label>Ονομασία γραφείου *</label>
               <input value={form.organizationName} onChange={upd('organizationName')} required />
             </div>
-            <div className="form-group"><label>ΑΦΜ γραφείου</label><input value={form.billing_afm} onChange={upd('billing_afm')} /></div>
+            <div className="form-group"><label>{TERM.afm} γραφείου</label><input value={form.billing_afm} onChange={upd('billing_afm')} /></div>
             <div className="form-group"><label>Τηλέφωνο</label><input value={form.billing_phone} onChange={upd('billing_phone')} /></div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
               <label>Email τιμολόγησης</label>

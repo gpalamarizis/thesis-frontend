@@ -46,7 +46,7 @@ function Courts({ user, onLogout, onOpenCaseSearch }) {
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">
-          <h2>Δικαστήρια (90+ προεγκατεστημένα)</h2>
+          <h2>Δικαστήρια (προεγκατεστημένα)</h2>
           <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέο Δικαστήριο</button>
         </div>
         {loading ? (

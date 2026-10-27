@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://cy.thesislegal.gr/sitemap.xml

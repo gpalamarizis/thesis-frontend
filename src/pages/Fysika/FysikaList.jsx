@@ -6,6 +6,7 @@ import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { fysika } from '../../api';
 import { fmtDate } from '../../utils/format';
+import { TERM } from '../../utils/region';
 
 function FysikaList({ user, onLogout, onOpenCaseSearch }) {
   const [meta, setMeta] = useState(null);
@@ -43,7 +44,7 @@ function FysikaList({ user, onLogout, onOpenCaseSearch }) {
     { key: 'eponymo',           label: 'Επώνυμο' },
     { key: 'onoma',             label: 'Όνομα' },
     { key: 'onoma_patros',      label: 'Πατρός' },
-    { key: 'afm',               label: 'ΑΦΜ',            width: 110 },
+    { key: 'afm',               label: TERM.afm,            width: 110 },
     { key: 'tilefono_kinito_1', label: 'Κινητό',         width: 110 },
     { key: 'email',             label: 'Email' },
     { key: 'date_gennisis',     label: 'Ημ/νία γέννησης', width: 110, render: r => fmtDate(r.date_gennisis) },

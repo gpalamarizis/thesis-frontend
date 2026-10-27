@@ -8,6 +8,7 @@ import { generateInvoicePdf } from '../../utils/invoicePdf';
 import MyDataPanel from './MyDataPanel';
 
 import DateInput from '../../components/DateInput';
+import { TERM, DEFAULT_VAT, VAT_RATES, HAS_MYDATA, HAS_GR_WITHHOLDINGS } from '../../utils/region';
 function round2(n) { return Math.round(Number(n || 0) * 100) / 100; }
 
 function computeTotals(lines, applyWithhold, applyStamp, applyTn) {
@@ -74,7 +75,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
     fysiko_prosopo_id: '',
     nomiko_prosopo_id: '',
     ypothesi_id: prefilledCaseId,
-    apply_withhold: true,
+    apply_withhold: HAS_GR_WITHHOLDINGS,   // Κύπρος: χωρίς παρακράτηση
     apply_stamp: false,
     apply_tn: false,
     notes: '',
@@ -87,7 +88,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
     client_expenses: '',
     account_ref: '',
     lines: [
-      { description: '', quantity: 1, unit_price: 0, vat_rate: 24 },
+      { description: '', quantity: 1, unit_price: 0, vat_rate: DEFAULT_VAT },
     ],
   });
 
@@ -118,10 +119,10 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
           const d = oRes.value?.data || {};
           setForm(f => ({
             ...f,
-            apply_withhold: d.default_withhold !== false,
+            apply_withhold: HAS_GR_WITHHOLDINGS && d.default_withhold !== false,
             apply_stamp:    !!d.default_stamp,
             apply_tn:       !!d.default_tn,
-            lines: [{ description: '', quantity: 1, unit_price: 0, vat_rate: d.default_vat_rate || 24 }],
+            lines: [{ description: '', quantity: 1, unit_price: 0, vat_rate: d.default_vat_rate ?? DEFAULT_VAT }],
           }));
         }
       }
@@ -193,7 +194,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
   }));
   const addLine = () => setForm(f => ({
     ...f,
-    lines: [...f.lines, { description: '', quantity: 1, unit_price: 0, vat_rate: orgData?.default_vat_rate || 24 }],
+    lines: [...f.lines, { description: '', quantity: 1, unit_price: 0, vat_rate: orgData?.default_vat_rate ?? DEFAULT_VAT }],
   }));
   const removeLine = (i) => setForm(f => ({
     ...f,
@@ -392,8 +393,8 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={title}>
       {error && <div className="error">{error}</div>}
 
-      {/* myDATA panel */}
-      {form.aa && form.status !== 'draft' && (
+      {/* myDATA panel — μόνο στην ελληνική εγκατάσταση */}
+      {HAS_MYDATA && form.aa && form.status !== 'draft' && (
         <MyDataPanel invoiceId={form.aa} invoiceStatus={form.status} />
       )}
 
@@ -467,14 +468,14 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
               <select value={form.fysiko_prosopo_id} onChange={e => setField('fysiko_prosopo_id', e.target.value)} disabled={isReadOnly}>
                 <option value="">— επιλογή —</option>
                 {fysikaList.map(f => (
-                  <option key={f.aa} value={f.aa}>{`${f.eponymo || ''} ${f.onoma || ''}`.trim()} {f.afm ? `(ΑΦΜ: ${f.afm})` : ''}</option>
+                  <option key={f.aa} value={f.aa}>{`${f.eponymo || ''} ${f.onoma || ''}`.trim()} {f.afm ? `(${TERM.afm}: ${f.afm})` : ''}</option>
                 ))}
               </select>
             ) : (
               <select value={form.nomiko_prosopo_id} onChange={e => setField('nomiko_prosopo_id', e.target.value)} disabled={isReadOnly}>
                 <option value="">— επιλογή —</option>
                 {nomikaList.map(n => (
-                  <option key={n.aa} value={n.aa}>{n.eponymia} {n.afm ? `(ΑΦΜ: ${n.afm})` : ''}</option>
+                  <option key={n.aa} value={n.aa}>{n.eponymia} {n.afm ? `(${TERM.afm}: ${n.afm})` : ''}</option>
                 ))}
               </select>
             )}
@@ -566,10 +567,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
                   </td>
                   <td>
                     <select value={l.vat_rate} onChange={e => setLine(i, 'vat_rate', e.target.value)} disabled={isReadOnly}>
-                      <option value="24">24%</option>
-                      <option value="13">13%</option>
-                      <option value="6">6%</option>
-                      <option value="0">0%</option>
+                      {VAT_RATES.map(v => <option key={v} value={v}>{v}%</option>)}
                     </select>
                   </td>
                   <td style={{textAlign:'right'}}>{fmtCurrency(computed.subtotal)}</td>
@@ -600,6 +598,8 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
       {/* Adjustments + Totals */}
       <div className="section" style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 20 }}>
         <div>
+          {/* Ελληνικές παρακρατήσεις — δεν υπάρχουν στην Κύπρο */}
+          {HAS_GR_WITHHOLDINGS && <>
           <h3 style={{ fontSize: 14, marginBottom: 8 }}>Παρακρατήσεις</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isReadOnly ? 'default' : 'pointer' }}>
@@ -615,8 +615,9 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
               <span>Ταμείο Νομικών 12% ({fmtCurrency(totals.tn_total)})</span>
             </label>
           </div>
+          </>}
 
-          <div style={{ marginTop: 20 }}>
+          <div style={{ marginTop: HAS_GR_WITHHOLDINGS ? 20 : 0 }}>
             <div className="form-group">
               <label>Όροι πληρωμής</label>
               <input type="text" value={form.payment_terms} onChange={e => setField('payment_terms', e.target.value)} disabled={isReadOnly} placeholder="π.χ. Πληρωμή εντός 30 ημερών" />

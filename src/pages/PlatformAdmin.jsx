@@ -12,6 +12,7 @@ import { platform } from '../api';
 
 import { toISODate } from '../utils/format';
 import DateInput from '../components/DateInput';
+import { TERM, DEFAULT_VAT } from '../utils/region';
 function fmtDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('el-GR');
@@ -212,7 +213,7 @@ function CreateOrgModal({ onClose, onCreated }) {
         <div className="form-group"><label>Διάρκεια (έτη)</label><input type="number" min="1" max="10" value={form.subscription_years} onChange={e => upd('subscription_years', parseInt(e.target.value))} /></div>
         <div className="form-group"><label>Max χρήστες</label><input type="number" value={form.max_users} onChange={e => upd('max_users', parseInt(e.target.value))} /></div>
         <div className="form-group"><label>Email τιμολόγησης</label><input type="email" value={form.billing_email} onChange={e => upd('billing_email', e.target.value)} /></div>
-        <div className="form-group"><label>ΑΦΜ</label><input value={form.billing_afm} onChange={e => upd('billing_afm', e.target.value)} /></div>
+        <div className="form-group"><label>{TERM.afm}</label><input value={form.billing_afm} onChange={e => upd('billing_afm', e.target.value)} /></div>
         <div className="form-group"><label>Τηλέφωνο</label><input value={form.billing_phone} onChange={e => upd('billing_phone', e.target.value)} /></div>
       </div>
       <div className="form-group"><label>Σημειώσεις</label><textarea rows="2" value={form.notes} onChange={e => upd('notes', e.target.value)} /></div>
@@ -555,7 +556,7 @@ function NewPartnerModal({ onClose, onCreated }) {
         <div className="form-group"><label>Ονοματεπώνυμο *</label><input value={form.full_name} onChange={c('full_name')} /></div>
         <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={c('email')} /></div>
         <div className="form-group"><label>Τηλέφωνο</label><input value={form.phone} onChange={c('phone')} /></div>
-        <div className="form-group"><label>ΑΦΜ</label><input value={form.afm} onChange={c('afm')} /></div>
+        <div className="form-group"><label>{TERM.afm}</label><input value={form.afm} onChange={c('afm')} /></div>
         <div className="form-group"><label>Commission %</label><input type="number" step="0.5" value={form.commission_rate} onChange={c('commission_rate')} /></div>
         <div className="form-group" style={{ gridColumn: 'span 2' }}><label>IBAN (για πληρωμή commission)</label><input value={form.iban} onChange={c('iban')} /></div>
       </div>
@@ -630,7 +631,7 @@ function PlanModal({ plan, onClose, onSaved }) {
     min_users:           plan.min_users ?? 1,
     max_users_allowed:   plan.max_users_allowed ?? plan.max_users ?? 1,
     storage_quota_mb:    plan.storage_quota_mb ?? 5120,
-    vat_rate:            plan.vat_rate ?? 24,
+    vat_rate:            plan.vat_rate ?? DEFAULT_VAT,
     description:         plan.description || '',
     active:              plan.active !== false,
   });
@@ -812,7 +813,7 @@ function PlansTab() {
                     : <span style={{ color: '#C53030', fontWeight: 600 }}>χωρίς τιμή</span>}
                 </td>
                 <td>{min === max ? min : `${min}–${max}`}</td>
-                <td>{Number(r.vat_rate ?? 24)}%</td>
+                <td>{Number(r.vat_rate ?? DEFAULT_VAT)}%</td>
                 <td>{Math.round((r.storage_quota_mb || 0) / 1024)} GB</td>
                 <td>
                   {r.active !== false

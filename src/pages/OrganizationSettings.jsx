@@ -1,11 +1,19 @@
 ﻿import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { orgSettings } from '../api';
+import { TERM, isCY, DEFAULT_VAT, VAT_RATES, HAS_MYDATA, HAS_GR_WITHHOLDINGS } from '../utils/region';
 
 /**
  * OrganizationSettings — Στοιχεία γραφείου (issuer data για τιμολόγια).
  * Μόνο admins/owners μπορούν να το επεξεργαστούν.
  */
+// Ουδέτερα παραδείγματα — ποτέ πραγματικά στοιχεία πελάτη
+const BANK_EXAMPLE = isCY
+  ? { lines: 'BANK OF CYPRUS | 0000000000 | CY00 0000 0000 ... | BCYPCY2N\nHELLENIC BANK | ... | CY... | HEBACY2N',
+      account: 'π.χ. 0000000000', swift: 'π.χ. BCYPCY2N', iban: 'CY...' }
+  : { lines: 'ALPHA BANK | 000-00-0000-000000 | GR00 0000 0000 ... | CRBAGRAA\nΠΕΙΡΑΙΩΣ | ... | GR... | PIRBGRAA\nEUROBANK | ... | GR... | ERBKGRAA',
+      account: 'π.χ. 000-00-0000-000000', swift: 'π.χ. CRBAGRAA', iban: 'GR...' };
+
 function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
   const [form, setForm] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -83,11 +91,11 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         <h2>Φορολογικά Στοιχεία</h2>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>ΑΦΜ *</label>
+            <label>{TERM.afm} *</label>
             <input type="text" value={form.afm || ''} onChange={c('afm')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
-            <label>ΔΟΥ</label>
+            <label>{TERM.doy}</label>
             <input type="text" value={form.doy || ''} onChange={c('doy')} disabled={!isAdmin} />
           </div>
         </div>
@@ -167,19 +175,20 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         <div className="form-group">
           <label>Εταίροι στην κεφαλίδα του λογαριασμού</label>
           <textarea rows={5} value={form.partners_list || ''} onChange={c('partners_list')}
-                    disabled={!isAdmin} placeholder={'ΣΠΥΡΟΣ Δ. ΜΑΥΡΟΣ\nΕΛΕΝΗ Δ. ΣΠΗΛΙΑΔΗ\n…'} />
+                    disabled={!isAdmin} placeholder={'ΟΝΟΜΑ Π. ΕΠΩΝΥΜΟ\nΟΝΟΜΑ Π. ΕΠΩΝΥΜΟ\n…'} />
           <small style={{ color: '#718096' }}>Ένα όνομα ανά γραμμή.</small>
-        </div>
+        </div>
+
         <div className="form-grid-2">
           <div className="form-group">
             <label>Εταίροι (EN)</label>
             <textarea rows={5} value={form.partners_list_en || ''} onChange={c('partners_list_en')}
-                      disabled={!isAdmin} placeholder={'SPYRIDON MAVROS\nDIMITRIOS MAVROS\n…'} />
+                      disabled={!isAdmin} placeholder={'NAME SURNAME\nNAME SURNAME\n…'} />
           </div>
           <div className="form-group">
             <label>Εταίροι (FR)</label>
             <textarea rows={5} value={form.partners_list_fr || ''} onChange={c('partners_list_fr')}
-                      disabled={!isAdmin} placeholder={'SPYRIDON MAVROS\nDIMITRIOS MAVROS\n…'} />
+                      disabled={!isAdmin} placeholder={'NAME SURNAME\nNAME SURNAME\n…'} />
           </div>
         </div>
 
@@ -191,7 +200,7 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
           <label>Λογαριασμοί για τα έντυπα — ένας ανά γραμμή</label>
           <textarea rows={4} value={form.bank_accounts || ''} onChange={c('bank_accounts')}
                     disabled={!isAdmin}
-                    placeholder={'ALPHA BANK | 359-00-2320-003047 | GR28 0140 3590 ... | CRBAGRAAXXX\nΠΕΙΡΑΙΩΣ | ... | GR... | PIRBGRAA\nEUROBANK | ... | GR... | ERBKGRAA'} />
+                    placeholder={BANK_EXAMPLE.lines} />
           <small style={{ color: '#718096' }}>
             Μορφή: Τράπεζα | Αριθμός | IBAN | SWIFT. Ό,τι λείπει παραλείπεται.
             Αν το αφήσεις κενό, χρησιμοποιούνται τα παρακάτω πεδία.
@@ -202,18 +211,18 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         <div className="form-grid-2">
           <div className="form-group">
             <label>Αριθμός λογαριασμού</label>
-            <input type="text" value={form.bank_account_no || ''} onChange={c('bank_account_no')} disabled={!isAdmin} placeholder="359-00-2320-003047" />
+            <input type="text" value={form.bank_account_no || ''} onChange={c('bank_account_no')} disabled={!isAdmin} placeholder={BANK_EXAMPLE.account} />
           </div>
           <div className="form-group">
             <label>SWIFT / BIC</label>
-            <input type="text" value={form.swift || ''} onChange={c('swift')} disabled={!isAdmin} placeholder="CRBAGRAAXXX" />
+            <input type="text" value={form.swift || ''} onChange={c('swift')} disabled={!isAdmin} placeholder={BANK_EXAMPLE.swift} />
           </div>
         </div>
 
         <div className="form-grid-2">
           <div className="form-group">
-            <label>ΚΑΔ κύριας δραστηριότητας</label>
-            <input type="text" value={form.kad || ''} onChange={c('kad')} disabled={!isAdmin} placeholder="π.χ. 69101100" />
+            <label>{TERM.kad}</label>
+            <input type="text" value={form.kad || ''} onChange={c('kad')} disabled={!isAdmin} placeholder={isCY ? 'π.χ. 69.10' : 'π.χ. 69101100'} />
           </div>
           <div className="form-group">
             <label>Περιγραφή δραστηριότητας</label>
@@ -221,7 +230,7 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
           </div>
         </div>
         <div className="form-group">
-          <label>Αριθμός ΓΕΜΗ</label>
+          <label>{isCY ? TERM.gemi : 'Αριθμός ΓΕΜΗ'}</label>
           <input type="text" value={form.gemi || ''} onChange={c('gemi')} disabled={!isAdmin} />
         </div>
       </div>
@@ -249,7 +258,7 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
           </div>
           <div className="form-group">
             <label>Χώρα</label>
-            <input type="text" value={form.xora || 'ΕΛΛΑΔΑ'} onChange={c('xora')} disabled={!isAdmin} />
+            <input type="text" value={form.xora || TERM.country} onChange={c('xora')} disabled={!isAdmin} />
           </div>
         </div>
       </div>
@@ -281,7 +290,7 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
           </div>
           <div className="form-group">
             <label>IBAN</label>
-            <input type="text" value={form.iban || ''} onChange={c('iban')} disabled={!isAdmin} placeholder="GR..." />
+            <input type="text" value={form.iban || ''} onChange={c('iban')} disabled={!isAdmin} placeholder={BANK_EXAMPLE.iban} />
           </div>
         </div>
       </div>
@@ -291,16 +300,14 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         <div className="form-grid-2">
           <div className="form-group">
             <label>Προεπιλεγμένος ΦΠΑ (%)</label>
-            <select value={form.default_vat_rate || 24} onChange={c('default_vat_rate')} disabled={!isAdmin}>
-              <option value="24">24%</option>
-              <option value="13">13%</option>
-              <option value="6">6%</option>
-              <option value="0">0%</option>
+            <select value={String(Number(form.default_vat_rate ?? DEFAULT_VAT))} onChange={c('default_vat_rate')} disabled={!isAdmin}>
+              {VAT_RATES.map(v => <option key={v} value={v}>{v}%</option>)}
             </select>
           </div>
           <div />
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* Ελληνικές παρακρατήσεις — δεν υπάρχουν στην Κύπρο */}
+        {HAS_GR_WITHHOLDINGS && <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isAdmin ? 'pointer' : 'default' }}>
             <input type="checkbox" checked={!!form.default_withhold} onChange={c('default_withhold')} disabled={!isAdmin} />
             <span>Προεπιλογή παρακράτησης φόρου 20% (για δικηγόρους)</span>
@@ -313,9 +320,11 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
             <input type="checkbox" checked={!!form.default_tn} onChange={c('default_tn')} disabled={!isAdmin} />
             <span>Προεπιλογή Ταμείου Νομικών 12%</span>
           </label>
-        </div>
+        </div>}
       </div>
 
+      {/* myDATA (ΑΑΔΕ) — μόνο στην ελληνική εγκατάσταση */}
+      {HAS_MYDATA && (
       <div className="section">
         <h2>myDATA — Διαβίβαση στην ΑΑΔΕ</h2>
         <div style={{ background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: 12, marginBottom: 16, fontSize: 13, color: '#4a5568' }}>
@@ -389,6 +398,7 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
           )}
         </div>
       </div>
+      )}
       {isAdmin && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
           <button type="button" className="btn" disabled={saving} onClick={save}>

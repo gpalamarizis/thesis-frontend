@@ -10,12 +10,13 @@ import { useState, useEffect, useMemo } from 'react';
 import Layout from '../components/Layout';
 import DataTable from '../components/DataTable';
 import { api, downloadFile } from '../api';
+import { TERM } from '../utils/region';
 
 const COLUMNS = [
   { key: 'typos',        label: 'Τύπος',        width: 70 },
   { key: 'onomasia',     label: 'Ονοματεπώνυμο / Επωνυμία', render: r => <strong>{r.onomasia || '—'}</strong> },
-  { key: 'afm',          label: 'ΑΦΜ',          width: 110, render: r => r.afm || '—' },
-  { key: 'doy',          label: 'ΔΟΥ',          width: 130, render: r => r.doy || '—' },
+  { key: 'afm',          label: TERM.afm,          width: 110, render: r => r.afm || '—' },
+  { key: 'doy',          label: TERM.doy,          width: 130, render: r => r.doy || '—' },
   { key: 'for_katoikia', label: 'Φορ. κατοικία', width: 130, render: r => r.for_katoikia || '—' },
   { key: 'ypoxreos',     label: 'Υπόχρεος',     width: 100, render: r => r.ypoxreos || '—' },
   { key: 'akinito',      label: 'Ακίνητο',      width: 90,  render: r => r.akinito || '—' },

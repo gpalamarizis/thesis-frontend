@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { HELP_LINKS } from '../utils/region';
 
 const roleLabel = { owner: 'Διαχειριστής', admin: 'Διαχειριστής', lawyer: 'Δικηγόρος', secretary: 'Γραμματέας' };
 
@@ -53,14 +54,8 @@ const menuGroups = [
   { title: 'Platform (admin only)', items: [
       { path: '/platform', label: 'Platform Admin', icon: '🛡️', platformOnly: true },
   ]},
-  { title: 'Βοήθεια', items: [
-      { href: 'https://www.dsa.gr',              label: 'ΔΣΑ',                icon: '⚖️', external: true },
-      { href: 'https://www.olomeleia.gr',        label: 'Ολομέλεια',          icon: '🏛️', external: true },
-      { href: 'https://www.gsis.gr',             label: 'ΓΓΠΣ / TAXISnet',    icon: '💼', external: true },
-      { href: 'https://www.businessregistry.gr', label: 'ΓΕΜΗ',               icon: '📊', external: true },
-      { href: 'https://solon.gov.gr',            label: 'Νομοθεσία (ΣΟΛΩΝ)',  icon: '📚', external: true },
-      { href: 'https://www.ktimatologio.gr',     label: 'Κτηματολόγιο',       icon: '🗺️', external: true },
-  ]},
+  // Σύνδεσμοι ανά χώρα (Ελλάδα: ΔΣΑ, ΓΓΠΣ… · Κύπρος: ΠΔΣ, CyLaw…)
+  { title: 'Βοήθεια', items: HELP_LINKS.map(l => ({ ...l, external: true })) },
 ];
 
 const SIDEBAR_WIDTH = 240;

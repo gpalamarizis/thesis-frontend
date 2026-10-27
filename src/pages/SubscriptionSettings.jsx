@@ -8,6 +8,7 @@ import Layout from '../components/Layout';
 import useConfirm from '../components/useConfirm';
 import Modal from '../components/Modal';
 import { subscriptions } from '../api';
+import { DEFAULT_VAT } from '../utils/region';
 
 function fmtDate(d) {
   if (!d) return '—';
@@ -92,7 +93,7 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
   const perUser   = Number(plan.price_per_user_year ?? plan.price_year);
   const min       = Number(plan.min_users || 1);
   const max       = Number(plan.max_users_allowed || plan.max_users || min);
-  const vatRate   = Number(plan.vat_rate ?? 24);
+  const vatRate   = Number(plan.vat_rate ?? DEFAULT_VAT);
 
   // Ξεκινάμε από τους ενεργούς χρήστες του γραφείου, αν χωράνε στο πλάνο
   const [users, setUsers] = useState(() => {
@@ -375,7 +376,7 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
               )}
               <p style={{ marginTop: 16, fontSize: 13, color: '#718096' }}>
                 Οι τιμές είναι ανά χρήστη ανά έτος και <strong>δεν περιλαμβάνουν ΦΠΑ</strong>.
-                Ο ΦΠΑ 24% προστίθεται στο τελικό ποσό.
+                Ο ΦΠΑ {DEFAULT_VAT}% προστίθεται στο τελικό ποσό.
               </p>
             </>
           )}

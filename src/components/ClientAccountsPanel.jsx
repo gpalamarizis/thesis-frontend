@@ -10,11 +10,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { clientCredentials } from '../api';
+import { TERM } from '../utils/region';
 
 const PROVIDERS = [
   { key: 'taxis', label: 'TAXISnet' },
   { key: 'dei',   label: 'ΔΕΗ' },
-  { key: 'gemi',  label: 'ΓΕΜΗ' },
+  { key: 'gemi',  label: TERM.gemi },
   { key: 'other', label: 'Άλλος' },
 ];
 

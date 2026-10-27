@@ -1,0 +1,20 @@
+// Κυπριακή εγκατάσταση της εφαρμογής: appcy.thesislegal.gr
+// Ίδιος κώδικας με το app.thesislegal.gr — χτίζεται με
+//   VITE_COUNTRY=CY  VITE_API_URL=https://apicy.thesislegal.gr
+// και ανεβαίνει με:  npx wrangler deploy -c wrangler.cy.jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "thesis-frontend-cy",
+  "compatibility_date": "2026-07-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [
+    { "pattern": "appcy.thesislegal.gr", "custom_domain": true }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

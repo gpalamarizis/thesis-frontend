@@ -10,6 +10,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import DataTable from '../components/DataTable';
 
 import DateInput from '../components/DateInput';
+import { TERM } from '../utils/region';
 const EMPTY = {
   // Στοιχεία Επιχείρησης
   eponymia: '', diakritikos_titlos: '',
@@ -169,7 +170,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
             padding: '2px 8px', borderRadius: 10, fontSize: 12, whiteSpace: 'nowrap',
           }}>{r.idiotita_name}</span>
         : <span style={{ color: '#CBD5E0' }}>—</span> },
-    { key: 'afm', label: 'ΑΦΜ', width: 120, render: r => r.afm || '—' },
+    { key: 'afm', label: TERM.afm, width: 120, render: r => r.afm || '—' },
     { key: 'tilefono', label: 'Τηλέφωνο', width: 140,
       value: r => r.tilefono_kinito_1 || r.tilefono_grafeiou_1 || r.tilefono_oikias_1 || '',
       render: r => r.tilefono_kinito_1 || r.tilefono_grafeiou_1 || r.tilefono_oikias_1 || '—' },
@@ -320,7 +321,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Ταυτότητα & ΑΦΜ</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Ταυτότητα & {TERM.afm}</h3>
               <div className="form-row">
                 <div className="form-group">
                   <label>Α.Δ.Τ.</label>
@@ -333,11 +334,11 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>ΑΦΜ</label>
+                  <label>{TERM.afm}</label>
                   <input type="text" name="afm" value={form.afm} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>ΔΟΥ</label>
+                  <label>{TERM.doy}</label>
                   <input type="text" name="doy" value={form.doy} onChange={c} />
                 </div>
               </div>

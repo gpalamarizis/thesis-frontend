@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../../components/Layout';
 import { api } from '../../api';
 import { COUNTRY_OPTIONS, countryName } from '../../utils/countries';
+import { TERM } from '../../utils/region';
 
 const PAGE = 50;
 const SS_KEY = 'ypikootita-bulk';
@@ -131,7 +132,7 @@ function FysikaYpikootita({ user, onLogout, onOpenCaseSearch }) {
                   onClick={() => setFilter('empty')}>Μόνο χωρίς υπηκοότητα</button>
           <button type="button" className={`btn btn-sm ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
                   onClick={() => setFilter('all')}>Όλα</button>
-          <input type="search" className="search-input" placeholder="🔍 Όνομα ή ΑΦΜ"
+          <input type="search" className="search-input" placeholder={`🔍 Όνομα ή ${TERM.afm}`}
                  value={q} onChange={e => setQ(e.target.value)} style={{ minWidth: 240 }} />
           <button type="submit" className="btn btn-sm btn-secondary">Αναζήτηση</button>
           <button type="button" className="btn btn-sm" onClick={() => load(true)} disabled={loading}>↻ Ανανέωση</button>
@@ -165,7 +166,7 @@ function FysikaYpikootita({ user, onLogout, onOpenCaseSearch }) {
                     <input type="checkbox" checked={allOnPage} onChange={togglePage} title="Όλη η σελίδα" />
                   </th>
                   <th>Ονοματεπώνυμο</th>
-                  <th style={{ width: 110 }}>ΑΦΜ</th>
+                  <th style={{ width: 110 }}>{TERM.afm}</th>
                   <th style={{ width: 180 }}>Κατοικία</th>
                   <th style={{ width: 230 }}>Πρόταση</th>
                   <th style={{ width: 240 }}>Υπηκοότητα</th>

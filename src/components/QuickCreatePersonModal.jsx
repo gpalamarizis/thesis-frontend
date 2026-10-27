@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Modal from '../components/Modal';
 import { people, fysika, nomika } from '../api';
+import { TERM } from '../utils/region';
 
 /**
  * QuickCreatePersonModal — inline "+ Νέος" creator from within case editing.
@@ -21,7 +22,7 @@ function QuickCreatePersonModal({ kind, onClose, onCreated }) {
         { key: 'eponymo',      label: 'Επώνυμο *', required: true },
         { key: 'onoma',        label: 'Όνομα' },
         { key: 'onoma_patros', label: 'Πατρός' },
-        { key: 'afm',          label: 'ΑΦΜ' },
+        { key: 'afm',          label: TERM.afm },
       ],
     },
     nomiko: {
@@ -30,7 +31,7 @@ function QuickCreatePersonModal({ kind, onClose, onCreated }) {
       fields: [
         { key: 'eponymia',           label: 'Επωνυμία *', required: true },
         { key: 'diakritikos_titlos', label: 'Διακριτικός τίτλος' },
-        { key: 'afm',                label: 'ΑΦΜ' },
+        { key: 'afm',                label: TERM.afm },
       ],
     },
     lawyer: {

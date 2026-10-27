@@ -1,0 +1,15 @@
+// Ιστοσελίδα προϊόντος για την Κύπρο: cy.thesislegal.gr
+// Στατικές σελίδες από τον φάκελο cy-site (ελληνικά + /en/).
+// Ανεβαίνει με:  npx wrangler deploy -c wrangler.site-cy.jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "thesis-site-cy",
+  "compatibility_date": "2026-07-08",
+  "assets": {
+    "directory": "./cy-site",
+    "not_found_handling": "404-page"
+  },
+  "routes": [
+    { "pattern": "cy.thesislegal.gr", "custom_domain": true }
+  ]
+}

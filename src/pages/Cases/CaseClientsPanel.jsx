@@ -11,6 +11,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { cases } from '../../api';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
+import { TERM } from '../../utils/region';
 
 // Νομικό πρόσωπο: η επωνυμία. Φυσικό: επώνυμο και όνομα.
 function fullName(p) {
@@ -170,7 +171,7 @@ function CaseClientsPanel({
               <th style={{ width: 40 }}>#</th>
               <th>Ονοματεπώνυμο / Επωνυμία</th>
               <th style={{ width: 140 }}>Πατρώνυμο / Τίτλος</th>
-              <th style={{ width: 110 }}>ΑΦΜ</th>
+              <th style={{ width: 110 }}>{TERM.afm}</th>
               <th style={{ width: 1 }}></th>
             </tr>
           </thead>
@@ -210,7 +211,7 @@ function CaseClientsPanel({
           value={q}
           disabled={adding}
           onChange={e => setQ(e.target.value)}
-          placeholder="Όνομα, επωνυμία ή ΑΦΜ — φυσικά και νομικά, τουλάχιστον 2 χαρακτήρες"
+          placeholder={`Όνομα, επωνυμία ή ${TERM.afm} — φυσικά και νομικά, τουλάχιστον 2 χαρακτήρες`}
         />
         {q.trim().length >= 2 && (
           <div style={{
@@ -239,7 +240,7 @@ function CaseClientsPanel({
               >
                 <TypeTag typos={p.typos} />
                 {fullName(p)}
-                {p.afm && <span style={{ color: '#718096', fontSize: 12 }}> · ΑΦΜ {p.afm}</span>}
+                {p.afm && <span style={{ color: '#718096', fontSize: 12 }}> · {TERM.afm} {p.afm}</span>}
               </button>
             ))}
           </div>

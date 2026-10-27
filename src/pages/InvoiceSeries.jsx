@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { invoiceSeries } from '../api';
+import { HAS_MYDATA } from '../utils/region';
 
 const TYPE_LABELS = {
   invoice:     'Τιμολόγιο',
@@ -170,10 +171,12 @@ function SeriesModal({ initial, onClose, onSaved }) {
           <input type="number" value={form.next_number} onChange={c('next_number')} min="1" />
           <small style={{ color: '#a0aec0' }}>Το επόμενο τιμολόγιο θα πάρει αυτόν τον αριθμό.</small>
         </div>
+        {HAS_MYDATA ? (
         <div className="form-group">
           <label>myDATA τύπος παραστατικού</label>
           <input type="text" value={form.mydata_invoice_type} onChange={c('mydata_invoice_type')} placeholder="π.χ. 1.1, 2.1" />
         </div>
+        ) : <div />}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>

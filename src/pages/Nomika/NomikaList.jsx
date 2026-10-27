@@ -5,6 +5,7 @@ import TruncationWarning from '../../components/TruncationWarning';
 import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { nomika } from '../../api';
+import { TERM } from '../../utils/region';
 
 function NomikaList({ user, onLogout, onOpenCaseSearch }) {
   const [meta, setMeta] = useState(null);
@@ -33,8 +34,8 @@ function NomikaList({ user, onLogout, onOpenCaseSearch }) {
     { key: 'aa',                  label: 'Α/Α',              width: 60 },
     { key: 'eponymia',            label: 'Επωνυμία' },
     { key: 'diakritikos_titlos',  label: 'Διακριτικός τίτλος' },
-    { key: 'afm',                 label: 'ΑΦΜ',              width: 110 },
-    { key: 'doy',                 label: 'ΔΟΥ',              width: 120 },
+    { key: 'afm',                 label: TERM.afm,              width: 110 },
+    { key: 'doy',                 label: TERM.doy,              width: 120 },
     { key: 'tilefono_grafeiou_1', label: 'Τηλέφωνο',         width: 120 },
     { key: 'email',               label: 'Email' },
   ];

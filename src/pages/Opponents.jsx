@@ -9,6 +9,7 @@ import { people } from '../api';
 import { entryKeyDown } from '../utils/formKeys';
 import ConfirmDialog from '../components/ConfirmDialog';
 import DataTable from '../components/DataTable';
+import { TERM, isCY, checkAfm, AFM_MAXLEN, AFM_PLACEHOLDER } from '../utils/region';
 
 const EMPTY = {
   morfi: 'φυσικό',
@@ -61,7 +62,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
       },
     },
     { key: 'onoma',    label: 'Όνομα',     render: r => r.onoma || '—' },
-    { key: 'afm',      label: 'ΑΦΜ',       width: 120, render: r => r.afm || '—' },
+    { key: 'afm',      label: TERM.afm,       width: 120, render: r => r.afm || '—' },
     { key: 'poli',     label: 'Πόλη',      width: 140, render: r => r.poli || '—' },
     { key: 'telefono', label: 'Τηλέφωνο',  width: 140,
       value: r => r.telefono || r.kinito || '', render: r => r.telefono || r.kinito || '—' },
@@ -97,8 +98,8 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
       setError('Το πεδίο Επώνυμο είναι υποχρεωτικό.');
       return;
     }
-    if (form.afm && !/^\d{9}$/.test(form.afm.trim())) {
-      setError('Το ΑΦΜ πρέπει να έχει ακριβώς 9 ψηφία.');
+    if (form.afm && checkAfm(form.afm)) {
+      setError(checkAfm(form.afm));
       return;
     }
     setSaving(true);
@@ -207,7 +208,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
                              value={form.diakritikos_titlos} onChange={c} />
                     </div>
                     <div className="form-group">
-                      <label>Αρ. ΓΕΜΗ</label>
+                      <label>{isCY ? TERM.gemi : 'Αρ. ΓΕΜΗ'}</label>
                       <input type="text" name="gemi" value={form.gemi} onChange={c} />
                     </div>
                   </div>
@@ -229,12 +230,12 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>ΑΦΜ</label>
+                  <label>{TERM.afm}</label>
                   <input type="text" name="afm" value={form.afm} onChange={c}
-                         maxLength={9} placeholder="9 ψηφία" />
+                         maxLength={AFM_MAXLEN} placeholder={AFM_PLACEHOLDER} />
                 </div>
                 <div className="form-group">
-                  <label>ΔΟΥ</label>
+                  <label>{TERM.doy}</label>
                   <input type="text" name="doy" value={form.doy} onChange={c} />
                 </div>
                 {!isNomiko && (
@@ -269,7 +270,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
                 <div className="form-group">
                   <label>Χώρα</label>
                   <input type="text" name="xora" value={form.xora} onChange={c}
-                         placeholder="ΕΛΛΑΔΑ" />
+                         placeholder={TERM.country} />
                 </div>
               </div>
 

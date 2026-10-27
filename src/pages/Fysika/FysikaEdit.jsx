@@ -11,6 +11,7 @@ import { toDateInput } from '../../utils/format';
 import { COUNTRY_OPTIONS } from '../../utils/countries';
 
 import DateInput from '../../components/DateInput';
+import { TERM } from '../../utils/region';
 // Backend fields (from routes/fysika.js FIELDS list):
 const emptyForm = {
   eponymo: '', onoma: '', onoma_patros: '',
@@ -167,7 +168,7 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
           <input type="text" value={form.afm} onChange={onChange('afm')} />
         </div>
         <div className="form-group">
-          <label>Δ.Ο.Υ.</label>
+          <label>{TERM.doy}</label>
           <input type="text" value={form.doy} onChange={onChange('doy')} />
         </div>
         {/* ΥΠΗΚΟΟΤΗΤΑ — κωδικός χώρας. Στα υπάρχοντα πρόσωπα είναι κενή και

@@ -8,6 +8,7 @@ import AccountsList from '../../components/AccountsList';
 import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { nomika } from '../../api';
 import { COUNTRY_OPTIONS } from '../../utils/countries';
+import { TERM, isCY } from '../../utils/region';
 
 // Backend fields (from routes/nomika.js FIELDS list):
 const emptyForm = {
@@ -82,12 +83,12 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
           <input type="text" value={form.afm} onChange={onChange('afm')} />
         </div>
         <div className="form-group">
-          <label>Δ.Ο.Υ.</label>
+          <label>{TERM.doy}</label>
           <input type="text" value={form.doy} onChange={onChange('doy')} />
         </div>
       </div>
       <div className="form-group">
-        <label>Αριθμός ΓΕΜΗ</label>
+        <label>{isCY ? TERM.gemi : 'Αριθμός ΓΕΜΗ'}</label>
         <input type="text" value={form.gemi} onChange={onChange('gemi')} placeholder="π.χ. 123456789012" />
       </div>
       <div className="form-grid-2">
