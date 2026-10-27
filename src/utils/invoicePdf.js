@@ -202,7 +202,11 @@ function buildHtml(invoice, orgData, lang = 'el') {
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; margin: 0; padding: 0; color: #1a202c; font-size: 10pt; line-height: 1.5; }
     @page { size: A4; margin: 15mm; }
     .courtesy { text-align: center; font-size: 8pt; color: #777; font-style: italic; margin-top: 6mm; }
-    .print-btn { position: fixed; top: 10mm; right: 10mm; padding: 8px 16px; background: #2b6cb0; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13pt; z-index: 100; }
+    /* Μπάρα εκτύπωσης πάνω από το έντυπο, στοιχισμένη δεξιά με το περιεχόμενο.
+       Παλιότερα το κουμπί ήταν position:fixed και σε στενά παράθυρα έπεφτε
+       πάνω στην ημερομηνία έκδοσης. Δεν τυπώνεται. */
+    .print-bar { max-width: 180mm; margin: 0 auto; padding: 6mm 0 0; display: flex; justify-content: flex-end; }
+    .print-btn { padding: 8px 16px; background: #2b6cb0; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12pt; }
     .wrap { max-width: 180mm; margin: 0 auto; padding: 10mm 0; }
     .watermark { position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 100pt; opacity: 0.08; z-index: -1; font-weight: bold; }
     .watermark.cancelled { color: #c53030; }
@@ -246,7 +250,7 @@ function buildHtml(invoice, orgData, lang = 'el') {
     .mydata-block .info .row { margin: 0.5mm 0; }
     .footer { position: fixed; bottom: 5mm; left: 15mm; right: 15mm; font-size: 8pt; color: #a0aec0; display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 2mm; }
     @media print {
-      .print-btn { display: none; }
+      .print-bar { display: none; }
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   </style>
@@ -256,7 +260,7 @@ function buildHtml(invoice, orgData, lang = 'el') {
   ${isDraft ? '<div class="watermark draft">DRAFT</div>' : ''}
 
   ${t.courtesy ? `<div class="courtesy">${esc(t.courtesy)}</div>` : ''}
-  <button class="print-btn" onclick="window.print()">🖨️ ${t.print}</button>
+  <div class="print-bar"><button class="print-btn" onclick="window.print()">🖨️ ${t.print}</button></div>
 
   <div class="wrap">
     <div class="header">
