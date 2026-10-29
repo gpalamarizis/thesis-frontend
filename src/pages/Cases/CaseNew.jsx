@@ -16,6 +16,7 @@ import { toISODate } from '../../utils/format';
 import DateInput from '../../components/DateInput';
 import EisforaSelect from '../../components/EisforaSelect';
 import { loadPartnerLines, isPartner } from '../../utils/partners';
+import { _t } from '../../i18n';
 const DRAFT_KEY = 'case-new';
 
 function CaseNew({ user, onLogout, onOpenCaseSearch }) {
@@ -149,10 +150,10 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
 
   const handleCancel = async () => {
     if (isDirty && !await ask({
-      title: 'Ακύρωση καταχώρησης',
-      message: 'Υπάρχουν στοιχεία που δεν έχουν αποθηκευτεί.\n\nΘέλετε σίγουρα να ακυρώσετε την καταχώρηση;',
-      confirmLabel: 'Ναι, ακύρωση',
-      cancelLabel: 'Συνέχεια επεξεργασίας',
+      title: _t("Ακύρωση καταχώρησης"),
+      message: _t("Υπάρχουν στοιχεία που δεν έχουν αποθηκευτεί.\n\nΘέλετε σίγουρα να ακυρώσετε την καταχώρηση;"),
+      confirmLabel: _t("Ναι, ακύρωση"),
+      cancelLabel: _t("Συνέχεια επεξεργασίας"),
     })) return;
     clearDraft(DRAFT_KEY);
     savedOk.current = true;
@@ -254,11 +255,11 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
     e.preventDefault();
     setError('');
     if (!fysikoProsopoId && !nomikoProsopoId) {
-      setError('Επιλέξτε πελάτη (Φυσικό ή Νομικό Πρόσωπο).');
+      setError(_t("Επιλέξτε πελάτη (Φυσικό ή Νομικό Πρόσωπο)."));
       return;
     }
     if (fysikoProsopoId && nomikoProsopoId) {
-      setError('Επιλέξτε είτε Φυσικό είτε Νομικό Πρόσωπο, όχι και τα δύο.');
+      setError(_t("Επιλέξτε είτε Φυσικό είτε Νομικό Πρόσωπο, όχι και τα δύο."));
       return;
     }
     setSaving(true);
@@ -298,7 +299,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
           catch (e) { failed.push(p.eponymia || `${p.eponymo || ''} ${p.onoma || ''}`.trim()); }
         }
         if (failed.length) {
-          setError(`Η υπόθεση δημιουργήθηκε, αλλά δεν προστέθηκαν: ${failed.join(', ')}`);
+          setError(_t("Η υπόθεση δημιουργήθηκε, αλλά δεν προστέθηκαν: {0}", [failed.join(', ')]));
         }
       }
 
@@ -341,7 +342,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
       }}
     >
       <h4 style={{ margin: '0 0 12px 0', fontSize: 14, color: '#2d3748' }}>
-        Υποθέσεις ίδιου πελάτη
+        {_t("Υποθέσεις ίδιου πελάτη")}
         {sameClientCases.length > 0 && (
           <span style={{ marginLeft: 6, color: '#4a5568', fontWeight: 'normal', fontSize: 13 }}>
             ({sameClientCases.length})
@@ -350,10 +351,10 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
       </h4>
 
       {loadingSameClient ? (
-        <div style={{ color: '#a0aec0', fontSize: 13 }}>⏳ φόρτωση...</div>
+        <div style={{ color: '#a0aec0', fontSize: 13 }}>{_t("⏳ φόρτωση...")}</div>
       ) : sameClientCases.length === 0 ? (
         <div style={{ color: '#a0aec0', fontSize: 13, fontStyle: 'italic' }}>
-          Δεν υπάρχουν άλλες υποθέσεις για τον επιλεγμένο πελάτη.
+          {_t("Δεν υπάρχουν άλλες υποθέσεις για τον επιλεγμένο πελάτη.")}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -374,7 +375,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{ fontWeight: 600, color: '#2b6cb0', textDecoration: 'none' }}
-                  title="Άνοιγμα σε νέα καρτέλα"
+                  title={_t("Άνοιγμα σε νέα καρτέλα")}
                 >
                   {c.xeirokinito_id || `#${c.aa}`}
                 </a>
@@ -382,7 +383,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                   className={`badge ${c.ekkremis ? 'badge-open' : 'badge-closed'}`}
                   style={{ fontSize: 12 }}
                 >
-                  {c.ekkremis ? 'Εκκρεμής' : 'Κλειστή'}
+                  {c.ekkremis ? _t("Εκκρεμής") : _t("Κλειστή")}
                 </span>
               </div>
               {c.onomasia_name && (
@@ -406,7 +407,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
               )}
               {c.date_eisagogis && (
                 <div style={{ color: '#a0aec0', marginTop: 4, fontSize: 12 }}>
-                  Εισαγωγή: {fmtDate(c.date_eisagogis)}
+                  {_t("Εισαγωγή:")} {fmtDate(c.date_eisagogis)}
                 </div>
               )}
             </div>
@@ -417,7 +418,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
   );
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Νέα Υπόθεση">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Νέα Υπόθεση")}>
       {error && <div className="error">{error}</div>}
 
       {recoverable && (
@@ -427,12 +428,12 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
           alignItems: 'center', gap: 16, flexWrap: 'wrap',
         }}>
           <div style={{ flex: 1, minWidth: 260, fontSize: 14, color: '#7B341E' }}>
-            Βρέθηκε καταχώρηση υπόθεσης που δεν ολοκληρώθηκε
+            {_t("Βρέθηκε καταχώρηση υπόθεσης που δεν ολοκληρώθηκε")}
             {recoverable.savedAt ? ` (${formatDraftTime(recoverable.savedAt)})` : ''}.
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button type="button" className="btn" onClick={restoreDraft}>Επαναφορά στοιχείων</button>
-            <button type="button" className="btn btn-secondary" onClick={discardDraft}>Διαγραφή</button>
+            <button type="button" className="btn" onClick={restoreDraft}>{_t("Επαναφορά στοιχείων")}</button>
+            <button type="button" className="btn btn-secondary" onClick={discardDraft}>{_t("Διαγραφή")}</button>
           </div>
         </div>
       )}
@@ -444,29 +445,29 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
 
             {/* -------- Ημερομηνίες φακέλου + Πρωτόκολλο -------- */}
             <div className="section">
-              <h3 style={{ marginBottom: 12 }}>Ημερομηνίες φακέλου</h3>
+              <h3 style={{ marginBottom: 12 }}>{_t("Ημερομηνίες φακέλου")}</h3>
               <div className="form-grid-3">
                 <div className="form-group">
-                  <label>Άνοιγμα (εισαγωγή)</label>
+                  <label>{_t("Άνοιγμα (εισαγωγή)")}</label>
                   <DateInput value={dateEnarxis} onChange={e => setDateEnarxis(e.target.value)} />
                 </div>
                 <div className="form-group">
-                  <label>Κλείσιμο (τέλος)</label>
+                  <label>{_t("Κλείσιμο (τέλος)")}</label>
                   <DateInput value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
                 </div>
                 <div className="form-group" style={{ display: 'flex', alignItems: 'end' }}>
                   <label style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', paddingBottom: 8 }}>
                     <input type="checkbox" checked={ekkremis} onChange={e => setEkkremis(e.target.checked)} />
-                    <span>Εκκρεμής</span>
+                    <span>{_t("Εκκρεμής")}</span>
                   </label>
                 </div>
               </div>
 
               {hasClient && (
                 <div className="protocol-preview" style={{ marginTop: 8 }}>
-                  <div className="protocol-preview-label">Αριθμός Πρωτοκόλλου (θα δημιουργηθεί):</div>
+                  <div className="protocol-preview-label">{_t("Αριθμός Πρωτοκόλλου (θα δημιουργηθεί):")}</div>
                   <div className="protocol-preview-value">
-                    {previewing ? '⏳ υπολογισμός...' : (previewError ? <span style={{color:'#c53030'}}>{previewError}</span> : (protocolPreview || '—'))}
+                    {previewing ? _t("⏳ υπολογισμός...") : (previewError ? <span style={{color:'#c53030'}}>{previewError}</span> : (protocolPreview || '—'))}
                   </div>
                 </div>
               )}
@@ -474,20 +475,20 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
 
             {/* -------- Στοιχεία υπόθεσης -------- */}
             <div className="section">
-              <h3 style={{ marginBottom: 12 }}>Στοιχεία υπόθεσης</h3>
+              <h3 style={{ marginBottom: 12 }}>{_t("Στοιχεία υπόθεσης")}</h3>
 
               <div className="form-grid-2">
                 <div className="form-group">
-                  <label>Είδος υπόθεσης</label>
+                  <label>{_t("Είδος υπόθεσης")}</label>
                   <select value={onomasiaId} onChange={e => setOnomasiaId(e.target.value)}>
-                    <option value="">— κανένα —</option>
+                    <option value="">{_t("— κανένα —")}</option>
                     {onomasiaOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Θέση στην υπόθεση</label>
+                  <label>{_t("Θέση στην υπόθεση")}</label>
                   <select value={thesi} onChange={e => setThesi(e.target.value)}>
-                    <option value="">— καμία —</option>
+                    <option value="">{_t("— καμία —")}</option>
                     {thesiOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
                   </select>
                 </div>
@@ -497,14 +498,14 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
               <div className="form-grid-2" style={{ marginTop: 12 }}>
                 <div className="form-group">
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                    <label>Πελάτης ΦΠ (Φυσικό Πρόσωπο)</label>
-                    <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('fysiko'); }} style={{ fontSize: 12 }}>+ Νέος</a>
+                    <label>{_t("Πελάτης ΦΠ (Φυσικό Πρόσωπο)")}</label>
+                    <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('fysiko'); }} style={{ fontSize: 12 }}>{_t("+ Νέος")}</a>
                   </div>
                   <select
                     value={fysikoProsopoId}
                     onChange={e => { setFysikoProsopoId(e.target.value); if (e.target.value) setNomikoProsopoId(''); }}
                   >
-                    <option value="">— κανένας —</option>
+                    <option value="">{_t("— κανένας —")}</option>
                     {fysikaList.map(f => (
                       <option key={f.aa || f.id} value={f.aa || f.id}>
                         {`${f.eponymo || ''} ${f.onoma || ''}`.trim() || `#${f.aa || f.id}`}
@@ -514,14 +515,14 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                 </div>
                 <div className="form-group">
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                    <label>Πελάτης ΝΠ (Νομικό Πρόσωπο)</label>
-                    <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('nomiko'); }} style={{ fontSize: 12 }}>+ Νέο</a>
+                    <label>{_t("Πελάτης ΝΠ (Νομικό Πρόσωπο)")}</label>
+                    <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('nomiko'); }} style={{ fontSize: 12 }}>{_t("+ Νέο")}</a>
                   </div>
                   <select
                     value={nomikoProsopoId}
                     onChange={e => { setNomikoProsopoId(e.target.value); if (e.target.value) setFysikoProsopoId(''); }}
                   >
-                    <option value="">— κανένα —</option>
+                    <option value="">{_t("— κανένα —")}</option>
                     {nomikaList.map(n => (
                       <option key={n.aa || n.id} value={n.aa || n.id}>
                         {n.eponymia || n.diakritikos_titlos || `#${n.aa || n.id}`}
@@ -534,11 +535,11 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
               <div className="form-grid-2" style={{ marginTop: 12 }}>
                 <div className="form-group">
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-                    <label>Αντίδικος</label>
-                    <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opponent'); }} style={{ fontSize: 12 }}>+ Νέος</a>
+                    <label>{_t("Αντίδικος")}</label>
+                    <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opponent'); }} style={{ fontSize: 12 }}>{_t("+ Νέος")}</a>
                   </div>
                   <select value={diadikosId} onChange={e => setDiadikosId(e.target.value)}>
-                    <option value="">— κανένας —</option>
+                    <option value="">{_t("— κανένας —")}</option>
                     {opponents.map(r => (
                       <option key={r.aa || r.id} value={r.aa || r.id}>
                         {`${r.eponymo || ''} ${r.onoma || ''}`.trim() || `#${r.aa || r.id}`}
@@ -547,9 +548,9 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Αρχειοθετημένη σε</label>
+                  <label>{_t("Αρχειοθετημένη σε")}</label>
                   <select value={thesiArxeiothetisisId} onChange={e => setThesiArxeiothetisisId(e.target.value)}>
-                    <option value="">— επιλογή —</option>
+                    <option value="">{_t("— επιλογή —")}</option>
                     {archiveOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
                   </select>
                 </div>
@@ -559,28 +560,27 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                    Η στήλη onomasia_fakelou παραμένει στη βάση για τα παλιά δεδομένα
                    και εξακολουθεί να εμφανίζεται στις κάρτες «Σχετικές υποθέσεις». */}
               <div className="form-group" style={{ marginTop: 12 }}>
-                <label>Παλιός Κωδικός</label>
+                <label>{_t("Παλιός Κωδικός")}</label>
                 <input type="text" value={oldKod}
                   onChange={e => { setOldKod(e.target.value); setOldKodSuggested(false); }} />
                 {oldKodSuggested && (
                   <div style={{ fontSize: 12, color: '#718096', marginTop: 4 }}>
-                    Προτεινόμενος — ο επόμενος της σειράς. Μπορείς να τον αλλάξεις.
+                    {_t("Προτεινόμενος — ο επόμενος της σειράς. Μπορείς να τον αλλάξεις.")}
                   </div>
                 )}
               </div>
 
               <div className="form-group" style={{ marginTop: 12 }}>
-                <label>Περίληψη / Περιγραφή</label>
-                <textarea rows="5" value={perilipsi} onChange={e => setPerilipsi(e.target.value)} placeholder="Σύντομη περιγραφή της υπόθεσης..." />
+                <label>{_t("Περίληψη / Περιγραφή")}</label>
+                <textarea rows="5" value={perilipsi} onChange={e => setPerilipsi(e.target.value)} placeholder={_t("Σύντομη περιγραφή της υπόθεσης...")} />
               </div>
             </div>
 
             {/* -------- Επιπλέον πελάτες -------- */}
             <div className="section">
-              <h3 style={{ margin: '0 0 4px' }}>Επιπλέον πελάτες</h3>
+              <h3 style={{ margin: '0 0 4px' }}>{_t("Επιπλέον πελάτες")}</h3>
               <p style={{ fontSize: 13, color: '#718096', marginBottom: 12 }}>
-                Για υποθέσεις με περισσότερους από έναν εντολείς. Θα καταχωρηθούν
-                μόλις αποθηκευτεί η υπόθεση.
+                {_t("Για υποθέσεις με περισσότερους από έναν εντολείς. Θα καταχωρηθούν μόλις αποθηκευτεί η υπόθεση.")}
               </p>
               <CaseClientsPanel
                 caseId={null}
@@ -597,18 +597,18 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
             {/* -------- Χειριστές δικηγόροι γραφείου -------- */}
             <div className="section">
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
-                <h3 style={{ margin: 0 }}>Χειριστές ({xeiristesIds.length} επιλεγμένοι)</h3>
+                <h3 style={{ margin: 0 }}>{_t("Χειριστές (")}{xeiristesIds.length} {_t("επιλεγμένοι)")}</h3>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center', fontSize: 12 }}>
                   <label style={{ display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
                     <input type="checkbox" checked={showInactiveLawyers} onChange={e => setShowInactiveLawyers(e.target.checked)} />
-                    Εμφάνιση μη ενεργών
+                    {_t("Εμφάνιση μη ενεργών")}
                   </label>
-                  <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('lawyer'); }}>+ Νέος δικηγόρος γραφείου</a>
+                  <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('lawyer'); }}>{_t("+ Νέος δικηγόρος γραφείου")}</a>
                 </div>
               </div>
               <div style={{ maxHeight: 200, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 6, padding: 8 }}>
                 {visibleLawyers.length === 0 ? (
-                  <div style={{ color: '#a0aec0', padding: 8 }}>Δεν υπάρχουν δικηγόροι γραφείου.</div>
+                  <div style={{ color: '#a0aec0', padding: 8 }}>{_t("Δεν υπάρχουν δικηγόροι γραφείου.")}</div>
                 ) : visibleLawyers.map(l => {
                   const id = l.aa || l.id;
                   const checked = xeiristesIds.includes(id);
@@ -616,7 +616,7 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
                     <label key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 6, cursor: 'pointer', borderRadius: 4 }}>
                       <input type="checkbox" checked={checked} onChange={() => toggleXeiristis(id)} />
                       <span>{`${l.eponymo || ''} ${l.onoma || ''}`.trim() || `#${id}`}</span>
-                      {l.energos === false && <small style={{ color: '#a0aec0' }}>(μη ενεργός)</small>}
+                      {l.energos === false && <small style={{ color: '#a0aec0' }}>{_t("(μη ενεργός)")}</small>}
                     </label>
                   );
                 })}
@@ -625,20 +625,20 @@ function CaseNew({ user, onLogout, onOpenCaseSearch }) {
 
             {/* -------- Εισφορά υπόθεσης -------- */}
             <div className="section">
-              <h3 style={{ margin: '0 0 8px' }}>Εισφορά υπόθεσης</h3>
+              <h3 style={{ margin: '0 0 8px' }}>{_t("Εισφορά υπόθεσης")}</h3>
               {/* Όχι μέσα σε .form-group: εκεί οι ετικέτες μικραίνουν και η λίστα
                   δεν θα ήταν ίδια με αυτή των χειριστών από πάνω */}
               <div>
-                <div style={{ color: '#4a5568', marginBottom: 8 }}>Δικηγόροι γραφείου που έφεραν την υπόθεση ({eisforaIds.length} επιλεγμένοι)</div>
+                <div style={{ color: '#4a5568', marginBottom: 8 }}>{_t("Δικηγόροι γραφείου που έφεραν την υπόθεση (")}{eisforaIds.length} {_t("επιλεγμένοι)")}</div>
                 <EisforaSelect lawyers={lawyers} value={eisforaIds} onChange={setEisforaIds} checkboxFirst />
-                <small style={{ display: 'block', marginTop: 6, color: '#a0aec0' }}>Χρησιμοποιείται στην «Ανάλυση τιμολόγησης» ανά δικηγόρο εισφοράς· με περισσότερους, το ποσό μοιράζεται ίσα.</small>
+                <small style={{ display: 'block', marginTop: 6, color: '#a0aec0' }}>{_t("Χρησιμοποιείται στην «Ανάλυση τιμολόγησης» ανά δικηγόρο εισφοράς· με περισσότερους, το ποσό μοιράζεται ίσα.")}</small>
               </div>
             </div>
 
             <div className="form-actions">
-              <button type="button" className="btn btn-secondary" onClick={handleCancel}>Ακύρωση</button>
+              <button type="button" className="btn btn-secondary" onClick={handleCancel}>{_t("Ακύρωση")}</button>
               <button type="submit" className="btn" disabled={saving || (!fysikoProsopoId && !nomikoProsopoId)}>
-                {saving ? 'Δημιουργία...' : 'Δημιουργία Υπόθεσης'}
+                {saving ? _t("Δημιουργία...") : _t("Δημιουργία Υπόθεσης")}
               </button>
             </div>
           </form>

@@ -7,6 +7,7 @@ import Layout from '../../components/Layout';
 import { courtsReport } from '../../api';
 
 import DateInput from '../../components/DateInput';
+import { _t } from '../../i18n';
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('el-GR') : '—'; }
 
 function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
@@ -39,7 +40,7 @@ function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
   const toggle = (id) => setExpanded(e => ({ ...e, [id]: !e[id] }));
 
   const exportCSV = () => {
-    const rows = [['Δικαστήριο', 'Διαδικασία', 'Πόλη', 'Σύνολο', 'Εκκρεμείς', 'Ολοκληρωμένες']];
+    const rows = [['Δικαστήριο', 'Διαδικασία', 'Πόλη', 'Σύνολο', 'Εκκρεμείς', 'Ολοκληρωμένες'].map(x => _t(x))];
     data.forEach(c => rows.push([c.court_name, c.diadikasia || '', c.city || '', c.total_actions, c.pending, c.closed]));
     const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -49,35 +50,35 @@ function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Αναφορά Δικαστηρίων">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Αναφορά Δικαστηρίων")}>
       {err && <div className="error">{err}</div>}
 
       {/* Filters */}
       <div className="filter-bar" style={{ marginBottom: 16, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'end' }}>
         <div className="form-group" style={{ margin: 0 }}>
-          <label style={{ fontSize: 12 }}>Από</label>
+          <label style={{ fontSize: 12 }}>{_t("Από")}</label>
           <DateInput value={filters.date_from} onChange={e => setFilters(f => ({ ...f, date_from: e.target.value }))} />
         </div>
         <div className="form-group" style={{ margin: 0 }}>
-          <label style={{ fontSize: 12 }}>Έως</label>
+          <label style={{ fontSize: 12 }}>{_t("Έως")}</label>
           <DateInput value={filters.date_to} onChange={e => setFilters(f => ({ ...f, date_to: e.target.value }))} />
         </div>
         <div className="form-group" style={{ margin: 0, minWidth: 220 }}>
-          <label style={{ fontSize: 12 }}>Δικαστήριο</label>
+          <label style={{ fontSize: 12 }}>{_t("Δικαστήριο")}</label>
           <select value={filters.court_id} onChange={e => setFilters(f => ({ ...f, court_id: e.target.value }))}>
-            <option value="">— όλα —</option>
+            <option value="">{_t("— όλα —")}</option>
             {courts.map(c => <option key={c.aa} value={c.aa}>{c.name}</option>)}
           </select>
         </div>
         <div className="form-group" style={{ margin: 0 }}>
-          <label style={{ fontSize: 12 }}>Κατάσταση</label>
+          <label style={{ fontSize: 12 }}>{_t("Κατάσταση")}</label>
           <select value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
-            <option value="all">Όλες</option>
-            <option value="pending">Εκκρεμείς</option>
-            <option value="closed">Ολοκληρωμένες</option>
+            <option value="all">{_t("Όλες")}</option>
+            <option value="pending">{_t("Εκκρεμείς")}</option>
+            <option value="closed">{_t("Ολοκληρωμένες")}</option>
           </select>
         </div>
-        <button className="btn btn-secondary" onClick={() => setFilters({ date_from: '', date_to: '', court_id: '', status: 'all' })}>Καθαρισμός</button>
+        <button className="btn btn-secondary" onClick={() => setFilters({ date_from: '', date_to: '', court_id: '', status: 'all' })}>{_t("Καθαρισμός")}</button>
         <button className="btn" onClick={exportCSV} disabled={data.length === 0}>📥 Export CSV</button>
       </div>
 
@@ -85,26 +86,26 @@ function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
       {summary && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
           <div style={{ padding: 12, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6 }}>
-            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Δικαστήρια</div>
+            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>{_t("Δικαστήρια")}</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: '#2d3748' }}>{summary.total_courts}</div>
           </div>
           <div style={{ padding: 12, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6 }}>
-            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Σύνολο ενεργειών</div>
+            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>{_t("Σύνολο ενεργειών")}</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: '#3182ce' }}>{summary.total_actions}</div>
           </div>
           <div style={{ padding: 12, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6 }}>
-            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Εκκρεμείς</div>
+            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>{_t("Εκκρεμείς")}</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: '#dd6b20' }}>{summary.total_pending}</div>
           </div>
           <div style={{ padding: 12, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6 }}>
-            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Ολοκληρωμένες</div>
+            <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>{_t("Ολοκληρωμένες")}</div>
             <div style={{ fontSize: 22, fontWeight: 700, color: '#38a169' }}>{summary.total_closed}</div>
           </div>
         </div>
       )}
 
-      {loading ? <div className="empty-state">Φόρτωση...</div> : data.length === 0 ? (
-        <div className="empty-state">Δεν βρέθηκαν εγγραφές με τα επιλεγμένα φίλτρα.</div>
+      {loading ? <div className="empty-state">{_t("Φόρτωση...")}</div> : data.length === 0 ? (
+        <div className="empty-state">{_t("Δεν βρέθηκαν εγγραφές με τα επιλεγμένα φίλτρα.")}</div>
       ) : (
         <div>
           {data.map(court => (
@@ -120,21 +121,21 @@ function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
                   </span>
                 </div>
                 <div style={{ display: 'flex', gap: 12, fontSize: 12 }}>
-                  <span><strong>{court.total_actions}</strong> ενέργειες</span>
-                  <span style={{ color: '#dd6b20' }}><strong>{court.pending}</strong> εκκρεμείς</span>
-                  <span style={{ color: '#38a169' }}><strong>{court.closed}</strong> ολοκλ.</span>
+                  <span><strong>{court.total_actions}</strong> {_t("ενέργειες")}</span>
+                  <span style={{ color: '#dd6b20' }}><strong>{court.pending}</strong> {_t("εκκρεμείς")}</span>
+                  <span style={{ color: '#38a169' }}><strong>{court.closed}</strong> {_t("ολοκλ.")}</span>
                 </div>
               </div>
               {expanded[court.court_id] && (
                 <table className="table" style={{ marginTop: 0 }}>
                   <thead>
                     <tr>
-                      <th>Ημερομηνία</th>
-                      <th>Υπόθεση</th>
-                      <th>Πελάτης</th>
-                      <th>Πινάκιο</th>
-                      <th>Απόφαση</th>
-                      <th>Κατάσταση</th>
+                      <th>{_t("Ημερομηνία")}</th>
+                      <th>{_t("Υπόθεση")}</th>
+                      <th>{_t("Πελάτης")}</th>
+                      <th>{_t("Πινάκιο")}</th>
+                      <th>{_t("Απόφαση")}</th>
+                      <th>{_t("Κατάσταση")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -142,7 +143,7 @@ function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
                       <tr key={a.action_id}
                           onClick={a.ypothesi_id ? () => navigate(`/cases/${a.ypothesi_id}?tab=court`) : undefined}
                           style={a.ypothesi_id ? { cursor: 'pointer' } : undefined}
-                          title={a.ypothesi_id ? 'Άνοιγμα υπόθεσης' : undefined}>
+                          title={a.ypothesi_id ? _t("Άνοιγμα υπόθεσης") : undefined}>
                         <td>{fmtDate(a.date_action)}</td>
                         <td>
                           <Link to={`/cases/${a.ypothesi_id}?tab=court`} onClick={e => e.stopPropagation()}>
@@ -153,7 +154,7 @@ function CourtsReport({ user, onLogout, onOpenCaseSearch }) {
                         <td>{a.client_name || '—'}</td>
                         <td>{a.ar_pinakiou || '—'}</td>
                         <td>{a.apofasi_num || '—'}</td>
-                        <td>{a.ekkremis ? '🟠 Εκκρεμεί' : '🟢 Ολοκλ.'}</td>
+                        <td>{a.ekkremis ? _t("🟠 Εκκρεμεί") : _t("🟢 Ολοκλ.")}</td>
                       </tr>
                     ))}
                   </tbody>

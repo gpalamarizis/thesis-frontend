@@ -11,6 +11,7 @@ import DataTable from '../components/DataTable';
 
 import DateInput from '../components/DateInput';
 import { TERM } from '../utils/region';
+import { _t } from '../i18n';
 const EMPTY = {
   // Στοιχεία Επιχείρησης
   eponymia: '', diakritikos_titlos: '',
@@ -119,7 +120,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
     setError('');
     // Απαιτούμε τουλάχιστον έναν από: επωνυμία, επώνυμο
     if (!form.eponymia.trim() && !form.eponymo.trim()) {
-      setError('Απαιτείται τουλάχιστον Επωνυμία (για εταιρεία) ή Επώνυμο (για φυσικό πρόσωπο).');
+      setError(_t("Απαιτείται τουλάχιστον Επωνυμία (για εταιρεία) ή Επώνυμο (για φυσικό πρόσωπο)."));
       return;
     }
     setSaving(true);
@@ -161,9 +162,9 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
   const displayName = (r) => r.eponymia || `${r.eponymo || ''} ${r.onoma || ''}`.trim() || '—';
 
   const COLUMNS = [
-    { key: 'onomasia', label: 'Ονομασία',
+    { key: 'onomasia', label: _t("Ονομασία"),
       value: displayName, render: r => <strong>{displayName(r)}</strong> },
-    { key: 'idiotita_name', label: 'Ιδιότητα', width: 150,
+    { key: 'idiotita_name', label: _t("Ιδιότητα"), width: 150,
       render: r => r.idiotita_name
         ? <span style={{
             background: '#EBF4FF', color: '#4C51BF',
@@ -171,10 +172,10 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
           }}>{r.idiotita_name}</span>
         : <span style={{ color: '#CBD5E0' }}>—</span> },
     { key: 'afm', label: TERM.afm, width: 120, render: r => r.afm || '—' },
-    { key: 'tilefono', label: 'Τηλέφωνο', width: 140,
+    { key: 'tilefono', label: _t("Τηλέφωνο"), width: 140,
       value: r => r.tilefono_kinito_1 || r.tilefono_grafeiou_1 || r.tilefono_oikias_1 || '',
       render: r => r.tilefono_kinito_1 || r.tilefono_grafeiou_1 || r.tilefono_oikias_1 || '—' },
-    { key: 'poli', label: 'Πόλη', width: 140,
+    { key: 'poli', label: _t("Πόλη"), width: 140,
       value: r => r.poli || r.poli_grafeiou || r.poli_oikias || '',
       render: r => r.poli || r.poli_grafeiou || r.poli_oikias || '—' },
     { key: 'paratiriseis', label: '📝', width: 40, sortable: false,
@@ -195,52 +196,52 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Σχετικά Πρόσωπα">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Σχετικά Πρόσωπα")}>
       <div className="section">
         <div className="section-header">
-          <h2>Σχετικά Πρόσωπα</h2>
-          <button className="btn" onClick={openNew}>+ Νέο</button>
+          <h2>{_t("Σχετικά Πρόσωπα")}</h2>
+          <button className="btn" onClick={openNew}>{_t("+ Νέο")}</button>
         </div>
 
         <div className="data-table-header">
           <select
             value={fIdiotita}
             onChange={e => setFIdiotita(e.target.value)}
-            title="Φίλτρο ιδιότητας"
+            title={_t("Φίλτρο ιδιότητας")}
             className="filter-select"
           >
-            <option value="">Όλες οι ιδιότητες</option>
+            <option value="">{_t("Όλες οι ιδιότητες")}</option>
             {idiotites.map(i => <option key={i.aa} value={i.aa}>{i.name}</option>)}
-            <option value="none">— χωρίς ιδιότητα —</option>
+            <option value="none">{_t("— χωρίς ιδιότητα —")}</option>
           </select>
           <select
             value={fPoli}
             onChange={e => setFPoli(e.target.value)}
-            title="Φίλτρο πόλης"
+            title={_t("Φίλτρο πόλης")}
             className="filter-select"
           >
-            <option value="">Όλες οι πόλεις</option>
+            <option value="">{_t("Όλες οι πόλεις")}</option>
             {cities.map(ct => (
               <option key={ct.poli} value={ct.poli}>{ct.poli} ({ct.plithos})</option>
             ))}
           </select>
           <label
             className="filter-check"
-            title="Οι αντίδικοι έχουν δικό τους πίνακα. Εδώ εμφανίζονται μόνο αν το ζητήσεις."
+            title={_t("Οι αντίδικοι έχουν δικό τους πίνακα. Εδώ εμφανίζονται μόνο αν το ζητήσεις.")}
           >
             <input
               type="checkbox"
               checked={showOpponents}
               onChange={e => setShowOpponents(e.target.checked)}
             />
-            Και αντίδικοι
+            {_t("Και αντίδικοι")}
           </label>
           {(fIdiotita || fPoli) && (
             <button
               className="btn btn-sm btn-secondary"
               onClick={() => { setFIdiotita(''); setFPoli(''); }}
-              title="Καθαρισμός φίλτρων"
-            >✕ Καθαρισμός</button>
+              title={_t("Καθαρισμός φίλτρων")}
+            >{_t("✕ Καθαρισμός")}</button>
           )}
         </div>
 
@@ -248,19 +249,19 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
         {error && <div className="error">{error}</div>}
 
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : (
           <DataTable
             columns={COLUMNS}
             rows={items}
             rowKey={r => r.aa}
             onRowClick={openEdit}
-            emptyMessage="Δεν υπάρχουν εγγραφές."
+            emptyMessage={_t("Δεν υπάρχουν εγγραφές.")}
             actions={r => (
               <span style={{ whiteSpace: 'nowrap' }}>
-                <button className="btn btn-sm btn-secondary" onClick={() => openCases(r)} title="Σε ποιες υποθέσεις εμφανίζεται">Υποθέσεις</button>
+                <button className="btn btn-sm btn-secondary" onClick={() => openCases(r)} title={_t("Σε ποιες υποθέσεις εμφανίζεται")}>{_t("Υποθέσεις")}</button>
                 {' '}
-                <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>Διαγραφή</button>
+                <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>{_t("Διαγραφή")}</button>
               </span>
             )}
           />
@@ -271,64 +272,64 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
         <div className="modal-overlay" role="presentation">
           <div className="modal" style={{ maxWidth: 900, maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>{editing ? 'Επεξεργασία Σχετικού Προσώπου' : 'Νέο Σχετικό Πρόσωπο'}</h2>
+              <h2>{editing ? _t("Επεξεργασία Σχετικού Προσώπου") : _t("Νέο Σχετικό Πρόσωπο")}</h2>
               <button className="close-btn" onClick={() => setShowModal(false)}>×</button>
             </div>
             {error && <div className="error">{error}</div>}
             <form onSubmit={handleSubmit} onKeyDown={entryKeyDown}>
 
-              <h3 style={{ marginTop: 8, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Στοιχεία Επιχείρησης (αν είναι εταιρεία)</h3>
+              <h3 style={{ marginTop: 8, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>{_t("Στοιχεία Επιχείρησης (αν είναι εταιρεία)")}</h3>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Επωνυμία</label>
+                  <label>{_t("Επωνυμία")}</label>
                   <input type="text" name="eponymia" value={form.eponymia} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Διακριτικός Τίτλος</label>
+                  <label>{_t("Διακριτικός Τίτλος")}</label>
                   <input type="text" name="diakritikos_titlos" value={form.diakritikos_titlos} onChange={c} />
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Στοιχεία Φυσικού Προσώπου</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>{_t("Στοιχεία Φυσικού Προσώπου")}</h3>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Επώνυμο</label>
+                  <label>{_t("Επώνυμο")}</label>
                   <input type="text" name="eponymo" value={form.eponymo} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Όνομα</label>
+                  <label>{_t("Όνομα")}</label>
                   <input type="text" name="onoma" value={form.onoma} onChange={c} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Πατρώνυμο</label>
+                  <label>{_t("Πατρώνυμο")}</label>
                   <input type="text" name="onoma_patros" value={form.onoma_patros} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Ημ. Γέννησης</label>
+                  <label>{_t("Ημ. Γέννησης")}</label>
                   <DateInput name="date_gennisis" value={form.date_gennisis} onChange={c} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Επώνυμο Συζύγου</label>
+                  <label>{_t("Επώνυμο Συζύγου")}</label>
                   <input type="text" name="eponymo_syzygou" value={form.eponymo_syzygou} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Όνομα Συζύγου</label>
+                  <label>{_t("Όνομα Συζύγου")}</label>
                   <input type="text" name="onoma_syzygou" value={form.onoma_syzygou} onChange={c} />
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Ταυτότητα & {TERM.afm}</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>{_t("Ταυτότητα &")} {TERM.afm}</h3>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Α.Δ.Τ.</label>
+                  <label>{_t("Α.Δ.Τ.")}</label>
                   <input type="text" name="adt" value={form.adt} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Εκδούσα Αρχή</label>
+                  <label>{_t("Εκδούσα Αρχή")}</label>
                   <input type="text" name="ekdousa_arxi" value={form.ekdousa_arxi} onChange={c} />
                 </div>
               </div>
@@ -343,7 +344,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Επικοινωνία & Σχέση</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>{_t("Επικοινωνία & Σχέση")}</h3>
               <div className="form-row">
                 <div className="form-group">
                   <label>Email</label>
@@ -356,26 +357,26 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Ιδιότητα</label>
+                  <label>{_t("Ιδιότητα")}</label>
                   <select name="idiotita_id" value={form.idiotita_id || ''} onChange={c}>
-                    <option value="">— καμία —</option>
+                    <option value="">{_t("— καμία —")}</option>
                     {idiotites.map(i => (
                       <option key={i.aa} value={i.aa}>{i.name}</option>
                     ))}
                   </select>
-                  <small style={{ color: '#A0AEC0' }}>Τι <b>είναι</b> ο άνθρωπος (δικηγόρος, συμβολαιογράφος…)</small>
+                  <small style={{ color: '#A0AEC0' }}>{_t("Τι")} <b>{_t("είναι")}</b> {_t("ο άνθρωπος (δικηγόρος, συμβολαιογράφος…)")}</small>
                 </div>
                 {/* ΑΦΑΙΡΕΘΗΚΕ: «Είδος σχέσης» (παρατήρηση Μαύρου #7) — καταχωρείται ανά υπόθεση. */}
                 <div className="form-group" style={{ flex: '0 0 120px' }}>
                   <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 24 }}>
                     <input type="checkbox" name="energos" checked={!!form.energos} onChange={c} />
-                    Ενεργός
+                    {_t("Ενεργός")}
                   </label>
                 </div>
               </div>
 
               <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>
-                Παρατηρήσεις <span style={{ fontWeight: 400, fontSize: 13, color: '#A0AEC0' }}>— εσωτερική σημείωση, δεν εμφανίζεται σε έγγραφα</span>
+                {_t("Παρατηρήσεις")} <span style={{ fontWeight: 400, fontSize: 13, color: '#A0AEC0' }}>{_t("— εσωτερική σημείωση, δεν εμφανίζεται σε έγγραφα")}</span>
               </h3>
               <div className="form-group">
                 <textarea
@@ -383,7 +384,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                   value={form.paratiriseis || ''}
                   onChange={c}
                   rows={4}
-                  placeholder="π.χ. συνεργάσιμος, αργεί στις απαντήσεις, καλή γνώση εμπράγματου…"
+                  placeholder={_t("π.χ. συνεργάσιμος, αργεί στις απαντήσεις, καλή γνώση εμπράγματου…")}
                   style={{
                     width: '100%', padding: '10px 12px', border: '1px solid #E2E8F0',
                     borderRadius: 8, fontFamily: 'inherit', fontSize: 14, resize: 'vertical',
@@ -391,98 +392,98 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                 />
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Διεύθυνση Οικίας</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>{_t("Διεύθυνση Οικίας")}</h3>
               <div className="form-row">
                 <div className="form-group" style={{ flex: 3 }}>
-                  <label>Οδός</label>
+                  <label>{_t("Οδός")}</label>
                   <input type="text" name="odos_oikias" value={form.odos_oikias} onChange={c} />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Αριθμός</label>
+                  <label>{_t("Αριθμός")}</label>
                   <input type="text" name="arithmos_oikias" value={form.arithmos_oikias} onChange={c} />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Τ.Κ.</label>
+                  <label>{_t("Τ.Κ.")}</label>
                   <input type="text" name="tk_oikias" value={form.tk_oikias} onChange={c} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Πόλη</label>
+                  <label>{_t("Πόλη")}</label>
                   <input type="text" name="poli_oikias" value={form.poli_oikias} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Χώρα</label>
+                  <label>{_t("Χώρα")}</label>
                   <input type="text" name="xora_oikias" value={form.xora_oikias} onChange={c} />
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Διεύθυνση Γραφείου</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>{_t("Διεύθυνση Γραφείου")}</h3>
               <div className="form-row">
                 <div className="form-group" style={{ flex: 3 }}>
-                  <label>Οδός</label>
+                  <label>{_t("Οδός")}</label>
                   <input type="text" name="odos_grafeiou" value={form.odos_grafeiou} onChange={c} />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Αριθμός</label>
+                  <label>{_t("Αριθμός")}</label>
                   <input type="text" name="arithmos_grafeiou" value={form.arithmos_grafeiou} onChange={c} />
                 </div>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label>Τ.Κ.</label>
+                  <label>{_t("Τ.Κ.")}</label>
                   <input type="text" name="tk_grafeiou" value={form.tk_grafeiou} onChange={c} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Πόλη</label>
+                  <label>{_t("Πόλη")}</label>
                   <input type="text" name="poli_grafeiou" value={form.poli_grafeiou} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Χώρα</label>
+                  <label>{_t("Χώρα")}</label>
                   <input type="text" name="xora_grafeiou" value={form.xora_grafeiou} onChange={c} />
                 </div>
               </div>
 
-              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>Τηλέφωνα</h3>
+              <h3 style={{ marginTop: 16, marginBottom: 8, borderBottom: '1px solid #e2e8f0', paddingBottom: 4 }}>{_t("Τηλέφωνα")}</h3>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Οικίας 1</label>
+                  <label>{_t("Οικίας 1")}</label>
                   <input type="text" name="tilefono_oikias_1" value={form.tilefono_oikias_1} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Οικίας 2</label>
+                  <label>{_t("Οικίας 2")}</label>
                   <input type="text" name="tilefono_oikias_2" value={form.tilefono_oikias_2} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Οικίας 3</label>
+                  <label>{_t("Οικίας 3")}</label>
                   <input type="text" name="tilefono_oikias_3" value={form.tilefono_oikias_3} onChange={c} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Γραφείου 1</label>
+                  <label>{_t("Γραφείου 1")}</label>
                   <input type="text" name="tilefono_grafeiou_1" value={form.tilefono_grafeiou_1} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Γραφείου 2</label>
+                  <label>{_t("Γραφείου 2")}</label>
                   <input type="text" name="tilefono_grafeiou_2" value={form.tilefono_grafeiou_2} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Γραφείου 3</label>
+                  <label>{_t("Γραφείου 3")}</label>
                   <input type="text" name="tilefono_grafeiou_3" value={form.tilefono_grafeiou_3} onChange={c} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Κινητό 1</label>
+                  <label>{_t("Κινητό 1")}</label>
                   <input type="text" name="tilefono_kinito_1" value={form.tilefono_kinito_1} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Κινητό 2</label>
+                  <label>{_t("Κινητό 2")}</label>
                   <input type="text" name="tilefono_kinito_2" value={form.tilefono_kinito_2} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Κινητό 3</label>
+                  <label>{_t("Κινητό 3")}</label>
                   <input type="text" name="tilefono_kinito_3" value={form.tilefono_kinito_3} onChange={c} />
                 </div>
               </div>
@@ -502,9 +503,9 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
               </div>
 
               <div className="modal-actions" style={{ marginTop: 20 }}>
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Ακύρωση</button>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>{_t("Ακύρωση")}</button>
                 <button type="submit" className="btn" disabled={saving}>
-                  {saving ? 'Αποθήκευση...' : (editing ? 'Αποθήκευση' : 'Δημιουργία')}
+                  {saving ? _t("Αποθήκευση...") : (editing ? _t("Αποθήκευση") : _t("Δημιουργία"))}
                 </button>
               </div>
             </form>
@@ -517,22 +518,22 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
         <div className="modal-overlay" role="presentation">
           <div className="modal" style={{ maxWidth: 780, maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Υποθέσεις — {displayName(casesFor)}</h2>
+              <h2>{_t("Υποθέσεις —")} {displayName(casesFor)}</h2>
               <button className="close-btn" onClick={() => setCasesFor(null)}>×</button>
             </div>
 
             {cases === null ? (
-              <div className="empty-state">Φόρτωση...</div>
+              <div className="empty-state">{_t("Φόρτωση...")}</div>
             ) : cases.length === 0 ? (
-              <div className="empty-state">Δεν συνδέεται με καμία υπόθεση.</div>
+              <div className="empty-state">{_t("Δεν συνδέεται με καμία υπόθεση.")}</div>
             ) : (
               <table className="table">
                 <thead>
                   <tr>
-                    <th style={{ width: 130 }}>Πρωτόκολλο</th>
-                    <th>Περίληψη</th>
-                    <th style={{ width: 160 }}>Ρόλος</th>
-                    <th style={{ width: 90 }}>Κατάσταση</th>
+                    <th style={{ width: 130 }}>{_t("Πρωτόκολλο")}</th>
+                    <th>{_t("Περίληψη")}</th>
+                    <th style={{ width: 160 }}>{_t("Ρόλος")}</th>
+                    <th style={{ width: 90 }}>{_t("Κατάσταση")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -547,8 +548,8 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
                       <td style={{ fontSize: 13 }}>{cs.eidos_sxesis_name || '—'}</td>
                       <td>
                         {cs.ekkremis
-                          ? <span style={{ color: '#C05621', fontSize: 12 }}>Εκκρεμής</span>
-                          : <span style={{ color: '#718096', fontSize: 12 }}>Κλειστή</span>}
+                          ? <span style={{ color: '#C05621', fontSize: 12 }}>{_t("Εκκρεμής")}</span>
+                          : <span style={{ color: '#718096', fontSize: 12 }}>{_t("Κλειστή")}</span>}
                       </td>
                     </tr>
                   ))}
@@ -557,7 +558,7 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
             )}
 
             <div style={{ marginTop: 12, textAlign: 'right' }}>
-              <button className="btn btn-secondary" onClick={() => setCasesFor(null)}>Κλείσιμο</button>
+              <button className="btn btn-secondary" onClick={() => setCasesFor(null)}>{_t("Κλείσιμο")}</button>
             </div>
           </div>
         </div>
@@ -567,21 +568,21 @@ function RelatedPersons({ user, onLogout, onOpenCaseSearch }) {
         const onoma = `${r.eponymo || r.eponymia || ''} ${r.onoma || ''}`.trim();
         const linked = !!(confirmDel.usage && confirmDel.usage.total > 0);
         const perigrafi = linked
-          ? confirmDel.usage.links.map(l => `${l.count} ${l.label}`).join(' και ')
+          ? confirmDel.usage.links.map(l => `${l.count} ${l.label}`).join(_t(' και '))
           : '';
         return (
           <ConfirmDialog
-            title={linked ? 'Δεν διαγράφεται' : 'Διαγραφή'}
+            title={linked ? _t("Δεν διαγράφεται") : _t("Διαγραφή")}
             message={
               confirmDel.loading
-                ? 'Έλεγχος συνδέσεων...'
+                ? _t("Έλεγχος συνδέσεων...")
                 : linked
-                  ? `«${onoma}» συνδέεται με ${perigrafi}. Αφαίρεσε πρώτα τις συνδέσεις και ξαναπροσπάθησε.`
-                  : `Διαγραφή «${onoma}»; Η ενέργεια δεν αναιρείται.`
+                  ? _t("«{0}» συνδέεται με {1}. Αφαίρεσε πρώτα τις συνδέσεις και ξαναπροσπάθησε.", [onoma, perigrafi])
+                  : _t("Διαγραφή «{0}»; Η ενέργεια δεν αναιρείται.", [onoma])
             }
             hideConfirm={confirmDel.loading || linked}
-            cancelLabel={linked ? 'Κλείσιμο' : 'Ακύρωση'}
-            confirmLabel="Διαγραφή"
+            cancelLabel={linked ? _t("Κλείσιμο") : _t("Ακύρωση")}
+            confirmLabel={_t("Διαγραφή")}
             onConfirm={() => del(r)}
             onClose={() => setConfirmDel(null)}
           />

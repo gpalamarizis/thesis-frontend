@@ -7,6 +7,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import { fysika } from '../../api';
 import { fmtDate } from '../../utils/format';
 import { TERM } from '../../utils/region';
+import { _t } from '../../i18n';
 
 function FysikaList({ user, onLogout, onOpenCaseSearch }) {
   const [meta, setMeta] = useState(null);
@@ -40,44 +41,44 @@ function FysikaList({ user, onLogout, onOpenCaseSearch }) {
   };
 
   const columns = [
-    { key: 'aa',                label: 'Α/Α',            width: 60 },
-    { key: 'eponymo',           label: 'Επώνυμο' },
-    { key: 'onoma',             label: 'Όνομα' },
-    { key: 'onoma_patros',      label: 'Πατρός' },
+    { key: 'aa',                label: _t("Α/Α"),            width: 60 },
+    { key: 'eponymo',           label: _t("Επώνυμο") },
+    { key: 'onoma',             label: _t("Όνομα") },
+    { key: 'onoma_patros',      label: _t("Πατρός") },
     { key: 'afm',               label: TERM.afm,            width: 110 },
-    { key: 'tilefono_kinito_1', label: 'Κινητό',         width: 110 },
+    { key: 'tilefono_kinito_1', label: _t("Κινητό"),         width: 110 },
     { key: 'email',             label: 'Email' },
-    { key: 'date_gennisis',     label: 'Ημ/νία γέννησης', width: 110, render: r => fmtDate(r.date_gennisis) },
+    { key: 'date_gennisis',     label: _t("Ημ/νία γέννησης"), width: 110, render: r => fmtDate(r.date_gennisis) },
   ];
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Φυσικά Πρόσωπα">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Φυσικά Πρόσωπα")}>
       <TruncationWarning meta={meta} />
       {error && <div className="error">{error}</div>}
 
       <div className="section">
         <div className="section-header">
-          <h2>Φυσικά Πρόσωπα</h2>
+          <h2>{_t("Φυσικά Πρόσωπα")}</h2>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn-secondary" onClick={() => navigate('/fysika/ypikootita')}>🌍 Συμπλήρωση υπηκοότητας</button>
-            <button className="btn" onClick={() => navigate('/fysika/new')}>+ Νέο Φυσικό Πρόσωπο</button>
+            <button className="btn btn-secondary" onClick={() => navigate('/fysika/ypikootita')}>{_t("🌍 Συμπλήρωση υπηκοότητας")}</button>
+            <button className="btn" onClick={() => navigate('/fysika/new')}>{_t("+ Νέο Φυσικό Πρόσωπο")}</button>
           </div>
         </div>
 
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : (
           <DataTable
             columns={columns}
             rows={items}
             rowKey={r => r.aa || r.id}
             onRowClick={r => navigate(`/fysika/${r.aa || r.id}`)}
-            emptyMessage="Δεν υπάρχουν φυσικά πρόσωπα. Πατήστε «Νέο Φυσικό Πρόσωπο» για δημιουργία."
+            emptyMessage={_t("Δεν υπάρχουν φυσικά πρόσωπα. Πατήστε «Νέο Φυσικό Πρόσωπο» για δημιουργία.")}
             actions={r => (
               <button
                 className="btn btn-danger btn-sm"
                 onClick={() => setConfirmDel(r)}
-              >Διαγραφή</button>
+              >{_t("Διαγραφή")}</button>
             )}
           />
         )}
@@ -85,9 +86,9 @@ function FysikaList({ user, onLogout, onOpenCaseSearch }) {
 
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή Φυσικού Προσώπου"
-          message={`Είστε σίγουρος ότι θέλετε να διαγράψετε τον/την "${confirmDel.eponymo} ${confirmDel.onoma || ''}"; Η ενέργεια δεν αναιρείται.`}
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή Φυσικού Προσώπου")}
+          message={_t("Είστε σίγουρος ότι θέλετε να διαγράψετε τον/την \"{0} {1}\"; Η ενέργεια δεν αναιρείται.", [confirmDel.eponymo, confirmDel.onoma || ''])}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel.aa || confirmDel.id)}
           onClose={() => setConfirmDel(null)}
         />

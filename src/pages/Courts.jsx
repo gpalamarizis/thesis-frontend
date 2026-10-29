@@ -4,11 +4,21 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { courts } from '../api';
+import { _t } from '../i18n';
+import { isCY } from '../utils/region';
 
 // Backend fields (from routes/courts.js): name, vathmos, eidos, edra
 
-const VATHMOS_OPTIONS = ['Ειρηνοδικείο', 'Πρωτοδικείο', 'Εφετείο', 'Άρειος Πάγος', 'Συμβούλιο Επικρατείας', 'Ελεγκτικό Συνέδριο', 'Διοικητικό'];
-const EIDOS_OPTIONS   = ['Πολιτικό', 'Ποινικό', 'Διοικητικό', 'Άλλο'];
+// Οι τιμές αποθηκεύονται στα ελληνικά (είναι δεδομένα)· μεταφράζεται μόνο η ετικέτα.
+const VATHMOS_OPTIONS = isCY
+  ? ['Ανώτατο', 'Εφετείο', 'Πρωτοβάθμιο']
+  : ['Ειρηνοδικείο', 'Πρωτοδικείο', 'Εφετείο', 'Άρειος Πάγος', 'Συμβούλιο Επικρατείας', 'Ελεγκτικό Συνέδριο', 'Διοικητικό'];
+const EIDOS_OPTIONS   = isCY
+  ? ['Πολιτικό', 'Ποινικό', 'Πολιτικό/Ποινικό', 'Διοικητικό', 'Συνταγματικό', 'Ναυτικό', 'Στρατιωτικό', 'Άλλο']
+  : ['Πολιτικό', 'Ποινικό', 'Διοικητικό', 'Άλλο'];
+// Αν η εγγραφή έχει τιμή εκτός λίστας (π.χ. παλιά), τη δείχνουμε κι αυτή,
+// ώστε η αποθήκευση να μην την αλλάξει σιωπηλά.
+const withCurrent = (list, v) => (v && !list.includes(v) ? [v, ...list] : list);
 
 function Courts({ user, onLogout, onOpenCaseSearch }) {
   const [items, setItems] = useState([]);
@@ -34,30 +44,30 @@ function Courts({ user, onLogout, onOpenCaseSearch }) {
   };
 
   const columns = [
-    { key: 'aa',      label: 'Α/Α',      width: 60 },
-    { key: 'name',    label: 'Ονομασία' },
-    { key: 'vathmos', label: 'Βαθμός',   width: 180 },
-    { key: 'eidos',   label: 'Είδος',    width: 140 },
-    { key: 'edra',    label: 'Έδρα',     width: 180 },
+    { key: 'aa',      label: _t("Α/Α"),      width: 60 },
+    { key: 'name',    label: _t("Ονομασία") },
+    { key: 'vathmos', label: _t("Βαθμός"),   width: 180, render: r => _t(r.vathmos || '') },
+    { key: 'eidos',   label: _t("Είδος"),    width: 140, render: r => _t(r.eidos || '') },
+    { key: 'edra',    label: _t("Έδρα"),     width: 180 },
   ];
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Δικαστήρια">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Δικαστήρια")}>
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">
-          <h2>Δικαστήρια (προεγκατεστημένα)</h2>
-          <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέο Δικαστήριο</button>
+          <h2>{_t("Δικαστήρια (προεγκατεστημένα)")}</h2>
+          <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>{_t("+ Νέο Δικαστήριο")}</button>
         </div>
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : (
           <DataTable
             columns={columns}
             rows={items}
             rowKey={r => r.aa || r.id}
             onRowClick={r => { setEditing(r); setShowModal(true); }}
-            emptyMessage="Δεν υπάρχουν δικαστήρια."
+            emptyMessage={_t("Δεν υπάρχουν δικαστήρια.")}
             actions={r => <button className="btn btn-danger btn-sm" onClick={() => setConfirmDel(r)}>×</button>}
           />
         )}
@@ -73,9 +83,9 @@ function Courts({ user, onLogout, onOpenCaseSearch }) {
 
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή Δικαστηρίου"
-          message={`Διαγραφή του "${confirmDel.name}";`}
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή Δικαστηρίου")}
+          message={_t("Διαγραφή του \"{0}\";", [confirmDel.name])}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -98,7 +108,7 @@ function CourtModal({ initial, onClose, onSaved }) {
 
   const save = async () => {
     setError('');
-    if (!form.name) { setError('Η ονομασία είναι υποχρεωτική.'); return; }
+    if (!form.name) { setError(_t("Η ονομασία είναι υποχρεωτική.")); return; }
     setSaving(true);
     try {
       const payload = { ...form };
@@ -115,37 +125,37 @@ function CourtModal({ initial, onClose, onSaved }) {
 
   return (
     <Modal
-      title={initial ? 'Επεξεργασία Δικαστηρίου' : 'Νέο Δικαστήριο'}
+      title={initial ? _t("Επεξεργασία Δικαστηρίου") : _t("Νέο Δικαστήριο")}
       onClose={onClose}
       size="lg"
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       <div className="form-group">
-        <label>Ονομασία *</label>
+        <label>{_t("Ονομασία *")}</label>
         <input type="text" value={form.name} onChange={c('name')} required />
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Βαθμός</label>
+          <label>{_t("Βαθμός")}</label>
           <select value={form.vathmos} onChange={c('vathmos')}>
-            <option value="">-- επιλογή --</option>
-            {VATHMOS_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
+            <option value="">{_t("-- επιλογή --")}</option>
+            {withCurrent(VATHMOS_OPTIONS, form.vathmos).map(v => <option key={v} value={v}>{_t(v)}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label>Είδος</label>
+          <label>{_t("Είδος")}</label>
           <select value={form.eidos} onChange={c('eidos')}>
-            <option value="">-- επιλογή --</option>
-            {EIDOS_OPTIONS.map(v => <option key={v} value={v}>{v}</option>)}
+            <option value="">{_t("-- επιλογή --")}</option>
+            {withCurrent(EIDOS_OPTIONS, form.eidos).map(v => <option key={v} value={v}>{_t(v)}</option>)}
           </select>
         </div>
       </div>
       <div className="form-group">
-        <label>Έδρα (πόλη)</label>
+        <label>{_t("Έδρα (πόλη)")}</label>
         <input type="text" value={form.edra} onChange={c('edra')} />
       </div>
     </Modal>

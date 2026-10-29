@@ -8,6 +8,7 @@
 // rows:    [{ code, label, ...τιμές, pososto }]
 // totals:  { ...τιμές } — γραμμή ΣΥΝΟΛΟ
 
+import { _t } from '../i18n';
 const fmtMoney = (n) => (Number(n) || 0).toLocaleString('el-GR',
   { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtInt = (n) => (Number(n) || 0).toLocaleString('el-GR');
@@ -29,7 +30,7 @@ function ShareTable({ firstLabel, columns, rows, totals, emptyMessage, unknownCo
           <tr>
             <th>{firstLabel}</th>
             {columns.map(c => <th key={c.key} style={{ ...NUM, width: c.money ? 130 : 110 }}>{c.label}</th>)}
-            <th style={{ width: 240 }}>Ποσοστό</th>
+            <th style={{ width: 240 }}>{_t("Ποσοστό")}</th>
           </tr>
         </thead>
         <tbody>
@@ -59,7 +60,7 @@ function ShareTable({ firstLabel, columns, rows, totals, emptyMessage, unknownCo
         {totals && (
           <tfoot>
             <tr style={{ background: '#f7fafc', fontWeight: 700 }}>
-              <td>ΣΥΝΟΛΟ</td>
+              <td>{_t("ΣΥΝΟΛΟ")}</td>
               {columns.map(c => <td key={c.key} style={NUM}>{fmt(c, totals[c.key])}</td>)}
               <td>
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

@@ -51,6 +51,7 @@ import ReportTaxProperty from './pages/ReportTaxProperty';
 import ReportClientsNationality from './pages/ReportClientsNationality';
 import ReportBillingAnalysis from './pages/ReportBillingAnalysis';
 import AccountsFolder from './pages/AccountsFolder';
+import { _t } from './i18n';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -125,7 +126,7 @@ function App() {
   };
 
   if (loading) {
-    return <div style={{ padding: 60, textAlign: 'center', color: '#4a5568' }}>Φόρτωση...</div>;
+    return <div style={{ padding: 60, textAlign: 'center', color: '#4a5568' }}>{_t("Φόρτωση...")}</div>;
   }
 
   const guard = (Component, props = {}) =>
@@ -153,7 +154,7 @@ function App() {
         <Route path="/nomika"           element={guard(NomikaList)} />
         <Route path="/nomika/new"       element={guard(NomikaEdit)} />
         <Route path="/nomika/:id"       element={guard(NomikaEdit)} />
-        <Route path="/lawyers"          element={guard(PeopleList, { kind: 'lawyers',          title: 'Δικηγόροι Γραφείου' })} />
+        <Route path="/lawyers"          element={guard(PeopleList, { kind: 'lawyers',          title: _t("Δικηγόροι Γραφείου") })} />
         <Route path="/opponents" element={guard(Opponents)} />
         <Route path="/related" element={guard(RelatedPersons)} />
         <Route path="/phonebook"        element={guard(Phonebook)} />

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { reports, actions, courtSubActions } from '../api';
 import { fmtDate } from '../utils/format';
 import DateInput from './DateInput';
+import { _t } from '../i18n';
 
 // Ενέργειες που έφτασαν — δικάσιμοι και προθεσμίες με ημερομηνία σήμερα ή
 // παλαιότερη, ακόμα εκκρεμείς.
@@ -33,7 +34,7 @@ function DueActionsPanel() {
     setLoading(true);
     reports.dueActions()
       .then(d => setRows(Array.isArray(d) ? d : (d?.data || [])))
-      .catch(e => setError(e.message || 'Αποτυχία φόρτωσης'))
+      .catch(e => setError(e.message || _t("Αποτυχία φόρτωσης")))
       .finally(() => setLoading(false));
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
@@ -43,8 +44,8 @@ function DueActionsPanel() {
   const apiFor = (kind) => (kind === 'court' ? actions.court
     : kind === 'court_sub' ? courtSubActions : actions.task);
   const dateField = (kind) => (kind === 'task' ? 'date_dead_line' : 'date');
-  const kindLabel = (kind) => (kind === 'court' ? 'Δικάσιμος'
-    : kind === 'court_sub' ? 'Ενέργεια δικασίμου' : 'Προθεσμία');
+  const kindLabel = (kind) => (kind === 'court' ? _t("Δικάσιμος")
+    : kind === 'court_sub' ? _t("Ενέργεια δικασίμου") : _t("Προθεσμία"));
 
   // Η γραμμή φεύγει αμέσως από τη λίστα· αν αποτύχει, επανέρχεται.
   const applyChange = async (r, payload) => {
@@ -58,7 +59,7 @@ function DueActionsPanel() {
       setNewDate('');
     } catch (e) {
       setRows(before);
-      setError(e.message || 'Η ενέργεια απέτυχε.');
+      setError(e.message || _t("Η ενέργεια απέτυχε."));
     } finally {
       setBusy(null);
     }
@@ -66,7 +67,7 @@ function DueActionsPanel() {
 
   const complete = (r) => applyChange(r, { ekkremis: false });
   const postpone = (r) => {
-    if (!newDate) { setError('Δώσε τη νέα ημερομηνία.'); return; }
+    if (!newDate) { setError(_t("Δώσε τη νέα ημερομηνία.")); return; }
     applyChange(r, { [dateField(r.kind)]: newDate });
   };
 
@@ -78,13 +79,11 @@ function DueActionsPanel() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
         <span style={{ fontSize: 20 }}>⏰</span>
         <h3 style={{ margin: 0, fontSize: 17 }}>
-          Ενέργειες που έφτασαν <span style={{ color: '#dd6b20' }}>({rows.length})</span>
+          {_t("Ενέργειες που έφτασαν")} <span style={{ color: '#dd6b20' }}>({rows.length})</span>
         </h3>
       </div>
       <p style={{ color: '#718096', fontSize: 13.5, margin: '0 0 14px' }}>
-        Έχει περάσει η ημερομηνία τους και είναι ακόμα εκκρεμείς. Δώσε νέα
-        ημερομηνία αν πήραν αναβολή ή παράταση, αλλιώς σημείωσέ τες ως
-        ολοκληρωμένες.
+        {_t("Έχει περάσει η ημερομηνία τους και είναι ακόμα εκκρεμείς. Δώσε νέα ημερομηνία αν πήραν αναβολή ή παράταση, αλλιώς σημείωσέ τες ως ολοκληρωμένες.")}
       </p>
 
       {error && <div className="error-message" style={{ marginBottom: 10 }}>{error}</div>}
@@ -92,10 +91,10 @@ function DueActionsPanel() {
       <table className="table">
         <thead>
           <tr>
-            <th style={{ width: 120 }}>Ημερομηνία</th>
-            <th style={{ width: 150 }}>Είδος</th>
-            <th>Ενέργεια</th>
-            <th style={{ width: 150 }}>Υπόθεση</th>
+            <th style={{ width: 120 }}>{_t("Ημερομηνία")}</th>
+            <th style={{ width: 150 }}>{_t("Είδος")}</th>
+            <th>{_t("Ενέργεια")}</th>
+            <th style={{ width: 150 }}>{_t("Υπόθεση")}</th>
             <th style={{ width: 320 }}></th>
           </tr>
         </thead>
@@ -110,11 +109,11 @@ function DueActionsPanel() {
                   {fmtDate(r.date)}
                   {late > 0 && (
                     <div style={{ fontSize: 12, color: '#c05621' }}>
-                      {late === 1 ? 'χθες' : `πριν ${late} ημέρες`}
+                      {late === 1 ? _t("χθες") : _t("πριν {0} ημέρες", [late])}
                     </div>
                   )}
                   {late === 0 && (
-                    <div style={{ fontSize: 12, color: '#2f855a' }}>σήμερα</div>
+                    <div style={{ fontSize: 12, color: '#2f855a' }}>{_t("σήμερα")}</div>
                   )}
                 </td>
                 <td style={{ whiteSpace: 'nowrap' }}>{kindLabel(r.kind)}</td>
@@ -122,7 +121,7 @@ function DueActionsPanel() {
                   {r.perigrafi}
                   {(r.pelatis || r.xeiristis) && (
                     <div style={{ fontSize: 12, color: '#718096' }}>
-                      {[r.pelatis, r.xeiristis && `Χειριστής: ${r.xeiristis}`].filter(Boolean).join(' · ')}
+                      {[r.pelatis, r.xeiristis && _t("Χειριστής: {0}", [r.xeiristis])].filter(Boolean).join(' · ')}
                     </div>
                   )}
                 </td>
@@ -139,11 +138,11 @@ function DueActionsPanel() {
                       </div>
                       <button type="button" className="btn btn-sm btn-primary"
                               disabled={busy === k} onClick={() => postpone(r)}>
-                        Αποθήκευση
+                        {_t("Αποθήκευση")}
                       </button>
                       <button type="button" className="btn btn-sm"
                               onClick={() => { setEditing(null); setNewDate(''); setError(''); }}>
-                        Άκυρο
+                        {_t("Άκυρο")}
                       </button>
                     </div>
                   ) : (
@@ -151,15 +150,15 @@ function DueActionsPanel() {
                       <button type="button" className="btn btn-sm"
                               disabled={busy === k}
                               onClick={() => { setEditing(k); setNewDate(''); setError(''); }}>
-                        Νέα ημερομηνία
+                        {_t("Νέα ημερομηνία")}
                       </button>
                       <button type="button" className="btn btn-sm"
                               disabled={busy === k} onClick={() => complete(r)}>
-                        ✓ Ολοκληρώθηκε
+                        {_t("✓ Ολοκληρώθηκε")}
                       </button>
                       <button type="button" className="btn btn-sm"
                               onClick={() => navigate(`/cases/${r.ypothesi_id}?tab=${tab}`)}>
-                        Άνοιγμα
+                        {_t("Άνοιγμα")}
                       </button>
                     </div>
                   )}

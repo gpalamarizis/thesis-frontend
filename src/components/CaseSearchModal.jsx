@@ -5,6 +5,7 @@ import { cases, fysika, nomika, people, lists } from '../api';
 import { fmtDate, trunc } from '../utils/format';
 
 import DateInput from './DateInput';
+import { _t } from '../i18n';
 /**
  * CaseSearchModal v4 — πλήρης αναζήτηση υπόθεσης.
  *
@@ -94,7 +95,7 @@ function CaseSearchModal({ onClose }) {
       setResults(list);
       setTotal(typeof res?.total === 'number' ? res.total : list.length);
     } catch (e) {
-      setError(e.message || 'Σφάλμα αναζήτησης');
+      setError(e.message || _t("Σφάλμα αναζήτησης"));
       setResults([]);
       setTotal(0);
     } finally {
@@ -118,14 +119,14 @@ function CaseSearchModal({ onClose }) {
 
   return (
     <Modal
-      title="Αναζήτηση υπόθεσης"
+      title={_t("Αναζήτηση υπόθεσης")}
       onClose={onClose}
       size="xl"
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={reset}>Καθαρισμός</button>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Κλείσιμο</button>
+        <button type="button" className="btn btn-secondary" onClick={reset}>{_t("Καθαρισμός")}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Κλείσιμο")}</button>
         <button type="button" className="btn" disabled={loading || searching} onClick={search}>
-          {loading ? 'Φόρτωση...' : searching ? 'Αναζήτηση...' : 'Ψάξε'}
+          {loading ? _t("Φόρτωση...") : searching ? _t("Αναζήτηση...") : _t("Ψάξε")}
         </button>
       </>}
     >
@@ -133,16 +134,16 @@ function CaseSearchModal({ onClose }) {
 
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Πελάτης Φυσικό Πρόσωπο</label>
+          <label>{_t("Πελάτης Φυσικό Πρόσωπο")}</label>
           <select value={criteria.fysiko_prosopo_id} onChange={c('fysiko_prosopo_id')}>
-            <option value="">— όλα —</option>
+            <option value="">{_t("— όλα —")}</option>
             {fysikaList.map(f => <option key={f.aa} value={f.aa}>{nameOf(f)}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label>Πελάτης Νομικό Πρόσωπο</label>
+          <label>{_t("Πελάτης Νομικό Πρόσωπο")}</label>
           <select value={criteria.nomiko_prosopo_id} onChange={c('nomiko_prosopo_id')}>
-            <option value="">— όλα —</option>
+            <option value="">{_t("— όλα —")}</option>
             {nomikaList.map(n => <option key={n.aa} value={n.aa}>{n.eponymia || n.diakritikos_titlos}</option>)}
           </select>
         </div>
@@ -150,16 +151,16 @@ function CaseSearchModal({ onClose }) {
 
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Είδος υπόθεσης</label>
+          <label>{_t("Είδος υπόθεσης")}</label>
           <select value={criteria.onomasia_id} onChange={c('onomasia_id')}>
-            <option value="">— όλα —</option>
+            <option value="">{_t("— όλα —")}</option>
             {caseTypes.map(t => <option key={t.aa} value={t.aa}>{t.name}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label>Αντίδικος</label>
+          <label>{_t("Αντίδικος")}</label>
           <select value={criteria.antidikos_id} onChange={c('antidikos_id')}>
-            <option value="">— όλοι —</option>
+            <option value="">{_t("— όλοι —")}</option>
             {opponents.map(o => <option key={o.aa} value={o.aa}>{nameOf(o)}</option>)}
           </select>
         </div>
@@ -167,16 +168,16 @@ function CaseSearchModal({ onClose }) {
 
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Δικηγόρος γραφείου</label>
+          <label>{_t("Δικηγόρος γραφείου")}</label>
           <select value={criteria.dikigoros_id} onChange={c('dikigoros_id')}>
-            <option value="">— όλοι —</option>
+            <option value="">{_t("— όλοι —")}</option>
             {lawyers.map(l => <option key={l.aa} value={l.aa}>{nameOf(l)}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label>Διαδικασία</label>
+          <label>{_t("Διαδικασία")}</label>
           <select value={criteria.diadikasia_id} onChange={c('diadikasia_id')}>
-            <option value="">— όλες —</option>
+            <option value="">{_t("— όλες —")}</option>
             {procedures.map(p => <option key={p.aa} value={p.aa}>{p.name}</option>)}
           </select>
         </div>
@@ -184,57 +185,56 @@ function CaseSearchModal({ onClose }) {
 
       <div className="form-grid-3">
         <div className="form-group">
-          <label>Εισαγωγή από</label>
+          <label>{_t("Εισαγωγή από")}</label>
           <DateInput value={criteria.from} onChange={c('from')} />
         </div>
         <div className="form-group">
-          <label>Εισαγωγή έως</label>
+          <label>{_t("Εισαγωγή έως")}</label>
           <DateInput value={criteria.to} onChange={c('to')} />
         </div>
         <div className="form-group">
-          <label>Κατάσταση</label>
+          <label>{_t("Κατάσταση")}</label>
           <select value={criteria.status} onChange={c('status')}>
-            <option value="">— όλες —</option>
-            <option value="ekkremis">Εκκρεμείς</option>
-            <option value="kleismeni">Κλεισμένες</option>
+            <option value="">{_t("— όλες —")}</option>
+            <option value="ekkremis">{_t("Εκκρεμείς")}</option>
+            <option value="kleismeni">{_t("Κλεισμένες")}</option>
           </select>
         </div>
       </div>
 
       <div className="form-group">
-        <label>Κείμενο σε πρωτόκολλο / πελάτη / περίληψη</label>
+        <label>{_t("Κείμενο σε πρωτόκολλο / πελάτη / περίληψη")}</label>
         <input
           type="text"
           value={criteria.text}
           onChange={c('text')}
           onKeyDown={e => e.key === 'Enter' && search()}
-          placeholder="π.χ. 2222, ΑΠΟΓΕΥΜΑΤΙΝΗ, Παπαδόπουλος, διαζύγιο"
+          placeholder={_t("π.χ. 2222, ΑΠΟΓΕΥΜΑΤΙΝΗ, Παπαδόπουλος, διαζύγιο")}
           autoFocus
         />
         <small style={{ color: '#718096', fontSize: 12, marginTop: 4, display: 'block' }}>
-          Ψάχνει σε πρωτόκολλο, όνομα πελάτη (φυσικού ή νομικού) και περίληψη.
-          Κάθε φίλτρο παραπάνω λειτουργεί και μόνο του.
+          {_t("Ψάχνει σε πρωτόκολλο, όνομα πελάτη (φυσικού ή νομικού) και περίληψη. Κάθε φίλτρο παραπάνω λειτουργεί και μόνο του.")}
         </small>
       </div>
 
       {results !== null && (
         <div style={{ marginTop: 16 }}>
           <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-            Αποτελέσματα ({results.length}{total > results.length ? ` από ${total}` : ''})
+            {_t("Αποτελέσματα (")}{results.length}{total > results.length ? _t(" από {0}", [total]) : ''})
           </h3>
           {results.length === 0 ? (
-            <div className="empty-state">Δεν βρέθηκαν υποθέσεις με αυτά τα κριτήρια.</div>
+            <div className="empty-state">{_t("Δεν βρέθηκαν υποθέσεις με αυτά τα κριτήρια.")}</div>
           ) : (
             <div style={{ maxHeight: 300, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 6 }}>
               <table className="table" style={{ marginBottom: 0 }}>
                 <thead style={{ position: 'sticky', top: 0, background: 'white' }}>
                   <tr>
-                    <th>Πρωτόκολλο</th>
-                    <th>Πελάτης</th>
-                    <th>Είδος</th>
-                    <th>Χειριστές</th>
-                    <th>Περιγραφή</th>
-                    <th style={{ width: 100 }}>Εισαγωγή</th>
+                    <th>{_t("Πρωτόκολλο")}</th>
+                    <th>{_t("Πελάτης")}</th>
+                    <th>{_t("Είδος")}</th>
+                    <th>{_t("Χειριστές")}</th>
+                    <th>{_t("Περιγραφή")}</th>
+                    <th style={{ width: 100 }}>{_t("Εισαγωγή")}</th>
                   </tr>
                 </thead>
                 <tbody>

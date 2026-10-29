@@ -7,6 +7,7 @@ import { fmtDate, toDateInput } from '../../utils/format';
 import { eventFromTaskAction } from '../../utils/calendar';
 
 import DateInput from '../../components/DateInput';
+import { _t } from '../../i18n';
 /**
  * TaskActionsTab — Λοιπές ενέργειες (energeies table)
  * Backend fields: ypotheseis_id, date_dead_line, perigrafi_energias, ekkremis
@@ -30,19 +31,19 @@ function TaskActionsTab({ caseId, rows, onChange }) {
     <div>
       {error && <div className="error">{error}</div>}
       <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
-        <div style={{ color: '#4a5568' }}>Προθεσμίες, εργασίες, λοιπές ενέργειες</div>
-        <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέα λοιπή ενέργεια</button>
+        <div style={{ color: '#4a5568' }}>{_t("Προθεσμίες, εργασίες, λοιπές ενέργειες")}</div>
+        <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowModal(true); }}>{_t("+ Νέα λοιπή ενέργεια")}</button>
       </div>
 
       {rows.length === 0 ? (
-        <div className="empty-state">Δεν υπάρχουν λοιπές ενέργειες.</div>
+        <div className="empty-state">{_t("Δεν υπάρχουν λοιπές ενέργειες.")}</div>
       ) : (
         <table className="table">
           <thead><tr>
-            <th style={{ width: 110 }}>Προθεσμία</th>
-            <th>Περιγραφή</th>
-            <th style={{ width: 220 }}>Δικηγόροι</th>
-            <th style={{ width: 110 }}>Κατάσταση</th>
+            <th style={{ width: 110 }}>{_t("Προθεσμία")}</th>
+            <th>{_t("Περιγραφή")}</th>
+            <th style={{ width: 220 }}>{_t("Δικηγόροι")}</th>
+            <th style={{ width: 110 }}>{_t("Κατάσταση")}</th>
             <th style={{ width: 1 }}></th>
           </tr></thead>
           <tbody>
@@ -71,13 +72,13 @@ function TaskActionsTab({ caseId, rows, onChange }) {
                   </td>
                   <td>
                     <span className={`badge ${r.ekkremis ? 'badge-open' : 'badge-closed'}`}>
-                      {r.ekkremis ? 'Εκκρεμής' : 'Ολοκληρώθηκε'}
+                      {r.ekkremis ? _t("Εκκρεμής") : _t("Ολοκληρώθηκε")}
                     </span>
                   </td>
                   <td style={{ whiteSpace: 'nowrap' }}>
                     <CalendarExportButton event={eventFromTaskAction(r)} filename={`prothesmia-${r.aa || r.id}.ics`} />
                     {' '}
-                    <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
+                    <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>{_t("Επεξ.")}</button>
                     {' '}
                     <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
                   </td>
@@ -98,9 +99,9 @@ function TaskActionsTab({ caseId, rows, onChange }) {
       )}
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή Λοιπής Ενέργειας"
-          message="Είστε σίγουρος;"
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή Λοιπής Ενέργειας")}
+          message={_t("Είστε σίγουρος;")}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -182,7 +183,7 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
   const save = async () => {
     setSaving(true);
     setError('');
-    if (!form.perigrafi_energias) { setError('Η περιγραφή είναι υποχρεωτική.'); setSaving(false); return; }
+    if (!form.perigrafi_energias) { setError(_t("Η περιγραφή είναι υποχρεωτική.")); setSaving(false); return; }
     try {
       const payload = {
         ypothesi_id:        Number(caseId),
@@ -203,28 +204,28 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
 
   return (
     <Modal
-      title={initial ? 'Επεξεργασία λοιπής ενέργειας' : 'Νέα λοιπή ενέργεια'}
+      title={initial ? _t("Επεξεργασία λοιπής ενέργειας") : _t("Νέα λοιπή ενέργεια")}
       onClose={onClose}
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Προθεσμία</label>
+          <label>{_t("Προθεσμία")}</label>
           <DateInput value={form.date_dead_line} onChange={c('date_dead_line')} />
         </div>
         <div className="form-group">
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 28 }}>
             <input type="checkbox" checked={form.ekkremis} onChange={e => setForm(f => ({ ...f, ekkremis: e.target.checked }))} />
-            <span>Εκκρεμής</span>
+            <span>{_t("Εκκρεμής")}</span>
           </label>
         </div>
       </div>
       <div className="form-group">
-        <label>Περιγραφή ενέργειας *</label>
+        <label>{_t("Περιγραφή ενέργειας *")}</label>
         <textarea rows="4" value={form.perigrafi_energias}
                   onChange={e => { c('perigrafi_energias')(e); setShowTpl(true); }}
                   onFocus={() => setShowTpl(true)}
@@ -244,7 +245,7 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
                    onMouseLeave={ev => { ev.currentTarget.style.background = '#fff'; }}>
                 {t.keimeno.length > 90 ? t.keimeno.slice(0, 90) + '…' : t.keimeno}
                 {t.plithos > 1 && (
-                  <span style={{ color: '#718096', fontSize: 12 }}> · {t.plithos} φορές</span>
+                  <span style={{ color: '#718096', fontSize: 12 }}> · {t.plithos} {_t("φορές")}</span>
                 )}
               </div>
             ))}
@@ -253,16 +254,16 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
       </div>
       <div className="form-group">
         <label>
-          Χειριστές δικηγόροι
+          {_t("Χειριστές δικηγόροι")}
           {form.dikigoroi_ids.length > 0 && (
             <span style={{ marginLeft: 8, color: '#4a5568', fontWeight: 'normal', fontSize: '0.9em' }}>
-              ({form.dikigoroi_ids.length} επιλεγμένοι)
+              ({form.dikigoroi_ids.length} {_t("επιλεγμένοι)")}
             </span>
           )}
         </label>
         <input
           type="text"
-          placeholder="Αναζήτηση δικηγόρου..."
+          placeholder={_t("Αναζήτηση δικηγόρου...")}
           value={lawyerFilter}
           onChange={e => setLawyerFilter(e.target.value)}
           style={{ marginBottom: 8 }}
@@ -288,7 +289,7 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
         >
           {filteredLawyers.length === 0 ? (
             <div style={{ color: '#a0aec0', fontStyle: 'italic', textAlign: 'center', padding: 8 }}>
-              {lawyers.length === 0 ? 'Δεν βρέθηκαν δικηγόροι.' : 'Κανένα αποτέλεσμα για τη λέξη-κλειδί.'}
+              {lawyers.length === 0 ? _t("Δεν βρέθηκαν δικηγόροι.") : _t("Κανένα αποτέλεσμα για τη λέξη-κλειδί.")}
             </div>
           ) : (
             filteredLawyers.map(u => {

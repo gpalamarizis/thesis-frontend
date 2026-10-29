@@ -17,12 +17,13 @@ import Layout from '../../components/Layout';
 import { api } from '../../api';
 import { COUNTRY_OPTIONS, countryName } from '../../utils/countries';
 import { TERM } from '../../utils/region';
+import { _t } from '../../i18n';
 
 const PAGE = 50;
 const SS_KEY = 'ypikootita-bulk';
 const loadState = () => { try { return JSON.parse(sessionStorage.getItem(SS_KEY) || '{}'); } catch { return {}; } };
 
-function CountrySelect({ value, onChange, disabled, placeholder = '— κενή —' }) {
+function CountrySelect({ value, onChange, disabled, placeholder = _t("— κενή —") }) {
   return (
     <select value={value || ''} onChange={e => onChange(e.target.value)} disabled={disabled}
             style={{ width: '100%', backgroundColor: '#fff' }}>
@@ -65,7 +66,7 @@ function FysikaYpikootita({ user, onLogout, onOpenCaseSearch }) {
         if (!keepPage) setPage(0);
         else setPage(pg => Math.min(pg, Math.max(0, Math.ceil(list.length / PAGE) - 1)));
       })
-      .catch(e => setError(e.message || 'Η φόρτωση απέτυχε.'))
+      .catch(e => setError(e.message || _t("Η φόρτωση απέτυχε.")))
       .finally(() => setLoading(false));
   };
   // eslint-disable-next-line
@@ -90,7 +91,7 @@ function FysikaYpikootita({ user, onLogout, onOpenCaseSearch }) {
       setKenes(k => Math.max(0, k - (filled - prevFilled)));
     } catch (e) {
       setRows(before);
-      setError(e.message || 'Η αποθήκευση απέτυχε.');
+      setError(e.message || _t("Η αποθήκευση απέτυχε."));
     } finally { setBusy(false); }
   };
 
@@ -114,48 +115,47 @@ function FysikaYpikootita({ user, onLogout, onOpenCaseSearch }) {
 
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch}
-            title="Υπηκοότητα φυσικών προσώπων">
+            title={_t("Υπηκοότητα φυσικών προσώπων")}>
       <div className="section">
         <div className="section-header">
-          <h2>Συμπλήρωση υπηκοότητας</h2>
-          <Link to="/fysika" className="btn btn-secondary" style={{ textDecoration: 'none' }}>← Φυσικά πρόσωπα</Link>
+          <h2>{_t("Συμπλήρωση υπηκοότητας")}</h2>
+          <Link to="/fysika" className="btn btn-secondary" style={{ textDecoration: 'none' }}>{_t("← Φυσικά πρόσωπα")}</Link>
         </div>
         <p style={{ color: '#718096', marginTop: 0, marginBottom: 14 }}>
-          Χωρίς υπηκοότητα: <strong style={{ color: '#2d3748' }}>{kenes.toLocaleString('el-GR')}</strong>.
-          {' '}Η αλλαγή σε μια γραμμή αποθηκεύεται αμέσως. Η «Πρόταση» προκύπτει από το όνομα
-          ή τη χώρα κατοικίας και εφαρμόζεται μόνο αν την αποδεχτείτε.
+          {_t("Χωρίς υπηκοότητα:")} <strong style={{ color: '#2d3748' }}>{kenes.toLocaleString('el-GR')}</strong>.
+          {' '}{_t("Η αλλαγή σε μια γραμμή αποθηκεύεται αμέσως. Η «Πρόταση» προκύπτει από το όνομα ή τη χώρα κατοικίας και εφαρμόζεται μόνο αν την αποδεχτείτε.")}
         </p>
 
         <form onSubmit={e => { e.preventDefault(); setQApplied(q.trim()); }}
               style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
           <button type="button" className={`btn btn-sm ${filter === 'empty' ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setFilter('empty')}>Μόνο χωρίς υπηκοότητα</button>
+                  onClick={() => setFilter('empty')}>{_t("Μόνο χωρίς υπηκοότητα")}</button>
           <button type="button" className={`btn btn-sm ${filter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setFilter('all')}>Όλα</button>
-          <input type="search" className="search-input" placeholder={`🔍 Όνομα ή ${TERM.afm}`}
+                  onClick={() => setFilter('all')}>{_t("Όλα")}</button>
+          <input type="search" className="search-input" placeholder={_t("🔍 Όνομα ή {0}", [TERM.afm])}
                  value={q} onChange={e => setQ(e.target.value)} style={{ minWidth: 240 }} />
-          <button type="submit" className="btn btn-sm btn-secondary">Αναζήτηση</button>
-          <button type="button" className="btn btn-sm" onClick={() => load(true)} disabled={loading}>↻ Ανανέωση</button>
+          <button type="submit" className="btn btn-sm btn-secondary">{_t("Αναζήτηση")}</button>
+          <button type="button" className="btn btn-sm" onClick={() => load(true)} disabled={loading}>{_t("↻ Ανανέωση")}</button>
         </form>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12,
                       padding: '10px 12px', background: '#f7fafc', border: '1px solid #edf2f7', borderRadius: 6 }}>
-          <span style={{ color: '#4a5568' }}>Επιλεγμένα: <strong>{selected.size}</strong></span>
+          <span style={{ color: '#4a5568' }}>{_t("Επιλεγμένα:")} <strong>{selected.size}</strong></span>
           <div style={{ width: 220 }}>
-            <CountrySelect value={bulkCode} onChange={setBulkCode} placeholder="— χώρα —" />
+            <CountrySelect value={bulkCode} onChange={setBulkCode} placeholder={_t("— χώρα —")} />
           </div>
           <button type="button" className="btn btn-sm btn-primary" disabled={busy || !bulkCode || !selected.size}
-                  onClick={applyBulk}>Εφαρμογή στα επιλεγμένα</button>
+                  onClick={applyBulk}>{_t("Εφαρμογή στα επιλεγμένα")}</button>
           <span style={{ flex: 1 }} />
           <button type="button" className="btn btn-sm btn-secondary" disabled={busy || !pageSuggestions}
-                  onClick={acceptPage}>✓ Αποδοχή προτάσεων σελίδας ({pageSuggestions})</button>
+                  onClick={acceptPage}>{_t("✓ Αποδοχή προτάσεων σελίδας (")}{pageSuggestions})</button>
         </div>
 
         {error && <div className="error-message" style={{ marginBottom: 10 }}>{error}</div>}
 
-        {loading ? <div className="empty-state">Φόρτωση...</div> : rows.length === 0 ? (
+        {loading ? <div className="empty-state">{_t("Φόρτωση...")}</div> : rows.length === 0 ? (
           <div className="empty-state">
-            {filter === 'empty' ? 'Όλα τα φυσικά πρόσωπα έχουν υπηκοότητα.' : 'Δεν βρέθηκαν πρόσωπα.'}
+            {filter === 'empty' ? _t("Όλα τα φυσικά πρόσωπα έχουν υπηκοότητα.") : _t("Δεν βρέθηκαν πρόσωπα.")}
           </div>
         ) : (
           <div className="data-table">
@@ -163,13 +163,13 @@ function FysikaYpikootita({ user, onLogout, onOpenCaseSearch }) {
               <thead>
                 <tr>
                   <th style={{ width: 36 }}>
-                    <input type="checkbox" checked={allOnPage} onChange={togglePage} title="Όλη η σελίδα" />
+                    <input type="checkbox" checked={allOnPage} onChange={togglePage} title={_t("Όλη η σελίδα")} />
                   </th>
-                  <th>Ονοματεπώνυμο</th>
+                  <th>{_t("Ονοματεπώνυμο")}</th>
                   <th style={{ width: 110 }}>{TERM.afm}</th>
-                  <th style={{ width: 180 }}>Κατοικία</th>
-                  <th style={{ width: 230 }}>Πρόταση</th>
-                  <th style={{ width: 240 }}>Υπηκοότητα</th>
+                  <th style={{ width: 180 }}>{_t("Κατοικία")}</th>
+                  <th style={{ width: 230 }}>{_t("Πρόταση")}</th>
+                  <th style={{ width: 240 }}>{_t("Υπηκοότητα")}</th>
                   <th style={{ width: 28 }}></th>
                 </tr>
               </thead>
@@ -181,7 +181,7 @@ function FysikaYpikootita({ user, onLogout, onOpenCaseSearch }) {
                       <Link to={`/fysika/${r.aa}`} className="link-inline">
                         {`${r.eponymo || ''} ${r.onoma || ''}`.trim() || `#${r.aa}`}
                       </Link>
-                      {r.onoma_patros && <span style={{ color: '#a0aec0', fontSize: 12 }}> του {r.onoma_patros}</span>}
+                      {r.onoma_patros && <span style={{ color: '#a0aec0', fontSize: 12 }}> {_t("του")} {r.onoma_patros}</span>}
                     </td>
                     <td style={{ fontVariantNumeric: 'tabular-nums' }}>{r.afm || '—'}</td>
                     <td>{[r.poli_oikias, r.xora_oikias].filter(Boolean).join(', ') || '—'}</td>
@@ -189,12 +189,12 @@ function FysikaYpikootita({ user, onLogout, onOpenCaseSearch }) {
                       {r.protasi && r.protasi.code !== r.ypikootita ? (
                         <button type="button" className="btn btn-sm btn-secondary" disabled={busy}
                                 onClick={() => save([{ aa: r.aa, ypikootita: r.protasi.code }])}
-                                title={`Από ${r.protasi.reason}`}>
+                                title={_t("Από {0}", [_t(r.protasi.reason)])}>
                           ✓ {countryName(r.protasi.code)}
                         </button>
                       ) : <span style={{ color: '#cbd5e0' }}>—</span>}
                       {r.protasi && r.protasi.code !== r.ypikootita && (
-                        <span style={{ fontSize: 11, color: '#a0aec0', marginLeft: 6 }}>{r.protasi.reason}</span>
+                        <span style={{ fontSize: 11, color: '#a0aec0', marginLeft: 6 }}>{_t(r.protasi.reason)}</span>
                       )}
                     </td>
                     <td>
@@ -208,9 +208,9 @@ function FysikaYpikootita({ user, onLogout, onOpenCaseSearch }) {
             </table>
             {pages > 1 && (
               <div className="pagination">
-                <button className="btn btn-secondary btn-sm" disabled={cur === 0} onClick={() => setPage(cur - 1)}>← Προηγ.</button>
-                <span>Σελίδα {cur + 1} από {pages} · {rows.length.toLocaleString('el-GR')} πρόσωπα</span>
-                <button className="btn btn-secondary btn-sm" disabled={cur >= pages - 1} onClick={() => setPage(cur + 1)}>Επόμ. →</button>
+                <button className="btn btn-secondary btn-sm" disabled={cur === 0} onClick={() => setPage(cur - 1)}>{_t("← Προηγ.")}</button>
+                <span>{_t("Σελίδα")} {cur + 1} {_t("από")} {pages} · {rows.length.toLocaleString('el-GR')} {_t("πρόσωπα")}</span>
+                <button className="btn btn-secondary btn-sm" disabled={cur >= pages - 1} onClick={() => setPage(cur + 1)}>{_t("Επόμ. →")}</button>
               </div>
             )}
           </div>

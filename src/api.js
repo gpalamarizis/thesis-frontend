@@ -3,6 +3,8 @@
 
 // Η κυπριακή εγκατάσταση (appcy.thesislegal.gr) χτίζεται με
 // VITE_API_URL=https://apicy.thesislegal.gr — βλ. utils/region.js
+import { _t, _tServer, LANG } from './i18n';
+
 const API_URL = (import.meta.env.VITE_API_URL || 'https://api.thesislegal.gr').replace(/\/$/, '');
 
 // Λήξη συνεδρίας (401).
@@ -161,12 +163,13 @@ async function request(endpoint, options = {}, _retried = false) {
     headers['Content-Type'] = 'application/json';
   }
   if (token) headers.Authorization = `Bearer ${token}`;
+  headers['X-UI-Lang'] = LANG;   // γλώσσα των εξαγωγών Excel/Word
 
   let res;
   try {
     res = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
   } catch (err) {
-    throw new Error('Πρόβλημα δικτύου. Ελέγξτε τη σύνδεσή σας.');
+    throw new Error(_t('Πρόβλημα δικτύου. Ελέγξτε τη σύνδεσή σας.'));
   }
 
   // Κυλιόμενη ανανέωση συνεδρίας.
@@ -210,7 +213,7 @@ async function request(endpoint, options = {}, _retried = false) {
       // 'unknown': δίκτυο ή προσωρινό — μένουμε συνδεδεμένοι και
       // επιστρέφουμε σφάλμα στη σελίδα, χωρίς αποσύνδεση.
     }
-    const msg = (data && (data.error || data.message)) || `Σφάλμα (${res.status})`;
+    const msg = _tServer((data && (data.error || data.message)) || `Σφάλμα (${res.status})`);
     const e = new Error(msg);
     e.status = res.status;   // π.χ. 403: χωρίς δικαίωμα — η σελίδα μπορεί να κρύψει την ενότητα
     throw e;
@@ -232,10 +235,10 @@ export async function downloadFile(endpointOrUrl, filename, fallbackName) {
   let res;
   try {
     res = await fetch(url, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: token ? { Authorization: `Bearer ${token}`, 'X-UI-Lang': LANG } : { 'X-UI-Lang': LANG },
     });
   } catch (err) {
-    throw new Error('Πρόβλημα δικτύου. Ελέγξτε τη σύνδεσή σας.');
+    throw new Error(_t('Πρόβλημα δικτύου. Ελέγξτε τη σύνδεσή σας.'));
   }
 
   if (!res.ok) {
@@ -244,7 +247,7 @@ export async function downloadFile(endpointOrUrl, filename, fallbackName) {
       const j = await res.json();
       if (j && (j.error || j.message)) msg = j.error || j.message;
     } catch (_) { /* δεν ήταν JSON */ }
-    throw new Error(msg);
+    throw new Error(_tServer(msg));
   }
 
   // Όνομα: από παράμετρο, αλλιώς από Content-Disposition, αλλιώς fallback
@@ -279,6 +282,7 @@ function uploadWithProgress(endpoint, formData, onProgress) {
 
     xhr.open('POST', `${API_URL}${endpoint}`);
     if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.setRequestHeader('X-UI-Lang', LANG);
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && typeof onProgress === 'function') {
@@ -298,11 +302,11 @@ function uploadWithProgress(endpoint, formData, onProgress) {
       if (xhr.status === 401 && token) {
         refreshToken().then(state => { if (state === 'dead') handleSessionExpired(); });
       }
-      reject(new Error((data && (data.error || data.message)) || `Σφάλμα (${xhr.status})`));
+      reject(new Error(_tServer((data && (data.error || data.message)) || `Σφάλμα (${xhr.status})`)));
     };
 
-    xhr.onerror = () => reject(new Error('Πρόβλημα δικτύου. Ελέγξτε τη σύνδεσή σας.'));
-    xhr.ontimeout = () => reject(new Error('Το ανέβασμα άργησε πολύ. Δοκιμάστε ξανά.'));
+    xhr.onerror = () => reject(new Error(_t('Πρόβλημα δικτύου. Ελέγξτε τη σύνδεσή σας.')));
+    xhr.ontimeout = () => reject(new Error(_t('Το ανέβασμα άργησε πολύ. Δοκιμάστε ξανά.')));
 
     xhr.send(formData);
   });
@@ -493,7 +497,7 @@ export const templates = {
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     }).then(async r => {
-      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`);
+      if (!r.ok) throw new Error(_tServer((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`));
       return r.json();
     });
   },
@@ -752,7 +756,7 @@ export const gdpr = {
     // η εξαγωγή πήγαινε στο app.thesislegal.gr αντί για το api.thesislegal.gr.
     // Χρησιμοποιούμε το ίδιο API_URL με όλες τις άλλες κλήσεις.
     const r = await fetch(`${API_URL}/api/gdpr/export`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
-    if (!r.ok) { let m = 'Export failed'; try { m = (await r.json()).error || m; } catch {} throw new Error(m); }
+    if (!r.ok) { let m = 'Export failed'; try { m = (await r.json()).error || m; } catch {} throw new Error(_tServer(m)); }
     return await r.blob();
   },
   requestDelete: (reason, confirm_email) => api.post('/api/gdpr/delete', { reason, confirm_email }),

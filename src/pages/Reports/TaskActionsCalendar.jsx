@@ -5,6 +5,7 @@ import { reports, people } from '../../api';
 import { fmtDate, trunc } from '../../utils/format';
 import CalendarExportButton from '../../components/CalendarExportButton';
 import { eventFromTaskAction } from '../../utils/calendar';
+import { _t, LOCALE } from '../../i18n';
 
 /**
  * TaskActionsCalendar — Ημερολόγιο λοιπών ενεργειών με φίλτρα.
@@ -48,7 +49,7 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
 
   const y = monthCursor.getFullYear();
   const m = monthCursor.getMonth();
-  const monthName = monthCursor.toLocaleDateString('el-GR', { month: 'long', year: 'numeric' });
+  const monthName = monthCursor.toLocaleDateString(LOCALE, { month: 'long', year: 'numeric' });
   const firstDay = new Date(y, m, 1).getDay();
   const mondayOffset = (firstDay + 6) % 7;
   const daysInMonth = new Date(y, m + 1, 0).getDate();
@@ -106,24 +107,24 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
   const selectedEvents = selectedDate ? (byDay[selectedDate.getDate()] || []) : [];
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Ημερολόγιο Ενεργειών">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Ημερολόγιο Ενεργειών")}>
       {error && <div className="error">{error}</div>}
 
       <div className="section" style={{ marginBottom: 20 }}>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Δικηγόρος</label>
+            <label>{_t("Δικηγόρος")}</label>
             <select value={filters.dikigoros_id} onChange={e => setFilters(f => ({ ...f, dikigoros_id: e.target.value }))}>
-              <option value="">— όλοι —</option>
+              <option value="">{_t("— όλοι —")}</option>
               {lawyers.map(l => <option key={l.aa} value={l.aa}>{`${l.eponymo || ''} ${l.onoma || ''}`.trim()}</option>)}
             </select>
           </div>
           <div className="form-group">
-            <label>Κατάσταση</label>
+            <label>{_t("Κατάσταση")}</label>
             <select value={filters.ekkremis} onChange={e => setFilters(f => ({ ...f, ekkremis: e.target.value }))}>
-              <option value="">— όλες —</option>
-              <option value="true">Εκκρεμείς</option>
-              <option value="false">Ολοκληρώθηκαν</option>
+              <option value="">{_t("— όλες —")}</option>
+              <option value="true">{_t("Εκκρεμείς")}</option>
+              <option value="false">{_t("Ολοκληρώθηκαν")}</option>
             </select>
           </div>
         </div>
@@ -131,26 +132,26 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
 
       <div className="section">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date(y, m - 1, 1))}>‹ Προηγ.</button>
+          <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date(y, m - 1, 1))}>{_t("‹ Προηγ.")}</button>
           <h2 style={{ textTransform: 'capitalize', margin: 0 }}>
-            {monthName} {loading && <span style={{ fontSize: 13, color: '#a0aec0' }}>(φόρτωση...)</span>}
+            {monthName} {loading && <span style={{ fontSize: 13, color: '#a0aec0' }}>{_t("(φόρτωση...)")}</span>}
           </h2>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date())}>Σήμερα</button>
-            <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date(y, m + 1, 1))}>Επόμ. ›</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date())}>{_t("Σήμερα")}</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date(y, m + 1, 1))}>{_t("Επόμ. ›")}</button>
           </div>
         </div>
         <div className="cal-grid">
-          {['Δευ','Τρι','Τετ','Πεμ','Παρ','Σαβ','Κυρ'].map(d => <div key={d} className="cal-header">{d}</div>)}
+          {['Δευ','Τρι','Τετ','Πεμ','Παρ','Σαβ','Κυρ'].map(d => <div key={d} className="cal-header">{_t(d)}</div>)}
           {cells}
         </div>
         {selectedDate && selectedEvents.length > 0 && (
           <div style={{ marginTop: 14, padding: 12, background: '#f7fafc', borderRadius: 6 }}>
             <h3 style={{ marginBottom: 8, fontSize: 14 }}>
-              Προθεσμίες στις {selectedDate.toLocaleDateString('el-GR')} ({selectedEvents.length})
+              {_t("Προθεσμίες στις")} {selectedDate.toLocaleDateString('el-GR')} ({selectedEvents.length})
             </h3>
             <table className="table" style={{ marginBottom: 0 }}>
-              <thead><tr><th>Πρωτόκολλο</th><th>Περιγραφή</th><th>Πελάτης</th><th style={{width:100}}>Κατάσταση</th><th style={{width:60}}></th></tr></thead>
+              <thead><tr><th>{_t("Πρωτόκολλο")}</th><th>{_t("Περιγραφή")}</th><th>{_t("Πελάτης")}</th><th style={{width:100}}>{_t("Κατάσταση")}</th><th style={{width:60}}></th></tr></thead>
               <tbody>
                 {selectedEvents.map((e, i) => (
                   <tr key={i} className="clickable" onClick={() => e.ypothesi_id && navigate(`/cases/${e.ypothesi_id}?tab=${e.kind === 'court_sub' ? 'court' : 'tasks'}`)}>
@@ -159,7 +160,7 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
                     <td>{e.pelatis || '—'}</td>
                     <td>
                       <span className={`badge ${e.ekkremis !== false ? 'badge-open' : 'badge-closed'}`}>
-                        {e.ekkremis !== false ? 'Εκκρεμής' : 'Έκλεισε'}
+                        {e.ekkremis !== false ? _t("Εκκρεμής") : _t("Έκλεισε")}
                       </span>
                     </td>
                     <td onClick={ev => ev.stopPropagation()}>
@@ -172,9 +173,9 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
           </div>
         )}
         <div style={{ marginTop: 12, fontSize: 12, color: '#a0aec0' }}>
-          Σύνολο εγγραφών: <strong>{events.length}</strong>
+          {_t("Σύνολο εγγραφών:")} <strong>{events.length}</strong>
           <span style={{ marginLeft: 12, color: '#e53e3e' }}>
-            Ληξιπρόθεσμες (κόκκινες κάρτες): {events.filter(e => {
+            {_t("Ληξιπρόθεσμες (κόκκινες κάρτες):")} {events.filter(e => {
               if (e.ekkremis === false || !e.date_dead_line) return false;
               return new Date(e.date_dead_line) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
             }).length}

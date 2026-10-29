@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { people } from '../api';
+import { _t } from '../i18n';
 
 // Επιλογή ΕΝΟΣ προσώπου από δύο διαφορετικούς καταλόγους. Χρησιμοποιείται
 // για τον υποβάλλοντα τη φορολογική δήλωση, για τον συνεργάτη ενός εξόδου
@@ -17,7 +18,7 @@ import { people } from '../api';
 const fullName = (p) =>
   (p?.eponymia && p.eponymia.trim())
   || `${p?.eponymo || ''} ${p?.onoma || ''}`.trim()
-  || '(χωρίς όνομα)';
+  || _t("(χωρίς όνομα)");
 
 function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled, label }) {
   const [lawyers, setLawyers] = useState([]);
@@ -69,7 +70,7 @@ function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled, label }) {
 
   return (
     <div className="form-group">
-      <label>{label || 'Δήλωση υποβάλλεται από'}</label>
+      <label>{label || _t("Δήλωση υποβάλλεται από")}</label>
 
       {sxetikoId ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -79,11 +80,11 @@ function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled, label }) {
           }}>
             {chosenSxetiko ? fullName(chosenSxetiko) : `#${sxetikoId}`}
             <span style={{ color: '#718096' }}>
-              {chosenSxetiko?.idiotita_name ? ` — ${chosenSxetiko.idiotita_name}` : ' — σχετικό πρόσωπο'}
+              {chosenSxetiko?.idiotita_name ? ` — ${chosenSxetiko.idiotita_name}` : _t(" — σχετικό πρόσωπο")}
             </span>
           </div>
           {!disabled && (
-            <button type="button" className="btn btn-sm" onClick={clearAll}>Αλλαγή</button>
+            <button type="button" className="btn btn-sm" onClick={clearAll}>{_t("Αλλαγή")}</button>
           )}
         </div>
       ) : (
@@ -93,7 +94,7 @@ function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled, label }) {
             onChange={e => pickLawyer(e.target.value)}
             disabled={disabled}
           >
-            <option value="">— δικηγόρος γραφείου —</option>
+            <option value="">{_t("— δικηγόρος γραφείου —")}</option>
             {activeLawyers.map(l => (
               <option key={l.aa} value={l.aa}>{fullName(l)}</option>
             ))}
@@ -105,16 +106,16 @@ function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled, label }) {
               value={q}
               onChange={e => setQ(e.target.value)}
               disabled={disabled}
-              placeholder="ή αναζήτησε σχετικό πρόσωπο — λογιστή, φοροτεχνικό…"
+              placeholder={_t("ή αναζήτησε σχετικό πρόσωπο — λογιστή, φοροτεχνικό…")}
             />
             {q.trim().length >= 2 && (
               <div style={{
                 border: '1px solid #e2e8f0', borderTop: 'none', borderRadius: '0 0 4px 4px',
                 maxHeight: 200, overflowY: 'auto', background: '#fff',
               }}>
-                {searching && <div style={{ padding: 8, fontSize: 13, color: '#718096' }}>Αναζήτηση…</div>}
+                {searching && <div style={{ padding: 8, fontSize: 13, color: '#718096' }}>{_t("Αναζήτηση…")}</div>}
                 {!searching && hits.length === 0 && (
-                  <div style={{ padding: 8, fontSize: 13, color: '#718096' }}>Κανένα αποτέλεσμα.</div>
+                  <div style={{ padding: 8, fontSize: 13, color: '#718096' }}>{_t("Κανένα αποτέλεσμα.")}</div>
                 )}
                 {hits.map(p => (
                   <div

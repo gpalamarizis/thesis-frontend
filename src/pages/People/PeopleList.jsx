@@ -7,79 +7,80 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import { people } from '../../api';
 import { transliterate } from '../../utils/translit';
 import { TERM } from '../../utils/region';
+import { _t } from '../../i18n';
 
 // Backend fields per kind (from routes/people.js):
 const KIND_CONFIG = {
   lawyers: {
     // Δικηγόροι γραφείου (dikigoroi_grafeiou)
     fields: [
-      { key: 'eponymo',       label: 'Επώνυμο *',       type: 'text', required: true },
-      { key: 'onoma',         label: 'Όνομα',           type: 'text' },
+      { key: 'eponymo',       label: _t("Επώνυμο *"),       type: 'text', required: true },
+      { key: 'onoma',         label: _t("Όνομα"),           type: 'text' },
       // Για τα αγγλικά/γαλλικά έντυπα (λογαριασμός). Κενά = αυτόματη μεταγραφή,
       // που φαίνεται ως πρόταση μέσα στο πεδίο.
-      { key: 'eponymo_latin', label: 'Επώνυμο με λατινικά (EN/FR έντυπα)', type: 'text',
+      { key: 'eponymo_latin', label: _t("Επώνυμο με λατινικά (EN/FR έντυπα)"), type: 'text',
         placeholder: (fm) => transliterate(fm.eponymo) },
-      { key: 'onoma_latin',   label: 'Όνομα με λατινικά (EN/FR έντυπα)',   type: 'text',
+      { key: 'onoma_latin',   label: _t("Όνομα με λατινικά (EN/FR έντυπα)"),   type: 'text',
         placeholder: (fm) => transliterate(fm.onoma) },
-      { key: 'onoma_patros',  label: 'Πατρός',          type: 'text' },
-      { key: 'date_gennisis', label: 'Ημ/νία γέννησης', type: 'date' },
-      { key: 'ar_mitroou',    label: 'Αρ. μητρώου',     type: 'text' },
-      { key: 'syllogos',      label: 'Δικηγορικός σύλλογος', type: 'text' },
+      { key: 'onoma_patros',  label: _t("Πατρός"),          type: 'text' },
+      { key: 'date_gennisis', label: _t("Ημ/νία γέννησης"), type: 'date' },
+      { key: 'ar_mitroou',    label: _t("Αρ. μητρώου"),     type: 'text' },
+      { key: 'syllogos',      label: _t("Δικηγορικός σύλλογος"), type: 'text' },
       { key: 'afm',           label: TERM.afm,             type: 'text' },
       { key: 'doy',           label: TERM.doy,             type: 'text' },
-      { key: 'adt',           label: 'ΑΔΤ',             type: 'text' },
-      { key: 'mobile',        label: 'Κινητό',          type: 'tel' },
+      { key: 'adt',           label: _t("ΑΔΤ"),             type: 'text' },
+      { key: 'mobile',        label: _t("Κινητό"),          type: 'tel' },
       { key: 'email',         label: 'Email',           type: 'email' },
-      { key: 'date_eggrafis', label: 'Ημ/νία εγγραφής', type: 'date' },
-      { key: 'exoterikos',    label: 'Εξωτερικός συνεργάτης', type: 'checkbox' },
-      { key: 'energos',       label: 'Ενεργός',         type: 'checkbox', default: true },
+      { key: 'date_eggrafis', label: _t("Ημ/νία εγγραφής"), type: 'date' },
+      { key: 'exoterikos',    label: _t("Εξωτερικός συνεργάτης"), type: 'checkbox' },
+      { key: 'energos',       label: _t("Ενεργός"),         type: 'checkbox', default: true },
     ],
     columns: [
-      { key: 'aa',         label: 'Α/Α',    width: 60 },
-      { key: 'eponymo',    label: 'Επώνυμο' },
-      { key: 'onoma',      label: 'Όνομα' },
-      { key: 'ar_mitroou', label: 'Αρ. μητρώου', width: 110 },
-      { key: 'syllogos',   label: 'Σύλλογος',    width: 150 },
-      { key: 'mobile',     label: 'Κινητό',      width: 120 },
+      { key: 'aa',         label: _t("Α/Α"),    width: 60 },
+      { key: 'eponymo',    label: _t("Επώνυμο") },
+      { key: 'onoma',      label: _t("Όνομα") },
+      { key: 'ar_mitroou', label: _t("Αρ. μητρώου"), width: 110 },
+      { key: 'syllogos',   label: _t("Σύλλογος"),    width: 150 },
+      { key: 'mobile',     label: _t("Κινητό"),      width: 120 },
       { key: 'email',      label: 'Email' },
     ],
   },
   opponents: {
     // Αντίδικοι (antidikoi)
     fields: [
-      { key: 'eponymo',  label: 'Επώνυμο *', type: 'text', required: true },
-      { key: 'onoma',    label: 'Όνομα',     type: 'text' },
-      { key: 'telefono', label: 'Τηλέφωνο',  type: 'tel' },
+      { key: 'eponymo',  label: _t("Επώνυμο *"), type: 'text', required: true },
+      { key: 'onoma',    label: _t("Όνομα"),     type: 'text' },
+      { key: 'telefono', label: _t("Τηλέφωνο"),  type: 'tel' },
       { key: 'email',    label: 'Email',     type: 'email' },
     ],
     columns: [
-      { key: 'aa',       label: 'Α/Α',      width: 60 },
-      { key: 'eponymo',  label: 'Επώνυμο' },
-      { key: 'onoma',    label: 'Όνομα' },
-      { key: 'telefono', label: 'Τηλέφωνο', width: 130 },
+      { key: 'aa',       label: _t("Α/Α"),      width: 60 },
+      { key: 'eponymo',  label: _t("Επώνυμο") },
+      { key: 'onoma',    label: _t("Όνομα") },
+      { key: 'telefono', label: _t("Τηλέφωνο"), width: 130 },
       { key: 'email',    label: 'Email' },
     ],
   },
   related: {
     // Σχετικά πρόσωπα (sxetika_prosopa) — subset of most useful fields
     fields: [
-      { key: 'eponymo',            label: 'Επώνυμο',            type: 'text' },
-      { key: 'onoma',              label: 'Όνομα',              type: 'text' },
-      { key: 'eponymia',           label: 'Επωνυμία (αν είναι εταιρεία)', type: 'text' },
-      { key: 'diakritikos_titlos', label: 'Διακριτικός τίτλος', type: 'text' },
+      { key: 'eponymo',            label: _t("Επώνυμο"),            type: 'text' },
+      { key: 'onoma',              label: _t("Όνομα"),              type: 'text' },
+      { key: 'eponymia',           label: _t("Επωνυμία (αν είναι εταιρεία)"), type: 'text' },
+      { key: 'diakritikos_titlos', label: _t("Διακριτικός τίτλος"), type: 'text' },
       { key: 'afm',                label: TERM.afm,                type: 'text' },
       { key: 'doy',                label: TERM.doy,                type: 'text' },
       { key: 'email',              label: 'Email',              type: 'email' },
-      { key: 'tilefono_kinito_1',  label: 'Κινητό',             type: 'tel' },
-      { key: 'tilefono_grafeiou_1', label: 'Τηλέφωνο γραφείου', type: 'tel' },
-      { key: 'energos',            label: 'Ενεργός',            type: 'checkbox', default: true },
+      { key: 'tilefono_kinito_1',  label: _t("Κινητό"),             type: 'tel' },
+      { key: 'tilefono_grafeiou_1', label: _t("Τηλέφωνο γραφείου"), type: 'tel' },
+      { key: 'energos',            label: _t("Ενεργός"),            type: 'checkbox', default: true },
     ],
     columns: [
-      { key: 'aa',                  label: 'Α/Α',    width: 60 },
-      { key: 'eponymo',             label: 'Επώνυμο', render: r => r.eponymo || r.eponymia || '—' },
-      { key: 'onoma',               label: 'Όνομα' },
+      { key: 'aa',                  label: _t("Α/Α"),    width: 60 },
+      { key: 'eponymo',             label: _t("Επώνυμο"), render: r => r.eponymo || r.eponymia || '—' },
+      { key: 'onoma',               label: _t("Όνομα") },
       { key: 'afm',                 label: TERM.afm,    width: 110 },
-      { key: 'tilefono_kinito_1',   label: 'Κινητό', width: 120 },
+      { key: 'tilefono_kinito_1',   label: _t("Κινητό"), width: 120 },
       { key: 'email',               label: 'Email' },
     ],
   },
@@ -131,30 +132,30 @@ function PeopleList({ user, onLogout, onOpenCaseSearch, kind, title }) {
                 <button
                   className={`btn btn-sm ${activeFilter === 'all' ? '' : 'btn-secondary'}`}
                   onClick={() => setActiveFilter('all')}
-                >Όλοι ({items.length})</button>
+                >{_t("Όλοι (")}{items.length})</button>
                 <button
                   className={`btn btn-sm ${activeFilter === 'active' ? '' : 'btn-secondary'}`}
                   onClick={() => setActiveFilter('active')}
-                >Ενεργοί ({items.filter(r => r.energos !== false).length})</button>
+                >{_t("Ενεργοί (")}{items.filter(r => r.energos !== false).length})</button>
                 <button
                   className={`btn btn-sm ${activeFilter === 'inactive' ? '' : 'btn-secondary'}`}
                   onClick={() => setActiveFilter('inactive')}
-                >Μή ενεργοί ({items.filter(r => r.energos === false).length})</button>
+                >{_t("Μή ενεργοί (")}{items.filter(r => r.energos === false).length})</button>
               </div>
             )}
-            <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέο</button>
+            <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>{_t("+ Νέο")}</button>
           </div>
         </div>
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : (
           <DataTable
             columns={config.columns}
             rows={filteredItems}
             rowKey={r => r.aa || r.id}
             onRowClick={r => { setEditing(r); setShowModal(true); }}
-            emptyMessage="Δεν υπάρχουν εγγραφές."
-            actions={r => <button className="btn btn-danger btn-sm" onClick={() => setConfirmDel(r)}>Διαγραφή</button>}
+            emptyMessage={_t("Δεν υπάρχουν εγγραφές.")}
+            actions={r => <button className="btn btn-danger btn-sm" onClick={() => setConfirmDel(r)}>{_t("Διαγραφή")}</button>}
           />
         )}
       </div>
@@ -171,9 +172,9 @@ function PeopleList({ user, onLogout, onOpenCaseSearch, kind, title }) {
 
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή"
-          message={`Διαγραφή του "${confirmDel.eponymo || confirmDel.eponymia || ''} ${confirmDel.onoma || ''}"; Η ενέργεια δεν αναιρείται.`}
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή")}
+          message={_t("Διαγραφή του \"{0} {1}\"; Η ενέργεια δεν αναιρείται.", [confirmDel.eponymo || confirmDel.eponymia || '', confirmDel.onoma || ''])}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -202,7 +203,7 @@ function PersonModal({ kind, config, initial, onClose, onSaved }) {
   const save = async () => {
     setError('');
     for (const f of config.fields) {
-      if (f.required && !form[f.key]) { setError(`Το πεδίο "${f.label.replace(' *', '')}" είναι υποχρεωτικό.`); return; }
+      if (f.required && !form[f.key]) { setError(_t("Το πεδίο \"{0}\" είναι υποχρεωτικό.", [f.label.replace(' *', '')])); return; }
     }
     setSaving(true);
     try {
@@ -224,12 +225,12 @@ function PersonModal({ kind, config, initial, onClose, onSaved }) {
 
   return (
     <Modal
-      title={initial ? 'Επεξεργασία' : 'Νέο πρόσωπο'}
+      title={initial ? _t("Επεξεργασία") : _t("Νέο πρόσωπο")}
       onClose={onClose}
       size="lg"
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}

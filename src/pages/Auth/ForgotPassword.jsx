@@ -1,6 +1,7 @@
 ﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../../api';
+import { _t } from '../../i18n';
 
 /**
  * ForgotPassword — Request a password reset link.
@@ -15,7 +16,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     setError('');
     if (!email.trim()) {
-      setError('Συμπληρώστε το email σας.');
+      setError(_t("Συμπληρώστε το email σας."));
       return;
     }
     setSubmitting(true);
@@ -23,7 +24,7 @@ export default function ForgotPassword() {
       await api.post('/api/auth/forgot-password', { email: email.trim() });
       setDone(true);
     } catch (err) {
-      setError(err.message || 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.');
+      setError(err.message || _t("Κάτι πήγε στραβά. Δοκιμάστε ξανά."));
     } finally {
       setSubmitting(false);
     }
@@ -33,25 +34,25 @@ export default function ForgotPassword() {
     <div className="auth-container">
       <div className="auth-card">
         <h1>Thesis</h1>
-        <p className="subtitle">Επαναφορά κωδικού</p>
+        <p className="subtitle">{_t("Επαναφορά κωδικού")}</p>
 
         {done ? (
           <>
             <div style={{ background: '#c6f6d5', color: '#22543d', padding: '12px 14px', borderRadius: 6, marginBottom: 16 }}>
-              ✓ Αν το email αντιστοιχεί σε λογαριασμό, θα λάβετε σύνδεσμο επαναφοράς.
+              {_t("✓ Αν το email αντιστοιχεί σε λογαριασμό, θα λάβετε σύνδεσμο επαναφοράς.")}
             </div>
             <p style={{ fontSize: 13, color: '#718096', lineHeight: 1.6 }}>
-              Ελέγξτε και τον φάκελο ανεπιθύμητης αλληλογραφίας. Ο σύνδεσμος λήγει σε 60 λεπτά.
+              {_t("Ελέγξτε και τον φάκελο ανεπιθύμητης αλληλογραφίας. Ο σύνδεσμος λήγει σε 60 λεπτά.")}
             </p>
             <div className="link">
-              <Link to="/login">← Επιστροφή στη σύνδεση</Link>
+              <Link to="/login">{_t("← Επιστροφή στη σύνδεση")}</Link>
             </div>
           </>
         ) : (
           <>
             {error && <div className="error">{error}</div>}
             <p style={{ fontSize: 14, color: '#4a5568', lineHeight: 1.6, marginBottom: 16 }}>
-              Δώστε το email σας και θα σας στείλουμε σύνδεσμο για να ορίσετε νέο κωδικό.
+              {_t("Δώστε το email σας και θα σας στείλουμε σύνδεσμο για να ορίσετε νέο κωδικό.")}
             </p>
             <form onSubmit={submit}>
               <div className="form-group">
@@ -65,11 +66,11 @@ export default function ForgotPassword() {
                 />
               </div>
               <button type="submit" className="btn btn-full" disabled={submitting}>
-                {submitting ? 'Αποστολή...' : 'Αποστολή συνδέσμου'}
+                {submitting ? _t("Αποστολή...") : _t("Αποστολή συνδέσμου")}
               </button>
             </form>
             <div className="link">
-              <Link to="/login">← Επιστροφή στη σύνδεση</Link>
+              <Link to="/login">{_t("← Επιστροφή στη σύνδεση")}</Link>
             </div>
           </>
         )}

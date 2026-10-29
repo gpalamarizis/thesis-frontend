@@ -4,6 +4,8 @@
 // (GR, CY, GB…). Ίδια λίστα με το backend (src/utils/countries.js) — αν
 // αλλάξει η μία, αλλάζει και η άλλη.
 
+import { isEN } from '../i18n';
+
 const RAW = `
 GR|Ελλάδα|Greece|ΕΛΛΑΣ;HELLAS;HELLENIC REPUBLIC;ΕΛΛΗΝΙΚΗ;ΕΛΛΗΝΙΚΗ ΔΗΜΟΚΡΑΤΙΑ;GREEK;ΕΛ;EL;GRC
 CY|Κύπρος|Cyprus|ΚΥΠΡΙΑΚΗ ΔΗΜΟΚΡΑΤΙΑ;ΚΥΠΡΙΑΚΗ;CYPRIOT;CYP
@@ -219,11 +221,13 @@ export const COUNTRIES = RAW.trim().split('\n').map((line) => {
   return { code, el, en };
 });
 
-// Για dropdown: Ελλάδα πρώτη, μετά αλφαβητικά στα ελληνικά
+// Στο αγγλικό περιβάλλον εμφανίζεται το αγγλικό όνομα (ο κωδικός μένει ίδιος).
+// Για dropdown: Ελλάδα και Κύπρος πρώτες, μετά αλφαβητικά στη γλώσσα του χρήστη.
+const nm = (c) => (isEN ? c.en : c.el);
 export const COUNTRY_OPTIONS = [
   ...COUNTRIES.filter(c => c.code === 'GR'),
-  ...COUNTRIES.filter(c => c.code !== 'GR').sort((a, b) => a.el.localeCompare(b.el, 'el')),
-];
+  ...COUNTRIES.filter(c => c.code !== 'GR').sort((a, b) => nm(a).localeCompare(nm(b), isEN ? 'en' : 'el')),
+].map(c => (isEN ? { ...c, el: c.en } : c));
 
 const BY_CODE = new Map(COUNTRIES.map(c => [c.code, c]));
-export const countryName = (code) => (BY_CODE.get(code) || {}).el || code || '';
+export const countryName = (code) => { const c = BY_CODE.get(code); return (c && nm(c)) || code || ''; };

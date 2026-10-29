@@ -9,6 +9,7 @@ import MyDataPanel from './MyDataPanel';
 
 import DateInput from '../../components/DateInput';
 import { TERM, DEFAULT_VAT, VAT_RATES, HAS_MYDATA, HAS_GR_WITHHOLDINGS } from '../../utils/region';
+import { _t, _tc } from '../../i18n';
 function round2(n) { return Math.round(Number(n || 0) * 100) / 100; }
 
 function computeTotals(lines, applyWithhold, applyStamp, applyTn) {
@@ -203,10 +204,10 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
 
   const save = async () => {
     setError('');
-    if (form.recipient_kind === 'fysiko' && !form.fysiko_prosopo_id) { setError('Επιλέξτε πελάτη (φυσικό πρόσωπο).'); return; }
-    if (form.recipient_kind === 'nomiko' && !form.nomiko_prosopo_id) { setError('Επιλέξτε πελάτη (νομικό πρόσωπο).'); return; }
-    if (form.lines.length === 0) { setError('Προσθέστε τουλάχιστον μία γραμμή.'); return; }
-    if (form.lines.some(l => !l.description.trim())) { setError('Όλες οι γραμμές πρέπει να έχουν περιγραφή.'); return; }
+    if (form.recipient_kind === 'fysiko' && !form.fysiko_prosopo_id) { setError(_t("Επιλέξτε πελάτη (φυσικό πρόσωπο).")); return; }
+    if (form.recipient_kind === 'nomiko' && !form.nomiko_prosopo_id) { setError(_t("Επιλέξτε πελάτη (νομικό πρόσωπο).")); return; }
+    if (form.lines.length === 0) { setError(_t("Προσθέστε τουλάχιστον μία γραμμή.")); return; }
+    if (form.lines.some(l => !l.description.trim())) { setError(_t("Όλες οι γραμμές πρέπει να έχουν περιγραφή.")); return; }
 
     setSaving(true);
     try {
@@ -238,10 +239,10 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
       if (isNew) {
         const r = await invoices.create(payload);
         const newId = r?.data?.aa || r?.aa;
-        if (!newId) { setError('Το backend δεν επέστρεψε ID.'); return; }
+        if (!newId) { setError(_t("Το backend δεν επέστρεψε ID.")); return; }
         navigate(`/invoices/${newId}`, { replace: true });
       } else {
-        if (!form.aa) { setError('Λείπει το ID τιμολογίου.'); return; }
+        if (!form.aa) { setError(_t("Λείπει το ID τιμολογίου.")); return; }
         await invoices.update(form.aa, payload);
         // Reload to get fresh state
         const d = await invoices.get(form.aa);
@@ -301,8 +302,8 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
         };
       }) }));
       setShowTr(true);
-      setTrMsg(isReadOnly ? 'Συμπληρώθηκαν — πατήστε «Αποθήκευση μεταφράσεων».' : 'Συμπληρώθηκαν — αποθηκεύονται με το «Αποθήκευση draft».');
-    } catch (e) { setError(e.message || 'Η αυτόματη μετάφραση απέτυχε.'); }
+      setTrMsg(isReadOnly ? _t("Συμπληρώθηκαν — πατήστε «Αποθήκευση μεταφράσεων».") : _t("Συμπληρώθηκαν — αποθηκεύονται με το «Αποθήκευση draft»."));
+    } catch (e) { setError(e.message || _t("Η αυτόματη μετάφραση απέτυχε.")); }
     finally { setTrBusy(false); }
   };
 
@@ -314,7 +315,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
       await invoices.translations(form.aa, form.lines
         .filter(l => l.aa)
         .map(l => ({ aa: l.aa, description_en: l.description_en || null, description_fr: l.description_fr || null })));
-      setTrMsg('Αποθηκεύτηκαν.');
+      setTrMsg(_t("Αποθηκεύτηκαν."));
     } catch (e) { setError(e.message); }
     finally { setTrSaving(false); }
   };
@@ -361,7 +362,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
   // δύο φέρουν σημείωση ότι είναι συνοδευτικά.
   const [pdfLang, setPdfLang] = useState('el');
   const downloadPdf = async () => {
-    if (!form.aa) { setError('Αποθήκευσε πρώτα το draft.'); return; }
+    if (!form.aa) { setError(_t("Αποθήκευσε πρώτα το draft.")); return; }
     try {
       const d = await invoices.get(form.aa);
       const inv = d?.data || d;
@@ -373,20 +374,20 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
 
   if (loading) {
     return (
-      <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Τιμολόγιο">
-        <div className="empty-state">Φόρτωση...</div>
+      <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Τιμολόγιο")}>
+        <div className="empty-state">{_t("Φόρτωση...")}</div>
       </Layout>
     );
   }
 
-  const title = isNew ? 'Νέο τιμολόγιο' :
-    (form.full_number ? `Τιμολόγιο ${form.full_number}` : `Τιμολόγιο (draft #${form.aa})`);
+  const title = isNew ? _t("Νέο τιμολόγιο") :
+    (form.full_number ? _t("Τιμολόγιο {0}", [form.full_number]) : _t("Τιμολόγιο (draft #{0})", [form.aa]));
 
   const statusLabel = isNew || !form.aa
-    ? 'Νέο τιμολόγιο (μη αποθηκευμένο)'
-    : form.status === 'draft'     ? `Draft #${form.aa} (επεξεργάσιμο)`
-    : form.status === 'issued'    ? `Εκδοθέν ${form.issued_at ? '(' + fmtDate(form.issued_at) + ')' : ''}`
-    : form.status === 'cancelled' ? `Ακυρωμένο ${form.cancelled_at ? '(' + fmtDate(form.cancelled_at) + ')' : ''}`
+    ? _t("Νέο τιμολόγιο (μη αποθηκευμένο)")
+    : form.status === 'draft'     ? _t("Draft #{0} (επεξεργάσιμο)", [form.aa])
+    : form.status === 'issued'    ? _t("Εκδοθέν {0}", [form.issued_at ? '(' + fmtDate(form.issued_at) + ')' : ''])
+    : form.status === 'cancelled' ? _t("Ακυρωμένο {0}", [form.cancelled_at ? '(' + fmtDate(form.cancelled_at) + ')' : ''])
     : form.status;
 
   return (
@@ -402,31 +403,31 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
       <div className="section" style={{ marginBottom: 20, padding: 12, background: form.status === 'issued' ? '#c6f6d5' : form.status === 'cancelled' ? '#fed7d7' : '#feebc8' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
           <div>
-            <strong>Κατάσταση:</strong> {statusLabel}
+            <strong>{_t("Κατάσταση:")}</strong> {statusLabel}
             {form.mydata_mark && <span style={{ marginLeft: 12 }}>myDATA MARK: <code>{form.mydata_mark}</code></span>}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn-sm btn-secondary" onClick={() => navigate('/invoices')}>← Πίσω</button>
+            <button className="btn btn-sm btn-secondary" onClick={() => navigate('/invoices')}>{_t("← Πίσω")}</button>
             {/* ΕΝΑ κουμπί εκτύπωσης, σε κάθε κατάσταση. Ήταν δύο χωριστά —
                 ένα για πρόχειρα και ένα για εκδοθέντα — και η επιλογή
                 γλώσσας έλειπε από το δεύτερο. Σε μη αποθηκευμένο
                 τιμολόγιο η επιλογή φαίνεται αλλά το κουμπί ζητά πρώτα
                 αποθήκευση, ώστε να ξέρει ο χειριστής ότι υπάρχει. */}
             <select value={pdfLang} onChange={e => setPdfLang(e.target.value)}
-                    style={{ width: 'auto' }} title="Γλώσσα εντύπου">
-              <option value="el">Ελληνικά</option>
+                    style={{ width: 'auto' }} title={_t("Γλώσσα εντύπου")}>
+              <option value="el">{_t("Ελληνικά")}</option>
               <option value="en">English</option>
               <option value="fr">Français</option>
             </select>
             <button className="btn btn-sm" onClick={downloadPdf}
-                    title={form.aa ? '' : 'Αποθήκευσε πρώτα το τιμολόγιο'}>
-              🖨️ {form.status === 'draft' || !form.aa ? 'Preview / PDF' : 'Εκτύπωση / PDF'}
+                    title={form.aa ? '' : _t("Αποθήκευσε πρώτα το τιμολόγιο")}>
+              🖨️ {form.status === 'draft' || !form.aa ? 'Preview / PDF' : _t("Εκτύπωση / PDF")}
             </button>
             {form.aa && form.status === 'draft' && (
-              <button className="btn btn-sm" onClick={() => setConfirmIssue(true)} disabled={!form.series_id}>✓ Έκδοση</button>
+              <button className="btn btn-sm" onClick={() => setConfirmIssue(true)} disabled={!form.series_id}>{_t("✓ Έκδοση")}</button>
             )}
             {form.status === 'issued' && (
-              <button className="btn btn-sm btn-danger" onClick={() => setConfirmCancel(true)}>Ακύρωση</button>
+              <button className="btn btn-sm btn-danger" onClick={() => setConfirmCancel(true)}>{_t("Ακύρωση")}</button>
             )}
           </div>
         </div>
@@ -436,44 +437,44 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
       <div className="section">
         <div className="form-grid-3">
           <div className="form-group">
-            <label>Σειρά *</label>
+            <label>{_t("Σειρά *")}</label>
             <select value={form.series_id} onChange={e => setField('series_id', e.target.value)} disabled={isReadOnly}>
-              <option value="">— επιλογή —</option>
+              <option value="">{_t("— επιλογή —")}</option>
               {series.map(s => (
-                <option key={s.aa} value={s.aa}>{s.name} {s.is_default ? '⭐' : ''} (επόμενος #{s.next_number})</option>
+                <option key={s.aa} value={s.aa}>{s.name} {s.is_default ? '⭐' : ''} {_t("(επόμενος #")}{s.next_number})</option>
               ))}
             </select>
           </div>
           <div className="form-group">
-            <label>Ημερομηνία *</label>
+            <label>{_t("Ημερομηνία *")}</label>
             <DateInput value={form.date} onChange={e => setField('date', e.target.value)} disabled={isReadOnly} />
           </div>
           <div className="form-group">
-            <label>Ημ/νία λήξης πληρωμής</label>
+            <label>{_t("Ημ/νία λήξης πληρωμής")}</label>
             <DateInput value={form.due_date} onChange={e => setField('due_date', e.target.value)} disabled={isReadOnly} />
           </div>
         </div>
 
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Τύπος πελάτη</label>
+            <label>{_t("Τύπος πελάτη")}</label>
             <select value={form.recipient_kind} onChange={e => setField('recipient_kind', e.target.value)} disabled={isReadOnly}>
-              <option value="fysiko">Φυσικό Πρόσωπο</option>
-              <option value="nomiko">Νομικό Πρόσωπο</option>
+              <option value="fysiko">{_t("Φυσικό Πρόσωπο")}</option>
+              <option value="nomiko">{_t("Νομικό Πρόσωπο")}</option>
             </select>
           </div>
           <div className="form-group">
-            <label>Πελάτης *</label>
+            <label>{_t("Πελάτης *")}</label>
             {form.recipient_kind === 'fysiko' ? (
               <select value={form.fysiko_prosopo_id} onChange={e => setField('fysiko_prosopo_id', e.target.value)} disabled={isReadOnly}>
-                <option value="">— επιλογή —</option>
+                <option value="">{_t("— επιλογή —")}</option>
                 {fysikaList.map(f => (
                   <option key={f.aa} value={f.aa}>{`${f.eponymo || ''} ${f.onoma || ''}`.trim()} {f.afm ? `(${TERM.afm}: ${f.afm})` : ''}</option>
                 ))}
               </select>
             ) : (
               <select value={form.nomiko_prosopo_id} onChange={e => setField('nomiko_prosopo_id', e.target.value)} disabled={isReadOnly}>
-                <option value="">— επιλογή —</option>
+                <option value="">{_t("— επιλογή —")}</option>
                 {nomikaList.map(n => (
                   <option key={n.aa} value={n.aa}>{n.eponymia} {n.afm ? `(${TERM.afm}: ${n.afm})` : ''}</option>
                 ))}
@@ -483,9 +484,9 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
         </div>
 
         <div className="form-group">
-          <label>Υπόθεση (προαιρετικά)</label>
+          <label>{_t("Υπόθεση (προαιρετικά)")}</label>
           <select value={form.ypothesi_id} onChange={e => setField('ypothesi_id', e.target.value)} disabled={isReadOnly}>
-            <option value="">— καμία —</option>
+            <option value="">{_t("— καμία —")}</option>
             {casesList.map(c => (
               <option key={c.aa} value={c.aa}>{c.xeirokinito_id} — {c.fysiko_full_name || c.nomiko_eponymia || ''}</option>
             ))}
@@ -496,30 +497,30 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
       {/* Lines */}
       <div className="section">
         <div className="section-header" style={{ padding: 0, marginBottom: 12 }}>
-          <h2>Γραμμές τιμολογίου</h2>
+          <h2>{_t("Γραμμές τιμολογίου")}</h2>
           <div style={{ display: 'flex', gap: 8 }}>
             <button type="button" className={`btn btn-sm ${showTr ? 'btn-primary' : 'btn-secondary'}`}
                     onClick={() => setShowTr(v => !v)}
-                    title="Μετάφραση των περιγραφών για το αγγλικό και το γαλλικό PDF">
-              🌐 Μετάφραση EN/FR
+                    title={_t("Μετάφραση των περιγραφών για το αγγλικό και το γαλλικό PDF")}>
+              {_t("🌐 Μετάφραση EN/FR")}
             </button>
             {trAuto && (
               <button type="button" className="btn btn-sm btn-secondary" disabled={trBusy} onClick={autoTranslate}
-                      title="Αυτόματη μετάφραση των κενών περιγραφών">
-                {trBusy ? 'Μετάφραση…' : '✨ Αυτόματη μετάφραση'}
+                      title={_t("Αυτόματη μετάφραση των κενών περιγραφών")}>
+                {trBusy ? _t("Μετάφραση…") : _t("✨ Αυτόματη μετάφραση")}
               </button>
             )}
-            {!isReadOnly && <button className="btn btn-sm" onClick={addLine}>+ Νέα γραμμή</button>}
+            {!isReadOnly && <button className="btn btn-sm" onClick={addLine}>{_t("+ Νέα γραμμή")}</button>}
           </div>
         </div>
         <table className="table">
           <thead><tr>
-            <th>Περιγραφή</th>
-            <th style={{width:130,textAlign:'right'}}>Ποσό (€)</th>
-            <th style={{width:80,textAlign:'right'}}>ΦΠΑ %</th>
-            <th style={{width:110,textAlign:'right'}}>Καθαρή αξία</th>
-            <th style={{width:110,textAlign:'right'}}>ΦΠΑ</th>
-            <th style={{width:110,textAlign:'right'}}>Σύνολο</th>
+            <th>{_t("Περιγραφή")}</th>
+            <th style={{width:130,textAlign:'right'}}>{_t("Ποσό (€)")}</th>
+            <th style={{width:80,textAlign:'right'}}>{_t("ΦΠΑ %")}</th>
+            <th style={{width:110,textAlign:'right'}}>{_t("Καθαρή αξία")}</th>
+            <th style={{width:110,textAlign:'right'}}>{_t("ΦΠΑ")}</th>
+            <th style={{width:110,textAlign:'right'}}>{_t("Σύνολο")}</th>
             {!isReadOnly && <th style={{width:1}}></th>}
           </tr></thead>
           <tbody>
@@ -539,7 +540,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
                         value={l.description}
                         onChange={e => setLine(i, 'description', e.target.value)}
                         disabled={isReadOnly}
-                        placeholder="Περιγραφή υπηρεσίας/προϊόντος"
+                        placeholder={_t("Περιγραφή υπηρεσίας/προϊόντος")}
                         style={{ width: '100%' }}
                       />
                       {showTr && (
@@ -589,7 +590,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
           <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 10, marginTop: 10 }}>
             {trMsg && <span style={{ color: '#2f855a', fontSize: 13 }}>{trMsg}</span>}
             <button type="button" className="btn btn-sm" disabled={trSaving} onClick={saveTranslations}>
-              {trSaving ? 'Αποθήκευση…' : 'Αποθήκευση μεταφράσεων'}
+              {trSaving ? _t("Αποθήκευση…") : _t("Αποθήκευση μεταφράσεων")}
             </button>
           </div>
         )}
@@ -600,86 +601,86 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
         <div>
           {/* Ελληνικές παρακρατήσεις — δεν υπάρχουν στην Κύπρο */}
           {HAS_GR_WITHHOLDINGS && <>
-          <h3 style={{ fontSize: 14, marginBottom: 8 }}>Παρακρατήσεις</h3>
+          <h3 style={{ fontSize: 14, marginBottom: 8 }}>{_t("Παρακρατήσεις")}</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isReadOnly ? 'default' : 'pointer' }}>
               <input type="checkbox" checked={form.apply_withhold} onChange={e => setField('apply_withhold', e.target.checked)} disabled={isReadOnly} />
-              <span>Παρακράτηση φόρου 20% ({fmtCurrency(totals.withhold_total)})</span>
+              <span>{_t("Παρακράτηση φόρου 20% (")}{fmtCurrency(totals.withhold_total)})</span>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isReadOnly ? 'default' : 'pointer' }}>
               <input type="checkbox" checked={form.apply_stamp} onChange={e => setField('apply_stamp', e.target.checked)} disabled={isReadOnly} />
-              <span>Χαρτόσημο 2.4% + ΟΓΑ 20% χαρτ. ({fmtCurrency(totals.stamp_total)})</span>
+              <span>{_t("Χαρτόσημο 2.4% + ΟΓΑ 20% χαρτ. (")}{fmtCurrency(totals.stamp_total)})</span>
             </label>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isReadOnly ? 'default' : 'pointer' }}>
               <input type="checkbox" checked={form.apply_tn} onChange={e => setField('apply_tn', e.target.checked)} disabled={isReadOnly} />
-              <span>Ταμείο Νομικών 12% ({fmtCurrency(totals.tn_total)})</span>
+              <span>{_t("Ταμείο Νομικών 12% (")}{fmtCurrency(totals.tn_total)})</span>
             </label>
           </div>
           </>}
 
           <div style={{ marginTop: HAS_GR_WITHHOLDINGS ? 20 : 0 }}>
             <div className="form-group">
-              <label>Όροι πληρωμής</label>
-              <input type="text" value={form.payment_terms} onChange={e => setField('payment_terms', e.target.value)} disabled={isReadOnly} placeholder="π.χ. Πληρωμή εντός 30 ημερών" />
+              <label>{_t("Όροι πληρωμής")}</label>
+              <input type="text" value={form.payment_terms} onChange={e => setField('payment_terms', e.target.value)} disabled={isReadOnly} placeholder={_t("π.χ. Πληρωμή εντός 30 ημερών")} />
             </div>
             <div className="form-group">
-              <label>Σημειώσεις</label>
+              <label>{_t("Σημειώσεις")}</label>
               <textarea rows="3" value={form.notes} onChange={e => setField('notes', e.target.value)} disabled={isReadOnly} />
             </div>
             <div className="form-grid-2">
               <div className="form-group">
-                <label>Έξοδα για λογαριασμό του πελάτη (€)</label>
+                <label>{_t("Έξοδα για λογαριασμό του πελάτη (€)")}</label>
                 <input type="number" step="0.01" value={form.client_expenses}
                        onChange={e => setField('client_expenses', e.target.value)} disabled={isReadOnly}
-                       placeholder="μόνο ως σημείωση" style={{ textAlign: 'right' }} />
+                       placeholder={_t("μόνο ως σημείωση")} style={{ textAlign: 'right' }} />
               </div>
               <div className="form-group">
-                <label>Αναλυτικός λογαριασμός</label>
+                <label>{_t("Αναλυτικός λογαριασμός")}</label>
                 <input type="text" value={form.account_ref} onChange={e => setField('account_ref', e.target.value)}
-                       disabled={isReadOnly} placeholder="π.χ. 01.03" />
+                       disabled={isReadOnly} placeholder={_t("π.χ. 01.03")} />
               </div>
             </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isReadOnly ? 'default' : 'pointer' }}>
               <input type="checkbox" checked={!!form.vat_exemption} onChange={e => setField('vat_exemption', e.target.checked)} disabled={isReadOnly} />
-              <span>Σημείωση απαλλαγής ΦΠΑ (Άρθρο 14 παρ. 2α Ν. 2859/2000 — ενδοκοινοτική)</span>
+              <span>{_t("Σημείωση απαλλαγής ΦΠΑ (Άρθρο 14 παρ. 2α Ν. 2859/2000 — ενδοκοινοτική)")}</span>
             </label>
           </div>
         </div>
 
         <div style={{ background: '#f7fafc', borderRadius: 8, padding: 16 }}>
-          <h3 style={{ fontSize: 14, marginBottom: 12 }}>Σύνολα</h3>
-          <TotalRow label="Καθαρή αξία"        value={totals.subtotal} />
-          <TotalRow label="ΦΠΑ"                value={totals.vat_total} />
-          <TotalRow label="Σύνολο (μικτό)"     value={totals.total_gross} bold />
-          {form.apply_withhold && <TotalRow label="− Παρακράτηση 20%" value={-totals.withhold_total} minus />}
-          {form.apply_stamp    && <TotalRow label="− Χαρτόσημο"        value={-totals.stamp_total}    minus />}
-          {form.apply_tn       && <TotalRow label="− Ταμείο Νομικών"   value={-totals.tn_total}       minus />}
+          <h3 style={{ fontSize: 14, marginBottom: 12 }}>{_t("Σύνολα")}</h3>
+          <TotalRow label={_t("Καθαρή αξία")}        value={totals.subtotal} />
+          <TotalRow label={_t("ΦΠΑ")}                value={totals.vat_total} />
+          <TotalRow label={_t("Σύνολο (μικτό)")}     value={totals.total_gross} bold />
+          {form.apply_withhold && <TotalRow label={_t("− Παρακράτηση 20%")} value={-totals.withhold_total} minus />}
+          {form.apply_stamp    && <TotalRow label={_t("− Χαρτόσημο")}        value={-totals.stamp_total}    minus />}
+          {form.apply_tn       && <TotalRow label={_t("− Ταμείο Νομικών")}   value={-totals.tn_total}       minus />}
           <hr style={{ margin: '10px 0', border: 'none', borderTop: '2px solid #cbd5e0' }} />
-          <TotalRow label="Πληρωτέο ποσό" value={totals.total_net} big />
+          <TotalRow label={_t("Πληρωτέο ποσό")} value={totals.total_net} big />
         </div>
       </div>
 
       {!isReadOnly && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
-          <button className="btn btn-secondary" onClick={() => navigate('/invoices')}>Ακύρωση</button>
-          <button className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση draft'}</button>
+          <button className="btn btn-secondary" onClick={() => navigate('/invoices')}>{_t("Ακύρωση")}</button>
+          <button className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση draft")}</button>
         </div>
       )}
 
       {confirmIssue && (
         <ConfirmDialog
-          title="Έκδοση τιμολογίου"
-          message="Μετά την έκδοση δεν μπορεί να επεξεργαστεί. Θα πάρει τον επόμενο αριθμό της σειράς και θα κλειδώσουν όλα τα στοιχεία. Συνέχεια;"
-          confirmLabel="Έκδοση"
+          title={_t("Έκδοση τιμολογίου")}
+          message={_t("Μετά την έκδοση δεν μπορεί να επεξεργαστεί. Θα πάρει τον επόμενο αριθμό της σειράς και θα κλειδώσουν όλα τα στοιχεία. Συνέχεια;")}
+          confirmLabel={_tc("verb", "Έκδοση")}
           onConfirm={doIssue}
           onClose={() => setConfirmIssue(false)}
         />
       )}
       {confirmCancel && (
         <ConfirmDialog
-          title="Ακύρωση τιμολογίου"
-          message="Το τιμολόγιο θα σημαδευτεί ως ακυρωμένο. Συνέχεια;"
-          confirmLabel="Ακύρωση τιμολογίου"
+          title={_t("Ακύρωση τιμολογίου")}
+          message={_t("Το τιμολόγιο θα σημαδευτεί ως ακυρωμένο. Συνέχεια;")}
+          confirmLabel={_t("Ακύρωση τιμολογίου")}
           onConfirm={doCancel}
           onClose={() => setConfirmCancel(false)}
         />

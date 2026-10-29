@@ -10,12 +10,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../api';
 import { TERM } from '../utils/region';
+import { _t } from '../i18n';
 
 const TYPES = [
-  { code: 'solo',                label: 'Μεμονωμένος δικηγόρος',       desc: 'Δουλεύεις μόνος σου. 1 χρήστης.', icon: '👤' },
-  { code: 'partnership_shared',  label: 'Συνεργασία (μοιραζόμενες υποθέσεις)', desc: 'Οι συνεργάτες βλέπουν όλες τις υποθέσεις.', icon: '🤝' },
-  { code: 'partnership_private', label: 'Συνεργασία (χωριστές υποθέσεις)',       desc: 'Κάθε δικηγόρος βλέπει μόνο τις δικές του — εκτός αν του δώσει πρόσβαση ο διαχειριστής.', icon: '🔒' },
-  { code: 'law_firm',            label: 'Δικηγορική εταιρεία',                   desc: 'Owner με πλήρη έλεγχο, συνεργάτες με περιορισμένη πρόσβαση.', icon: '🏛️' },
+  { code: 'solo',                label: _t("Μεμονωμένος δικηγόρος"),       desc: _t("Δουλεύεις μόνος σου. 1 χρήστης."), icon: '👤' },
+  { code: 'partnership_shared',  label: _t("Συνεργασία (μοιραζόμενες υποθέσεις)"), desc: _t("Οι συνεργάτες βλέπουν όλες τις υποθέσεις."), icon: '🤝' },
+  { code: 'partnership_private', label: _t("Συνεργασία (χωριστές υποθέσεις)"),       desc: _t("Κάθε δικηγόρος βλέπει μόνο τις δικές του — εκτός αν του δώσει πρόσβαση ο διαχειριστής."), icon: '🔒' },
+  { code: 'law_firm',            label: _t("Δικηγορική εταιρεία"),                   desc: _t("Owner με πλήρη έλεγχο, συνεργάτες με περιορισμένη πρόσβαση."), icon: '🏛️' },
 ];
 
 function TypeCard({ type, selected, onClick }) {
@@ -99,12 +100,12 @@ function Signup() {
     <div style={{ maxWidth: 720, margin: '40px auto', padding: 24 }}>
       <div style={{ textAlign: 'center', marginBottom: 30 }}>
         <h1 style={{ fontSize: 32, margin: 0 }}>Thesis</h1>
-        <p style={{ color: '#718096' }}>Δωρεάν δοκιμαστική περίοδος 30 ημερών</p>
+        <p style={{ color: '#718096' }}>{_t("Δωρεάν δοκιμαστική περίοδος 30 ημερών")}</p>
       </div>
 
       {/* Progress */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 30 }}>
-        {['Τύπος', 'Λεπτ.', 'Στοιχεία', 'Ολοκλήρωση'].map((s, i) => (
+        {['Τύπος', 'Λεπτ.', 'Στοιχεία', 'Ολοκλήρωση'].map(x => _t(x)).map((s, i) => (
           <div key={i} style={{
             flex: 1,
             textAlign: 'center',
@@ -122,7 +123,7 @@ function Signup() {
       {/* Step 1: Type */}
       {step === 1 && (
         <>
-          <h2>Ποιος τύπος γραφείου είσαι;</h2>
+          <h2>{_t("Ποιος τύπος γραφείου είσαι;")}</h2>
           <div style={{ display: 'grid', gap: 12, marginTop: 20 }}>
             {TYPES.map(t => <TypeCard key={t.code} type={t} selected={form.plan_type === t.code} onClick={() => chooseType(t.code)} />)}
           </div>
@@ -132,22 +133,22 @@ function Signup() {
       {/* Step 2: Visibility (only for partnership) */}
       {step === 2 && (
         <>
-          <h2>Τρόπος πρόσβασης σε υποθέσεις</h2>
-          <p style={{ color: '#4a5568', marginBottom: 20 }}>Πώς θα βλέπουν οι συνεργάτες τις υποθέσεις;</p>
+          <h2>{_t("Τρόπος πρόσβασης σε υποθέσεις")}</h2>
+          <p style={{ color: '#4a5568', marginBottom: 20 }}>{_t("Πώς θα βλέπουν οι συνεργάτες τις υποθέσεις;")}</p>
           <div style={{ display: 'grid', gap: 12 }}>
             <TypeCard
-              type={{ label: 'Όλοι βλέπουν όλα', desc: 'Κάθε συνεργάτης βλέπει όλες τις υποθέσεις του γραφείου.', icon: '👥' }}
+              type={{ label: _t("Όλοι βλέπουν όλα"), desc: _t("Κάθε συνεργάτης βλέπει όλες τις υποθέσεις του γραφείου."), icon: '👥' }}
               selected={form.visibility_mode === 'shared'}
               onClick={() => { setForm(f => ({ ...f, visibility_mode: 'shared' })); setStep(3); }}
             />
             <TypeCard
-              type={{ label: 'Ο καθένας τα δικά του', desc: 'Οι συνεργάτες βλέπουν μόνο ό,τι τους δίνει ο owner. Ιδανικό για ανεξάρτητους δικηγόρους με κοινό γραφείο.', icon: '🔒' }}
+              type={{ label: _t("Ο καθένας τα δικά του"), desc: _t("Οι συνεργάτες βλέπουν μόνο ό,τι τους δίνει ο owner. Ιδανικό για ανεξάρτητους δικηγόρους με κοινό γραφείο."), icon: '🔒' }}
               selected={form.visibility_mode === 'private'}
               onClick={() => { setForm(f => ({ ...f, visibility_mode: 'private' })); setStep(3); }}
             />
           </div>
           <div style={{ marginTop: 20 }}>
-            <button className="btn btn-secondary" onClick={back}>← Πίσω</button>
+            <button className="btn btn-secondary" onClick={back}>{_t("← Πίσω")}</button>
           </div>
         </>
       )}
@@ -155,36 +156,36 @@ function Signup() {
       {/* Step 3: Details */}
       {step === 3 && (
         <>
-          <h2>Στοιχεία γραφείου & owner</h2>
+          <h2>{_t("Στοιχεία γραφείου & owner")}</h2>
           <div className="form-grid-2" style={{ marginTop: 20 }}>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label>Ονομασία γραφείου *</label>
+              <label>{_t("Ονομασία γραφείου *")}</label>
               <input value={form.organizationName} onChange={upd('organizationName')} required />
             </div>
-            <div className="form-group"><label>{TERM.afm} γραφείου</label><input value={form.billing_afm} onChange={upd('billing_afm')} /></div>
-            <div className="form-group"><label>Τηλέφωνο</label><input value={form.billing_phone} onChange={upd('billing_phone')} /></div>
+            <div className="form-group"><label>{TERM.afm} {_t("γραφείου")}</label><input value={form.billing_afm} onChange={upd('billing_afm')} /></div>
+            <div className="form-group"><label>{_t("Τηλέφωνο")}</label><input value={form.billing_phone} onChange={upd('billing_phone')} /></div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label>Email τιμολόγησης</label>
+              <label>{_t("Email τιμολόγησης")}</label>
               <input type="email" value={form.billing_email} onChange={upd('billing_email')} />
             </div>
 
-            <h3 style={{ gridColumn: 'span 2', margin: '20px 0 0', borderTop: '1px solid #e2e8f0', paddingTop: 20 }}>Owner λογαριασμός</h3>
+            <h3 style={{ gridColumn: 'span 2', margin: '20px 0 0', borderTop: '1px solid #e2e8f0', paddingTop: 20 }}>{_t("Owner λογαριασμός")}</h3>
 
-            <div className="form-group"><label>Όνομα *</label><input value={form.firstName} onChange={upd('firstName')} required /></div>
-            <div className="form-group"><label>Επώνυμο *</label><input value={form.lastName} onChange={upd('lastName')} required /></div>
+            <div className="form-group"><label>{_t("Όνομα *")}</label><input value={form.firstName} onChange={upd('firstName')} required /></div>
+            <div className="form-group"><label>{_t("Επώνυμο *")}</label><input value={form.lastName} onChange={upd('lastName')} required /></div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label>Email σύνδεσης *</label>
+              <label>{_t("Email σύνδεσης *")}</label>
               <input type="email" value={form.email} onChange={upd('email')} required />
             </div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label>Κωδικός (≥8 χαρακτ.) *</label>
+              <label>{_t("Κωδικός (≥8 χαρακτ.) *")}</label>
               <input type="password" value={form.password} onChange={upd('password')} required minLength={8} />
             </div>
           </div>
 
           <div style={{ marginTop: 20, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
-            <button className="btn btn-secondary" onClick={back}>← Πίσω</button>
-            <button className="btn" onClick={() => setStep(4)} disabled={!form.organizationName || !form.email || !form.password || !form.firstName}>Επόμενο →</button>
+            <button className="btn btn-secondary" onClick={back}>{_t("← Πίσω")}</button>
+            <button className="btn" onClick={() => setStep(4)} disabled={!form.organizationName || !form.email || !form.password || !form.firstName}>{_t("Επόμενο →")}</button>
           </div>
         </>
       )}
@@ -192,32 +193,31 @@ function Signup() {
       {/* Step 4: Confirm */}
       {step === 4 && (
         <>
-          <h2>Επιβεβαίωση εγγραφής</h2>
+          <h2>{_t("Επιβεβαίωση εγγραφής")}</h2>
           <div style={{ padding: 20, background: '#f7fafc', borderRadius: 8, marginTop: 20 }}>
-            <p><strong>Τύπος:</strong> {TYPES.find(t => t.code === form.plan_type)?.label}</p>
+            <p><strong>{_t("Τύπος:")}</strong> {TYPES.find(t => t.code === form.plan_type)?.label}</p>
             {(form.plan_type === 'partnership_shared' || form.plan_type === 'partnership_private') && (
-              <p><strong>Πρόσβαση:</strong> {form.visibility_mode === 'shared' ? 'Όλοι βλέπουν όλα' : 'Ο καθένας τα δικά του'}</p>
+              <p><strong>{_t("Πρόσβαση:")}</strong> {form.visibility_mode === 'shared' ? _t("Όλοι βλέπουν όλα") : _t("Ο καθένας τα δικά του")}</p>
             )}
-            <p><strong>Γραφείο:</strong> {form.organizationName}</p>
+            <p><strong>{_t("Γραφείο:")}</strong> {form.organizationName}</p>
             <p><strong>Owner:</strong> {form.firstName} {form.lastName} ({form.email})</p>
           </div>
 
           <div style={{ padding: 16, background: '#ebf8ff', border: '1px solid #90cdf4', borderRadius: 6, marginTop: 20 }}>
-            <strong>🎁 Δωρεάν δοκιμαστική:</strong> Ξεκινάς με 30 ημέρες trial χωρίς κόστος.
-            Μετά τη λήξη, μπορείς να επιλέξεις πλάνο και να πληρώσεις μέσω Viva Payments.
+            <strong>{_t("🎁 Δωρεάν δοκιμαστική:")}</strong> {_t("Ξεκινάς με 30 ημέρες trial χωρίς κόστος. Μετά τη λήξη, μπορείς να επιλέξεις πλάνο και να πληρώσεις μέσω Viva Payments.")}
           </div>
 
           <div style={{ marginTop: 20, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
-            <button className="btn btn-secondary" onClick={back} disabled={submitting}>← Πίσω</button>
+            <button className="btn btn-secondary" onClick={back} disabled={submitting}>{_t("← Πίσω")}</button>
             <button className="btn" onClick={submit} disabled={submitting}>
-              {submitting ? 'Δημιουργία...' : '✓ Ολοκλήρωση εγγραφής'}
+              {submitting ? _t("Δημιουργία...") : _t("✓ Ολοκλήρωση εγγραφής")}
             </button>
           </div>
         </>
       )}
 
       <div style={{ textAlign: 'center', marginTop: 30 }}>
-        <a href="/login" style={{ color: '#3182ce' }}>Έχεις ήδη λογαριασμό; Σύνδεση →</a>
+        <a href="/login" style={{ color: '#3182ce' }}>{_t("Έχεις ήδη λογαριασμό; Σύνδεση →")}</a>
       </div>
     </div>
   );

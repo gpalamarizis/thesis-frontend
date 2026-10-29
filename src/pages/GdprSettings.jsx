@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import useConfirm from '../components/useConfirm';
 import { gdpr } from '../api';
+import { _t } from '../i18n';
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('el-GR') : '—'; }
 function daysBetween(d1, d2) {
@@ -43,13 +44,13 @@ function GdprSettings({ user, onLogout, onOpenCaseSearch }) {
   const submitDelete = async () => {
     setErr('');
     if (deleteForm.confirm_email !== user.email) {
-      setErr('Πληκτρολογήστε το email σας ακριβώς για επιβεβαίωση.');
+      setErr(_t("Πληκτρολογήστε το email σας ακριβώς για επιβεβαίωση."));
       return;
     }
     if (!await ask({
-      title: 'Αίτημα διαγραφής δεδομένων',
-      message: 'Το αίτημα θα εκτελεστεί σε 30 ημέρες.\n\nΜέσα σε αυτό το διάστημα μπορείτε να το ακυρώσετε. Μετά την εκτέλεση, η ενέργεια δεν αναιρείται.',
-      confirmLabel: 'Υποβολή αιτήματος',
+      title: _t("Αίτημα διαγραφής δεδομένων"),
+      message: _t("Το αίτημα θα εκτελεστεί σε 30 ημέρες.\n\nΜέσα σε αυτό το διάστημα μπορείτε να το ακυρώσετε. Μετά την εκτέλεση, η ενέργεια δεν αναιρείται."),
+      confirmLabel: _t("Υποβολή αιτήματος"),
     })) return;
     try {
       await gdpr.requestDelete(deleteForm.reason, deleteForm.confirm_email);
@@ -59,73 +60,71 @@ function GdprSettings({ user, onLogout, onOpenCaseSearch }) {
   };
 
   const cancelDelete = async () => {
-    if (!await ask({ title: 'Ακύρωση αιτήματος', message: 'Ακύρωση του αιτήματος διαγραφής;', confirmLabel: 'Ακύρωση αιτήματος', cancelLabel: 'Όχι', danger: false })) return;
+    if (!await ask({ title: _t("Ακύρωση αιτήματος"), message: _t("Ακύρωση του αιτήματος διαγραφής;"), confirmLabel: _t("Ακύρωση αιτήματος"), cancelLabel: _t("Όχι"), danger: false })) return;
     try { await gdpr.cancelDelete(); loadStatus(); }
     catch (e) { setErr(e.message); }
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="GDPR — Προσωπικά Δεδομένα">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("GDPR — Προσωπικά Δεδομένα")}>
       {err && <div className="error">{err}</div>}
 
       {/* Data Export */}
       <div className="section" style={{ marginBottom: 24, padding: 20, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-        <h2>📥 Εξαγωγή δεδομένων</h2>
-        <p>Κατεβάστε όλα τα δεδομένα του γραφείου σας σε μορφή <code>JSON</code>. Περιλαμβάνει: υποθέσεις, πρόσωπα, δικαστήρια, οικονομικά, τιμολόγια, έγγραφα (metadata), χρήστες.</p>
-        <p style={{ fontSize: 13, color: '#718096' }}>Οι κωδικοί χρηστών (password hashes) αφαιρούνται από το export για λόγους ασφαλείας.</p>
+        <h2>{_t("📥 Εξαγωγή δεδομένων")}</h2>
+        <p>{_t("Κατεβάστε όλα τα δεδομένα του γραφείου σας σε μορφή")} <code>JSON</code>{_t(". Περιλαμβάνει: υποθέσεις, πρόσωπα, δικαστήρια, οικονομικά, τιμολόγια, έγγραφα (metadata), χρήστες.")}</p>
+        <p style={{ fontSize: 13, color: '#718096' }}>{_t("Οι κωδικοί χρηστών (password hashes) αφαιρούνται από το export για λόγους ασφαλείας.")}</p>
         <button className="btn" onClick={doExport} disabled={exporting || !isOwner}>
-          {exporting ? 'Δημιουργία...' : '📥 Κατέβασμα δεδομένων (JSON)'}
+          {exporting ? _t("Δημιουργία...") : _t("📥 Κατέβασμα δεδομένων (JSON)")}
         </button>
-        {!isOwner && <p style={{ fontSize: 13, color: '#dd6b20', marginTop: 8 }}>Μόνο ο owner μπορεί να κάνει export.</p>}
+        {!isOwner && <p style={{ fontSize: 13, color: '#dd6b20', marginTop: 8 }}>{_t("Μόνο ο owner μπορεί να κάνει export.")}</p>}
       </div>
 
       {/* Data Deletion */}
       <div className="section" style={{ padding: 20, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8 }}>
-        <h2 style={{ color: '#e53e3e' }}>🗑️ Διαγραφή λογαριασμού</h2>
+        <h2 style={{ color: '#e53e3e' }}>{_t("🗑️ Διαγραφή λογαριασμού")}</h2>
 
         {deleteStatus && deleteStatus.status === 'pending' ? (
           <div style={{ padding: 16, background: '#fed7d7', border: '1px solid #fc8181', borderRadius: 6, marginTop: 12 }}>
             <p style={{ margin: 0, color: '#742a2a' }}>
-              <strong>⚠️ Εκκρεμές αίτημα διαγραφής</strong>
+              <strong>{_t("⚠️ Εκκρεμές αίτημα διαγραφής")}</strong>
             </p>
             <p style={{ marginTop: 8, color: '#742a2a' }}>
-              Ζητήθηκε στις {fmtDate(deleteStatus.requested_at)}.
-              Θα εκτελεστεί στις <strong>{fmtDate(deleteStatus.scheduled_at)}</strong> ({daysBetween(new Date(), deleteStatus.scheduled_at)} ημέρες).
+              {_t("Ζητήθηκε στις")} {fmtDate(deleteStatus.requested_at)}{_t(". Θα εκτελεστεί στις")} <strong>{fmtDate(deleteStatus.scheduled_at)}</strong> ({daysBetween(new Date(), deleteStatus.scheduled_at)} {_t("ημέρες).")}
             </p>
             {isOwner && (
               <button className="btn btn-secondary" onClick={cancelDelete} style={{ marginTop: 12 }}>
-                Ακύρωση διαγραφής
+                {_t("Ακύρωση διαγραφής")}
               </button>
             )}
           </div>
         ) : deleteStatus && deleteStatus.status === 'executed' ? (
-          <p>Ο λογαριασμός σας έχει διαγραφεί στις {fmtDate(deleteStatus.executed_at)}.</p>
+          <p>{_t("Ο λογαριασμός σας έχει διαγραφεί στις")} {fmtDate(deleteStatus.executed_at)}.</p>
         ) : (
           <>
-            <p>Μπορείτε να ζητήσετε τη διαγραφή όλων των δεδομένων σας. Το αίτημα εκτελείται μετά από <b>30 ημέρες grace period</b> — μπορείτε να το ακυρώσετε ανά πάσα στιγμή μέσα σε αυτό το διάστημα.</p>
+            <p>{_t("Μπορείτε να ζητήσετε τη διαγραφή όλων των δεδομένων σας. Το αίτημα εκτελείται μετά από")} <b>{_t("30 ημέρες grace period")}</b> {_t("— μπορείτε να το ακυρώσετε ανά πάσα στιγμή μέσα σε αυτό το διάστημα.")}</p>
             <p style={{ fontSize: 13, color: '#e53e3e' }}>
-              <b>Προσοχή:</b> Η διαγραφή είναι <b>μη αναστρέψιμη</b>. Θα χαθούν υποθέσεις, πρόσωπα, έγγραφα, τιμολόγια.
-              Κάντε <b>πρώτα export</b> των δεδομένων σας!
+              <b>{_t("Προσοχή:")}</b> {_t("Η διαγραφή είναι")} <b>{_t("μη αναστρέψιμη")}</b>{_t(". Θα χαθούν υποθέσεις, πρόσωπα, έγγραφα, τιμολόγια. Κάντε")} <b>{_t("πρώτα export")}</b> {_t("των δεδομένων σας!")}
             </p>
 
             {!showDelete ? (
               <button className="btn btn-danger" onClick={() => setShowDelete(true)} disabled={!isOwner}>
-                Ξεκινήστε αίτημα διαγραφής
+                {_t("Ξεκινήστε αίτημα διαγραφής")}
               </button>
             ) : (
               <div style={{ padding: 16, background: '#fff5f5', border: '1px solid #fc8181', borderRadius: 6, marginTop: 12 }}>
-                <h3 style={{ color: '#e53e3e' }}>Επιβεβαίωση διαγραφής</h3>
+                <h3 style={{ color: '#e53e3e' }}>{_t("Επιβεβαίωση διαγραφής")}</h3>
                 <div className="form-group">
-                  <label>Λόγος (προαιρετικά)</label>
-                  <textarea rows="2" value={deleteForm.reason} onChange={e => setDeleteForm(f => ({ ...f, reason: e.target.value }))} placeholder="Θα μας βοηθήσει να βελτιωθούμε..." />
+                  <label>{_t("Λόγος (προαιρετικά)")}</label>
+                  <textarea rows="2" value={deleteForm.reason} onChange={e => setDeleteForm(f => ({ ...f, reason: e.target.value }))} placeholder={_t("Θα μας βοηθήσει να βελτιωθούμε...")} />
                 </div>
                 <div className="form-group">
-                  <label>Πληκτρολογήστε το email σας για επιβεβαίωση: <code>{user.email}</code></label>
+                  <label>{_t("Πληκτρολογήστε το email σας για επιβεβαίωση:")} <code>{user.email}</code></label>
                   <input value={deleteForm.confirm_email} onChange={e => setDeleteForm(f => ({ ...f, confirm_email: e.target.value }))} placeholder={user.email} />
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-secondary" onClick={() => setShowDelete(false)}>Ακύρωση</button>
-                  <button className="btn btn-danger" onClick={submitDelete}>Επιβεβαίωση διαγραφής</button>
+                  <button className="btn btn-secondary" onClick={() => setShowDelete(false)}>{_t("Ακύρωση")}</button>
+                  <button className="btn btn-danger" onClick={submitDelete}>{_t("Επιβεβαίωση διαγραφής")}</button>
                 </div>
               </div>
             )}

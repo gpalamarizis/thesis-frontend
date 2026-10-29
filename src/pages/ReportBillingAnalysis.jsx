@@ -3,6 +3,7 @@ import Layout from '../components/Layout';
 import DateInput from '../components/DateInput';
 import ShareTable from '../components/ShareTable';
 import { reports, downloadFile } from '../api';
+import { _t } from '../i18n';
 
 // ΑΝΑΛΥΣΗ ΤΙΜΟΛΟΓΗΣΗΣ
 //
@@ -10,23 +11,23 @@ import { reports, downloadFile } from '../api';
 // αμοιβές (ώρες + πάγιες αμοιβές) και έξοδα που περιλήφθηκαν σε αυτούς,
 // με βάση την ημερομηνία έκδοσης του λογαριασμού.
 const GROUPS = [
-  { key: 'nationality', label: 'Υπηκοότητα', first: 'Υπηκοότητα / χώρα' },
-  { key: 'eidos',       label: 'Είδος υπόθεσης', first: 'Είδος υπόθεσης' },
-  { key: 'client',      label: 'Πελάτης', first: 'Πελάτης' },
-  { key: 'eisfora',     label: 'Δικηγόρος εισφοράς', first: 'Δικηγόρος εισφοράς' },
+  { key: 'nationality', label: _t("Υπηκοότητα"), first: _t("Υπηκοότητα / χώρα") },
+  { key: 'eidos',       label: _t("Είδος υπόθεσης"), first: _t("Είδος υπόθεσης") },
+  { key: 'client',      label: _t("Πελάτης"), first: _t("Πελάτης") },
+  { key: 'eisfora',     label: _t("Δικηγόρος εισφοράς"), first: _t("Δικηγόρος εισφοράς") },
 ];
 
 const COLUMNS = [
-  { key: 'amoives', label: 'Αμοιβές', money: true },
-  { key: 'exoda',   label: 'Έξοδα',   money: true },
-  { key: 'synolo',  label: 'Σύνολο',  money: true },
-  { key: 'logariasmoi', label: 'Λογαρ.' },
+  { key: 'amoives', label: _t("Αμοιβές"), money: true },
+  { key: 'exoda',   label: _t("Έξοδα"),   money: true },
+  { key: 'synolo',  label: _t("Σύνολο"),  money: true },
+  { key: 'logariasmoi', label: _t("Λογαρ.") },
 ];
 // Ανά δικηγόρο εισφοράς: και πόσες υποθέσεις έφερε ο καθένας
 const COLUMNS_EISFORA = [
   ...COLUMNS,
-  { key: 'ypotheseis_xreosis',  label: 'Υποθ. με χρέωση' },
-  { key: 'ypotheseis_eisforas', label: 'Υποθ. που εισέφερε' },
+  { key: 'ypotheseis_xreosis',  label: _t("Υποθ. με χρέωση") },
+  { key: 'ypotheseis_eisforas', label: _t("Υποθ. που εισέφερε") },
 ];
 
 function ReportBillingAnalysis({ user, onLogout, onOpenCaseSearch }) {
@@ -66,42 +67,36 @@ function ReportBillingAnalysis({ user, onLogout, onOpenCaseSearch }) {
 
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch}
-            title="Ανάλυση τιμολόγησης">
+            title={_t("Ανάλυση τιμολόγησης")}>
       <div className="section">
         <div className="section-header">
-          <h2>Ανάλυση τιμολόγησης</h2>
+          <h2>{_t("Ανάλυση τιμολόγησης")}</h2>
           <button type="button" className="btn btn-secondary" disabled={busy || loading} onClick={doExport}>
-            {busy ? 'Εξαγωγή…' : 'Εξαγωγή σε Excel'}
+            {busy ? _t("Εξαγωγή…") : _t("Εξαγωγή σε Excel")}
           </button>
         </div>
 
         <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ color: '#4a5568', marginRight: 4 }}>Πηγή:</span>
+          <span style={{ color: '#4a5568', marginRight: 4 }}>{_t("Πηγή:")}</span>
           <button type="button" className={`btn btn-sm ${source === 'accounts' ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setSource('accounts')}>Αναλυτικοί λογαριασμοί</button>
+                  onClick={() => setSource('accounts')}>{_t("Αναλυτικοί λογαριασμοί")}</button>
           <button type="button" className={`btn btn-sm ${source === 'invoices' ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setSource('invoices')}>Τιμολόγια</button>
+                  onClick={() => setSource('invoices')}>{_t("Τιμολόγια")}</button>
         </div>
 
         <p style={{ color: '#718096', marginTop: 0, marginBottom: 16 }}>
           {source === 'accounts' ? (
-            <>Τα ποσά προέρχονται από τους εκδοθέντες αναλυτικούς λογαριασμούς,
-            με βάση την ημερομηνία έκδοσής τους. Αμοιβές = ώρες, πάγιες
-            αμοιβές και γραμμάτια· έξοδα = έξοδα με και χωρίς ΦΠΑ.</>
+            <>{_t("Τα ποσά προέρχονται από τους εκδοθέντες αναλυτικούς λογαριασμούς, με βάση την ημερομηνία έκδοσής τους. Αμοιβές = ώρες, πάγιες αμοιβές και γραμμάτια· έξοδα = έξοδα με και χωρίς ΦΠΑ.")}</>
           ) : (
-            <>Τα ποσά προέρχονται από τα εκδοθέντα τιμολόγια, με βάση την ημερομηνία
-            τους. Αμοιβές = καθαρή αξία· έξοδα = όσα σημειώθηκαν για λογαριασμό του
-            πελάτη. Τα πιστωτικά αφαιρούνται, τα ακυρωμένα δεν μετρούν.</>
+            <>{_t("Τα ποσά προέρχονται από τα εκδοθέντα τιμολόγια, με βάση την ημερομηνία τους. Αμοιβές = καθαρή αξία· έξοδα = όσα σημειώθηκαν για λογαριασμό του πελάτη. Τα πιστωτικά αφαιρούνται, τα ακυρωμένα δεν μετρούν.")}</>
           )}
           {group === 'eisfora' && (
-            <> Ανά δικηγόρο που εισέφερε την υπόθεση· «Υποθ. που εισέφερε» μετρά
-            τις υποθέσεις του με ημερομηνία εισαγωγής μέσα στην περίοδο, ακόμα κι αν
-            δεν έχουν τιμολογηθεί.</>
+            <> {_t("Ανά δικηγόρο που εισέφερε την υπόθεση· «Υποθ. που εισέφερε» μετρά τις υποθέσεις του με ημερομηνία εισαγωγής μέσα στην περίοδο, ακόμα κι αν δεν έχουν τιμολογηθεί.")}</>
           )}
         </p>
 
         <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ color: '#4a5568', marginRight: 4 }}>Ομαδοποίηση:</span>
+          <span style={{ color: '#4a5568', marginRight: 4 }}>{_t("Ομαδοποίηση:")}</span>
           {GROUPS.map(x => (
             <button key={x.key} type="button"
                     className={`btn btn-sm ${group === x.key ? 'btn-primary' : 'btn-secondary'}`}
@@ -113,30 +108,30 @@ function ReportBillingAnalysis({ user, onLogout, onOpenCaseSearch }) {
           <div style={{ minWidth: 150 }}>
             <DateInput value={from} onChange={e => setFrom(e.target.value)} />
           </div>
-          <span style={{ color: '#718096' }}>έως</span>
+          <span style={{ color: '#718096' }}>{_t("έως")}</span>
           <div style={{ minWidth: 150 }}>
             <DateInput value={to} onChange={e => setTo(e.target.value)} />
           </div>
-          <button type="button" className="btn btn-sm" onClick={() => year(0)}>Φέτος</button>
-          <button type="button" className="btn btn-sm" onClick={() => year(-1)}>Πέρυσι</button>
+          <button type="button" className="btn btn-sm" onClick={() => year(0)}>{_t("Φέτος")}</button>
+          <button type="button" className="btn btn-sm" onClick={() => year(-1)}>{_t("Πέρυσι")}</button>
           {(from || to) && (
             <button type="button" className="btn btn-sm"
-                    onClick={() => { setFrom(''); setTo(''); }}>Όλη η περίοδος</button>
+                    onClick={() => { setFrom(''); setTo(''); }}>{_t("Όλη η περίοδος")}</button>
           )}
         </div>
 
         {error && <div className="error-message" style={{ marginBottom: 10 }}>{error}</div>}
 
-        {loading ? <div className="empty-state">Φόρτωση...</div> : (
+        {loading ? <div className="empty-state">{_t("Φόρτωση...")}</div> : (
           <ShareTable
             firstLabel={g.first}
             columns={(group === 'eisfora' ? COLUMNS_EISFORA : COLUMNS)
-              .map(c => (c.key === 'logariasmoi' && source === 'invoices' ? { ...c, label: 'Τιμολ.' } : c))}
+              .map(c => (c.key === 'logariasmoi' && source === 'invoices' ? { ...c, label: _t("Τιμολ.") } : c))}
             rows={data?.data || []}
             totals={data?.totals}
             emptyMessage={source === 'invoices'
-              ? 'Δεν υπάρχουν εκδοθέντα τιμολόγια σε αυτή την περίοδο.'
-              : 'Δεν υπάρχουν εκδοθέντες λογαριασμοί σε αυτή την περίοδο.'}
+              ? _t("Δεν υπάρχουν εκδοθέντα τιμολόγια σε αυτή την περίοδο.")
+              : _t("Δεν υπάρχουν εκδοθέντες λογαριασμοί σε αυτή την περίοδο.")}
           />
         )}
       </div>

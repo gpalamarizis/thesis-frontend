@@ -9,6 +9,7 @@ import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { nomika } from '../../api';
 import { COUNTRY_OPTIONS } from '../../utils/countries';
 import { TERM, isCY } from '../../utils/region';
+import { _t } from '../../i18n';
 
 // Backend fields (from routes/nomika.js FIELDS list):
 const emptyForm = {
@@ -47,7 +48,7 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!form.eponymia) { setError('Η επωνυμία είναι υποχρεωτική.'); return; }
+    if (!form.eponymia) { setError(_t("Η επωνυμία είναι υποχρεωτική.")); return; }
     setSaving(true);
     try {
       const payload = { ...form };
@@ -63,23 +64,23 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
     }
   };
 
-  if (loading) return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Νομικό Πρόσωπο"><div className="empty-state">Φόρτωση...</div></Layout>;
+  if (loading) return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Νομικό Πρόσωπο")}><div className="empty-state">{_t("Φόρτωση...")}</div></Layout>;
 
   const tabCompany = (
     <div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Επωνυμία *</label>
+          <label>{_t("Επωνυμία *")}</label>
           <input type="text" value={form.eponymia} onChange={onChange('eponymia')} required />
         </div>
         <div className="form-group">
-          <label>Διακριτικός τίτλος</label>
+          <label>{_t("Διακριτικός τίτλος")}</label>
           <input type="text" value={form.diakritikos_titlos} onChange={onChange('diakritikos_titlos')} />
         </div>
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Α.Φ.Μ.</label>
+          <label>{isCY ? TERM.afm : _t("Α.Φ.Μ.")}</label>
           <input type="text" value={form.afm} onChange={onChange('afm')} />
         </div>
         <div className="form-group">
@@ -88,8 +89,8 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
         </div>
       </div>
       <div className="form-group">
-        <label>{isCY ? TERM.gemi : 'Αριθμός ΓΕΜΗ'}</label>
-        <input type="text" value={form.gemi} onChange={onChange('gemi')} placeholder="π.χ. 123456789012" />
+        <label>{isCY ? TERM.gemi : _t("Αριθμός ΓΕΜΗ")}</label>
+        <input type="text" value={form.gemi} onChange={onChange('gemi')} placeholder={_t("π.χ. 123456789012")} />
       </div>
       <div className="form-grid-2">
         <div className="form-group">
@@ -97,14 +98,14 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
           <input type="email" value={form.email} onChange={onChange('email')} />
         </div>
         <div className="form-group">
-          <label>Ιστοσελίδα</label>
+          <label>{_t("Ιστοσελίδα")}</label>
           <input type="text" value={form.web_site} onChange={onChange('web_site')} />
         </div>
       </div>
       <div className="form-group">
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
           <input type="checkbox" checked={!!form.energos} onChange={e => setForm(f => ({ ...f, energos: e.target.checked }))} />
-          <span>Ενεργός</span>
+          <span>{_t("Ενεργός")}</span>
         </label>
       </div>
       {/* ΧΡΕΩΣΗ ΑΝΑ ΩΡΑ
@@ -112,11 +113,11 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
           σε κάθε υπόθεση του πελάτη. Αλλάζει ελεύθερα ανά εγγραφή. */}
       <div className="form-grid-3">
         <div className="form-group">
-          <label>Χρέωση ανά ώρα (€)</label>
+          <label>{_t("Χρέωση ανά ώρα (€)")}</label>
           <input type="number" step="0.01" value={form.xreosi_ora || ''}
-                 onChange={onChange('xreosi_ora')} placeholder="π.χ. 150" />
+                 onChange={onChange('xreosi_ora')} placeholder={_t("π.χ. 150")} />
           <small style={{ color: '#718096' }}>
-            Προσυμπληρώνεται στις εγγραφές ωρών όλων των υποθέσεών του.
+            {_t("Προσυμπληρώνεται στις εγγραφές ωρών όλων των υποθέσεών του.")}
           </small>
         </div>
       </div>
@@ -127,25 +128,25 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
     <div>
       <div className="form-grid-3">
         <div className="form-group" style={{ gridColumn: 'span 2' }}>
-          <label>Οδός</label>
+          <label>{_t("Οδός")}</label>
           <input type="text" value={form.odos} onChange={onChange('odos')} />
         </div>
         <div className="form-group">
-          <label>Αριθμός</label>
+          <label>{_t("Αριθμός")}</label>
           <input type="text" value={form.arithmos} onChange={onChange('arithmos')} />
         </div>
       </div>
       <div className="form-grid-3">
         <div className="form-group">
-          <label>Τ.Κ.</label>
+          <label>{_t("Τ.Κ.")}</label>
           <input type="text" value={form.tk} onChange={onChange('tk')} />
         </div>
         <div className="form-group">
-          <label>Πόλη</label>
+          <label>{_t("Πόλη")}</label>
           <input type="text" value={form.poli} onChange={onChange('poli')} />
         </div>
         <div className="form-group">
-          <label>Χώρα (έδρα)</label>
+          <label>{_t("Χώρα (έδρα)")}</label>
           {/* Ελεύθερο κείμενο με προτάσεις: η αναφορά «Πελατεία ανά
               υπηκοότητα» αναγνωρίζει το ελληνικό όνομα της χώρας. */}
           <input type="text" list="nomika-xores" value={form.xora} onChange={onChange('xora')} />
@@ -159,20 +160,20 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
 
   const tabPhones = (
     <div>
-      <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Τηλέφωνα γραφείου</h3>
+      <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>{_t("Τηλέφωνα γραφείου")}</h3>
       <div className="form-grid-3">
         {[1,2,3].map(n => (
           <div className="form-group" key={`g${n}`}>
-            <label>Τηλέφωνο {n}</label>
+            <label>{_t("Τηλέφωνο")} {n}</label>
             <input type="tel" value={form[`tilefono_grafeiou_${n}`] || ''} onChange={onChange(`tilefono_grafeiou_${n}`)} />
           </div>
         ))}
       </div>
-      <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, margin: '16px 0 8px' }}>Κινητά</h3>
+      <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, margin: '16px 0 8px' }}>{_t("Κινητά")}</h3>
       <div className="form-grid-3">
         {[1,2,3].map(n => (
           <div className="form-group" key={`k${n}`}>
-            <label>Κινητό {n}</label>
+            <label>{_t("Κινητό")} {n}</label>
             <input type="tel" value={form[`tilefono_kinito_${n}`] || ''} onChange={onChange(`tilefono_kinito_${n}`)} />
           </div>
         ))}
@@ -190,7 +191,7 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
   );
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={isNew ? 'Νέο Νομικό Πρόσωπο' : form.eponymia}>
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={isNew ? _t("Νέο Νομικό Πρόσωπο") : form.eponymia}>
       {error && <div className="error">{error}</div>}
       <PersonEditToolbar
         kind="nomika"
@@ -201,16 +202,16 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
       <form onSubmit={handleSubmit}>
         <div className="section">
           <Tabs tabs={[
-            { label: 'Εταιρεία',    content: tabCompany },
-            { label: 'Έδρα',        content: tabAddress },
-            { label: 'Επικοινωνία', content: tabPhones },
-            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="nomiko" ownerId={isNew ? null : Number(id)} accountsPanel={<ClientAccountsPanel ownerType="nomiko" ownerId={isNew ? null : Number(id)} />} /> },
-            ...(isNew ? [] : [{ label: 'Λογαριασμοί', content: <AccountsList filter={{ clientType: 'nomiko', clientId: Number(id) }} showClient={false} /> }]),
+            { label: _t("Εταιρεία"),    content: tabCompany },
+            { label: _t("Έδρα"),        content: tabAddress },
+            { label: _t("Επικοινωνία"), content: tabPhones },
+            { label: _t("Φορολογικά & Ιδιοκτησία"), content: <ClientCredentialsSection form={form} onChange={onChange} kind="nomiko" ownerId={isNew ? null : Number(id)} accountsPanel={<ClientAccountsPanel ownerType="nomiko" ownerId={isNew ? null : Number(id)} />} /> },
+            ...(isNew ? [] : [{ label: _t("Λογαριασμοί"), content: <AccountsList filter={{ clientType: 'nomiko', clientId: Number(id) }} showClient={false} /> }]),
           ]}/>
         </div>
         <div className="form-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/nomika')}>Ακύρωση</button>
-          <button type="submit" className="btn" disabled={saving}>{saving ? 'Αποθήκευση...' : (isNew ? 'Δημιουργία' : 'Αποθήκευση')}</button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/nomika')}>{_t("Ακύρωση")}</button>
+          <button type="submit" className="btn" disabled={saving}>{saving ? _t("Αποθήκευση...") : (isNew ? _t("Δημιουργία") : _t("Αποθήκευση"))}</button>
         </div>
       </form>
     </Layout>

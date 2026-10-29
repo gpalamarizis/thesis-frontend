@@ -6,6 +6,7 @@
 // μεσάνυχτα και μετά μετατρέπει σε UTC, οπότε στην Ελλάδα (+02/+03) γυρίζει
 // στην προηγούμενη μέρα. Το εύρος ενός μήνα έβγαινε 28/02..30/03 αντί για
 // 01/03..31/03, και η τελευταία δικάσιμος κάθε μήνα δεν εμφανιζόταν.
+import { _t } from '../i18n';
 export function toISODate(d) {
   const p = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
@@ -72,4 +73,4 @@ export function fullNameNomiko(p) {
 
 // Case status → badge class + label
 export const caseStatusBadge = (ekkremis) =>
-  ekkremis ? { cls: 'badge-open', label: 'Εκκρεμής' } : { cls: 'badge-closed', label: 'Κλεισμένη' };
+  ekkremis ? { cls: 'badge-open', label: _t("Εκκρεμής") } : { cls: 'badge-closed', label: _t("Κλεισμένη") };

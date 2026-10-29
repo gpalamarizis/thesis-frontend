@@ -12,6 +12,7 @@ import { cases } from '../../api';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import QuickCreatePersonModal from '../../components/QuickCreatePersonModal';
 import { TERM } from '../../utils/region';
+import { _t } from '../../i18n';
 
 // Νομικό πρόσωπο: η επωνυμία. Φυσικό: επώνυμο και όνομα.
 function fullName(p) {
@@ -28,7 +29,7 @@ function TypeTag({ typos }) {
       fontSize: 11, fontWeight: 600, borderRadius: 4, padding: '1px 0',
       verticalAlign: 'middle',
       background: n ? '#ebf4ff' : '#f0fff4', color: n ? '#2c5282' : '#276749',
-    }} title={n ? 'Νομικό πρόσωπο' : 'Φυσικό πρόσωπο'}>{n ? 'ΝΠ' : 'ΦΠ'}</span>
+    }} title={n ? _t("Νομικό πρόσωπο") : _t("Φυσικό πρόσωπο")}>{n ? _t("ΝΠ") : _t("ΦΠ")}</span>
   );
 }
 
@@ -159,18 +160,18 @@ function CaseClientsPanel({
       {error && <div className="error">{error}</div>}
 
       {loading && !isPending ? (
-        <div style={{ fontSize: 13, color: '#718096' }}>Φόρτωση...</div>
+        <div style={{ fontSize: 13, color: '#718096' }}>{_t("Φόρτωση...")}</div>
       ) : shown.length === 0 ? (
         <div style={{ fontSize: 13, color: '#718096', marginBottom: 10 }}>
-          Κανένας επιπλέον πελάτης.
+          {_t("Κανένας επιπλέον πελάτης.")}
         </div>
       ) : (
         <table className="table" style={{ marginBottom: 10 }}>
           <thead>
             <tr>
               <th style={{ width: 40 }}>#</th>
-              <th>Ονοματεπώνυμο / Επωνυμία</th>
-              <th style={{ width: 140 }}>Πατρώνυμο / Τίτλος</th>
+              <th>{_t("Ονοματεπώνυμο / Επωνυμία")}</th>
+              <th style={{ width: 140 }}>{_t("Πατρώνυμο / Τίτλος")}</th>
               <th style={{ width: 110 }}>{TERM.afm}</th>
               <th style={{ width: 1 }}></th>
             </tr>
@@ -189,7 +190,7 @@ function CaseClientsPanel({
                     type="button"
                     className="btn btn-sm btn-danger"
                     onClick={() => setConfirmDel(r)}
-                  >Αφαίρεση</button>
+                  >{_t("Αφαίρεση")}</button>
                 </td>
               </tr>
             ))}
@@ -199,19 +200,19 @@ function CaseClientsPanel({
 
       <div className="form-group" style={{ marginBottom: 0, position: 'relative' }}>
         <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span>Προσθήκη πελάτη</span>
+          <span>{_t("Προσθήκη πελάτη")}</span>
           <a
             href="#"
             onClick={e => { e.preventDefault(); setQuickCreate(true); }}
             style={{ fontSize: 12, fontWeight: 'normal' }}
-          >+ Νέο φυσικό πρόσωπο</a>
+          >{_t("+ Νέο φυσικό πρόσωπο")}</a>
         </label>
         <input
           type="search"
           value={q}
           disabled={adding}
           onChange={e => setQ(e.target.value)}
-          placeholder={`Όνομα, επωνυμία ή ${TERM.afm} — φυσικά και νομικά, τουλάχιστον 2 χαρακτήρες`}
+          placeholder={_t("Όνομα, επωνυμία ή {0} — φυσικά και νομικά, τουλάχιστον 2 χαρακτήρες", [TERM.afm])}
         />
         {q.trim().length >= 2 && (
           <div style={{
@@ -220,10 +221,10 @@ function CaseClientsPanel({
           }}>
             {matches.length === 0 ? (
               <div style={{ padding: '10px 12px', fontSize: 13, color: '#718096' }}>
-                Κανένα αποτέλεσμα.{' '}
+                {_t("Κανένα αποτέλεσμα.")}{' '}
                 <a href="#" onClick={e => { e.preventDefault(); setQuickCreate(true); }}>
-                  Καταχώρισέ το τώρα
-                </a> ως νέο φυσικό πρόσωπο.
+                  {_t("Καταχώρισέ το τώρα")}
+                </a> {_t("ως νέο φυσικό πρόσωπο.")}
               </div>
             ) : matches.map(p => (
               <button
@@ -257,10 +258,9 @@ function CaseClientsPanel({
 
       {confirmDel && (
         <ConfirmDialog
-          title="Αφαίρεση πελάτη"
-          message={`Αφαίρεση του «${fullName(confirmDel)}» από την υπόθεση; Το πρόσωπο παραμένει στα ${
-            (confirmDel.nomiko_prosopo_id || confirmDel.typos === 'nomiko') ? 'Νομικά' : 'Φυσικά'} Πρόσωπα.`}
-          confirmLabel="Αφαίρεση"
+          title={_t("Αφαίρεση πελάτη")}
+          message={_t("Αφαίρεση του «{0}» από την υπόθεση; Το πρόσωπο παραμένει στα {1} Πρόσωπα.", [fullName(confirmDel), (confirmDel.nomiko_prosopo_id || confirmDel.typos === 'nomiko') ? _t("Νομικά") : _t("Φυσικά")])}
+          confirmLabel={_t("Αφαίρεση")}
           onConfirm={() => doRemove(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />

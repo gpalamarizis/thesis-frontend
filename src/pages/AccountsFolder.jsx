@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import AccountsList from '../components/AccountsList';
+import { _t } from '../i18n';
 
 // ΓΕΝΙΚΟΣ ΦΑΚΕΛΟΣ ΛΟΓΑΡΙΑΣΜΩΝ
 //
@@ -17,26 +18,26 @@ function AccountsFolder({ user, onLogout, onOpenCaseSearch }) {
 
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch}
-            title="Λογαριασμοί">
+            title={_t("Λογαριασμοί")}>
       <div className="section">
         <div className="section-header">
-          <h2>Εκδοθέντες λογαριασμοί</h2>
-          <Link to="/invoices" className="btn btn-secondary" style={{ textDecoration: 'none' }}>Τιμολόγια →</Link>
+          <h2>{_t("Εκδοθέντες λογαριασμοί")}</h2>
+          <Link to="/invoices" className="btn btn-secondary" style={{ textDecoration: 'none' }}>{_t("Τιμολόγια →")}</Link>
         </div>
 
         <form onSubmit={e => { e.preventDefault(); setQApplied(q.trim()); }}
               style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
           <select className="filter-select" value={year} onChange={e => setYear(e.target.value)}>
-            <option value="">Όλα τα έτη</option>
+            <option value="">{_t("Όλα τα έτη")}</option>
             {years.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
-          <input type="search" className="search-input" placeholder="🔍 Πελάτης ή αρ. φακέλου"
+          <input type="search" className="search-input" placeholder={_t("🔍 Πελάτης ή αρ. φακέλου")}
                  value={q} onChange={e => setQ(e.target.value)} style={{ minWidth: 260 }} />
-          <button type="submit" className="btn btn-sm btn-secondary">Αναζήτηση</button>
+          <button type="submit" className="btn btn-sm btn-secondary">{_t("Αναζήτηση")}</button>
         </form>
 
         <AccountsList filter={{ year: year || null, q: qApplied || null }}
-                      emptyMessage="Δεν βρέθηκαν λογαριασμοί με αυτά τα κριτήρια." />
+                      emptyMessage={_t("Δεν βρέθηκαν λογαριασμοί με αυτά τα κριτήρια.")} />
       </div>
     </Layout>
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { documents } from '../api';
+import { _t } from '../i18n';
 
 // Σύνδεση εγγράφου με εγγραφή — παραστατικό εξόδου.
 //
@@ -38,7 +39,7 @@ function DocumentPicker({ caseId, value, onChange, disabled }) {
       load();
       if (rec?.aa) onChange(rec.aa);
     } catch (e) {
-      setError(e.message || 'Αποτυχία ανεβάσματος');
+      setError(e.message || _t("Αποτυχία ανεβάσματος"));
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -48,7 +49,7 @@ function DocumentPicker({ caseId, value, onChange, disabled }) {
   if (!caseId) {
     return (
       <div style={{ fontSize: 13, color: '#718096' }}>
-        Αποθήκευσε πρώτα την υπόθεση για να συνδέσεις παραστατικό.
+        {_t("Αποθήκευσε πρώτα την υπόθεση για να συνδέσεις παραστατικό.")}
       </div>
     );
   }
@@ -62,7 +63,7 @@ function DocumentPicker({ caseId, value, onChange, disabled }) {
           disabled={disabled || loading}
           style={{ flex: 1, minWidth: 0 }}
         >
-          <option value="">— κανένα —</option>
+          <option value="">{_t("— κανένα —")}</option>
           {docs.map(d => (
             <option key={d.aa} value={d.aa}>{d.filename}</option>
           ))}
@@ -72,7 +73,7 @@ function DocumentPicker({ caseId, value, onChange, disabled }) {
           className="btn btn-sm"
           onClick={() => fileRef.current && fileRef.current.click()}
           disabled={disabled || uploading}
-        >{uploading ? 'Ανεβαίνει…' : '+ Ανέβασμα'}</button>
+        >{uploading ? _t("Ανεβαίνει…") : _t("+ Ανέβασμα")}</button>
       </div>
 
       <input
@@ -85,7 +86,7 @@ function DocumentPicker({ caseId, value, onChange, disabled }) {
       {error && <div style={{ color: '#e53e3e', fontSize: 13, marginTop: 4 }}>{error}</div>}
       {!loading && docs.length === 0 && !error && (
         <div style={{ fontSize: 12, color: '#718096', marginTop: 4 }}>
-          Η υπόθεση δεν έχει αρχεία. Ανέβασε το παραστατικό με το κουμπί.
+          {_t("Η υπόθεση δεν έχει αρχεία. Ανέβασε το παραστατικό με το κουμπί.")}
         </div>
       )}
     </div>

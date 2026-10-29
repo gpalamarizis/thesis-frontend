@@ -2,6 +2,7 @@ import { downloadFile } from '../api';
 
 import DateInput from './DateInput';
 import FilerPicker from './FilerPicker';
+import { _t } from '../i18n';
 // src/components/ClientCredentialsSection.jsx
 // Reusable section για φορολογικά + ιδιοκτησιακά στοιχεία πελατών.
 // Χρησιμοποιείται σε FysikaEdit + NomikaEdit.
@@ -55,11 +56,11 @@ function MultiValueField({ label, value, onChange, placeholder, hint }) {
             className="btn btn-sm btn-secondary"
             onClick={() => removeAt(i)}
             disabled={rows.length === 1 && !v.replace(/\u200b/g, '')}
-            title="Αφαίρεση γραμμής"
+            title={_t("Αφαίρεση γραμμής")}
           >×</button>
         </div>
       ))}
-      <button type="button" className="btn btn-sm btn-secondary" onClick={addRow}>+ Προσθήκη</button>
+      <button type="button" className="btn btn-sm btn-secondary" onClick={addRow}>{_t("+ Προσθήκη")}</button>
     </div>
   );
 }
@@ -90,10 +91,10 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId
       {ownerId ? (
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginBottom: 12 }}>
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => exportOne('xlsx')}>
-            Εξαγωγή σε Excel
+            {_t("Εξαγωγή σε Excel")}
           </button>
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => exportOne('docx')}>
-            Εξαγωγή σε Word
+            {_t("Εξαγωγή σε Word")}
           </button>
         </div>
       ) : null}
@@ -103,32 +104,30 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId
         background: '#fff5f5', border: '1px solid #feb2b2', borderRadius: 6,
         padding: 12, marginBottom: 16, fontSize: 13, color: '#742a2a'
       }}>
-        <strong>⚠ Ευαίσθητα δεδομένα:</strong> Οι κωδικοί TAXIS/ΔΕΗ/ΓΕΜΗ αποθηκεύονται
-        κρυπτογραφημένοι (AES-256-GCM). Βεβαιώσου ότι έχεις γραπτή συναίνεση του πελάτη
-        (GDPR άρθρο 6§1α) πριν την καταχώρηση.
+        <strong>{_t("⚠ Ευαίσθητα δεδομένα:")}</strong> {_t("Οι κωδικοί TAXIS/ΔΕΗ/ΓΕΜΗ αποθηκεύονται κρυπτογραφημένοι (AES-256-GCM). Βεβαιώσου ότι έχεις γραπτή συναίνεση του πελάτη (GDPR άρθρο 6§1α) πριν την καταχώρηση.")}
       </div>
 
       {isFysiko && (
         <>
           <div className="form-grid-2">
             <div className="form-group">
-              <label>Ημερομηνία θανάτου</label>
+              <label>{_t("Ημερομηνία θανάτου")}</label>
               <DateInput value={form.date_thanaton || ''}
                 onChange={onChange('date_thanaton')} />
               {isDeceased && (
                 <div style={{ fontSize: 12, color: '#742a2a', marginTop: 4 }}>
-                  Το πρόσωπο είναι αποβιώσαν — έλεγξε τη νομιμοποίηση επεξεργασίας δεδομένων.
+                  {_t("Το πρόσωπο είναι αποβιώσαν — έλεγξε τη νομιμοποίηση επεξεργασίας δεδομένων.")}
                 </div>
               )}
             </div>
             <div className="form-group">
-              <label>Φορολογική κατοικία</label>
+              <label>{_t("Φορολογική κατοικία")}</label>
               <select
                 value={form.forologikos_katoikos || 'EL'}
                 onChange={onChange('forologikos_katoikos')}
               >
-                <option value="EL">Ελλάδας</option>
-                <option value="FOR">Εξωτερικού</option>
+                <option value="EL">{_t("Ελλάδας")}</option>
+                <option value="FOR">{_t("Εξωτερικού")}</option>
               </select>
             </div>
           </div>
@@ -140,7 +139,7 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId
                 checked={!!form.ypoxreous_forologikis_dilosis}
                 onChange={onChange('ypoxreous_forologikis_dilosis')}
               />
-              Υπόχρεος φορολογικής δήλωσης
+              {_t("Υπόχρεος φορολογικής δήλωσης")}
             </label>
           </div>
 
@@ -155,13 +154,13 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId
       {/* Παρατήρηση Μαύρου #9β: πολλαπλοί λογαριασμοί ανά πελάτη,
           αντί για ένα ζεύγος username/password. */}
       <h3 style={{ marginTop: 20, marginBottom: 8, fontSize: 14, color: '#2d3748' }}>
-        Λογαριασμοί (TAXISnet / ΔΕΗ / ΓΕΜΗ)
+        {_t("Λογαριασμοί (TAXISnet / ΔΕΗ / ΓΕΜΗ)")}
       </h3>
       {accountsPanel}
 
       {/* Ιδιοκτησία ακινήτου */}
       <h3 style={{ marginTop: 20, marginBottom: 8, fontSize: 14, color: '#2d3748' }}>
-        Ιδιοκτησία ακινήτου
+        {_t("Ιδιοκτησία ακινήτου")}
       </h3>
       <div className="form-group">
         <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -170,25 +169,25 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId
             checked={!!form.idioktitis_akinitou}
             onChange={onChange('idioktitis_akinitou')}
           />
-          Ιδιοκτήτης ακινήτου
+          {_t("Ιδιοκτήτης ακινήτου")}
         </label>
       </div>
 
       {form.idioktitis_akinitou && (
         <div style={{ paddingLeft: 20, borderLeft: '3px solid #cbd5e0', marginBottom: 12 }}>
           <MultiValueField
-            label="ΚΑΕΚ ιδιοκτησίας/ών"
-            hint="(μία γραμμή ανά ακίνητο)"
+            label={_t("ΚΑΕΚ ιδιοκτησίας/ών")}
+            hint={_t("(μία γραμμή ανά ακίνητο)")}
             value={form.kaek}
             onChange={onChange('kaek')}
-            placeholder="π.χ. 050441201005/0/0"
+            placeholder={_t("π.χ. 050441201005/0/0")}
           />
           <MultiValueField
-            label="Α.Μ.Α. ακινήτου/ων"
-            hint="(μία γραμμή ανά ακίνητο)"
+            label={_t("Α.Μ.Α. ακινήτου/ων")}
+            hint={_t("(μία γραμμή ανά ακίνητο)")}
             value={form.ama_akinitou}
             onChange={onChange('ama_akinitou')}
-            placeholder="π.χ. 12345678"
+            placeholder={_t("π.χ. 12345678")}
           />
           {/* ΔΕΗ: μεταφέρθηκε στους «Λογαριασμούς» παραπάνω (#9β). */}
         </div>
@@ -196,7 +195,7 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId
 
       {/* Ιδιοκτησία ΙΧ */}
       <h3 style={{ marginTop: 20, marginBottom: 8, fontSize: 14, color: '#2d3748' }}>
-        Ιδιοκτησία ΙΧ
+        {_t("Ιδιοκτησία ΙΧ")}
       </h3>
       <div className="form-group">
         <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -205,18 +204,18 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId
             checked={!!form.idioktitis_ix}
             onChange={onChange('idioktitis_ix')}
           />
-          Ιδιοκτήτης ΙΧ
+          {_t("Ιδιοκτήτης ΙΧ")}
         </label>
       </div>
 
       {form.idioktitis_ix && (
         <div style={{ paddingLeft: 20, borderLeft: '3px solid #cbd5e0' }}>
           <MultiValueField
-            label="Πινακίδα/ες ΙΧ"
-            hint="(μία γραμμή ανά όχημα)"
+            label={_t("Πινακίδα/ες ΙΧ")}
+            hint={_t("(μία γραμμή ανά όχημα)")}
             value={form.pinakides_ix}
             onChange={onChange('pinakides_ix')}
-            placeholder="π.χ. ΑΒΓ-1234"
+            placeholder={_t("π.χ. ΑΒΓ-1234")}
           />
         </div>
       )}

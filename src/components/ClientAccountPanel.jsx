@@ -5,6 +5,7 @@ import { fmtDate, fmtCurrency } from '../utils/format';
 
 import DateInput from './DateInput';
 import AccountLinesEditor from './AccountLinesEditor';
+import { _t } from '../i18n';
 // ΛΟΓΑΡΙΑΣΜΟΣ ΠΕΛΑΤΗ — ό,τι εκκρεμεί από ΟΛΕΣ τις υποθέσεις του.
 //
 // Ο δικηγόρος χρεώνει τον πελάτη συνολικά, όχι ανά φάκελο: το υπόλοιπο
@@ -34,7 +35,7 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
     reports.clientAccount(clientType, clientId, from || null, to || null)
       .then(d => { if (alive) setData(d?.data || d || null); })
       // Χωρίς δικαίωμα οικονομικών η ενότητα απλώς δεν εμφανίζεται
-      .catch(e => { if (alive && e.status !== 403) setError(e.message || 'Αποτυχία φόρτωσης'); })
+      .catch(e => { if (alive && e.status !== 403) setError(e.message || _t("Αποτυχία φόρτωσης")); })
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [clientType, clientId, from, to, reloadKey]);
@@ -99,7 +100,7 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
         if (onIssued) onIssued();
       }
     } catch (e) {
-      setError(e.message || 'Η παραγωγή απέτυχε.');
+      setError(e.message || _t("Η παραγωγή απέτυχε."));
     } finally { setBusy(false); }
   };
 
@@ -108,63 +109,63 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     gap: 12, flexWrap: 'wrap' }}>
         <div>
-          <strong>Λογαριασμός πελάτη</strong>
+          <strong>{_t("Λογαριασμός πελάτη")}</strong>
           <span style={{ color: '#718096', fontSize: 13, marginLeft: 8 }}>
-            {cases.length} {cases.length === 1 ? 'υπόθεση' : 'υποθέσεις'}
+            {cases.length} {cases.length === 1 ? _t("υπόθεση") : _t("υποθέσεις")}
           </span>
         </div>
         <button type="button" className="btn btn-sm" onClick={() => setOpen(!open)}>
-          {open ? 'Απόκρυψη' : 'Εμφάνιση'}
+          {open ? _t("Απόκρυψη") : _t("Εμφάνιση")}
         </button>
       </div>
 
       <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginTop: 10, fontSize: 14 }}>
-        <span>Αμοιβές: <strong>{fmtCurrency(amoives)}</strong></span>
-        <span>Έξοδα: <strong>{fmtCurrency(exoda)}</strong></span>
-        <span>Προκαταβολές: <strong>−{fmtCurrency(prok)}</strong></span>
+        <span>{_t("Αμοιβές:")} <strong>{fmtCurrency(amoives)}</strong></span>
+        <span>{_t("Έξοδα:")} <strong>{fmtCurrency(exoda)}</strong></span>
+        <span>{_t("Προκαταβολές:")} <strong>−{fmtCurrency(prok)}</strong></span>
         <span style={{ color: ypoloipo > 0 ? '#c05621' : '#2f855a' }}>
-          Υπόλοιπο: <strong>{fmtCurrency(ypoloipo)}</strong>
+          {_t("Υπόλοιπο:")} <strong>{fmtCurrency(ypoloipo)}</strong>
         </span>
       </div>
 
       {open && (
         <>
           <p style={{ color: '#718096', fontSize: 13, margin: '14px 0 8px' }}>
-            Περίοδος — άφησέ τα κενά για τα πάντα από την αρχή.
+            {_t("Περίοδος — άφησέ τα κενά για τα πάντα από την αρχή.")}
           </p>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center',
                         flexWrap: 'wrap', marginBottom: 10 }}>
             <div style={{ minWidth: 150 }}>
               <DateInput value={from} onChange={e => setFrom(e.target.value)} />
             </div>
-            <span style={{ color: '#718096' }}>έως</span>
+            <span style={{ color: '#718096' }}>{_t("έως")}</span>
             <div style={{ minWidth: 150 }}>
               <DateInput value={to} onChange={e => setTo(e.target.value)} />
             </div>
             <button type="button" className="btn btn-sm" onClick={() => quarter(0)}>
-              Τρέχον τρίμηνο
+              {_t("Τρέχον τρίμηνο")}
             </button>
             <button type="button" className="btn btn-sm" onClick={() => quarter(-1)}>
-              Προηγούμενο τρίμηνο
+              {_t("Προηγούμενο τρίμηνο")}
             </button>
             {(from || to) && (
               <button type="button" className="btn btn-sm"
-                      onClick={() => { setFrom(''); setTo(''); }}>Καθάρισμα</button>
+                      onClick={() => { setFrom(''); setTo(''); }}>{_t("Καθάρισμα")}</button>
             )}
           </div>
 
           <p style={{ color: '#718096', fontSize: 13, margin: '14px 0 8px' }}>
-            Διάλεξε ποιες υποθέσεις μπαίνουν στο έντυπο.
+            {_t("Διάλεξε ποιες υποθέσεις μπαίνουν στο έντυπο.")}
           </p>
           <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
             <button type="button" className="btn btn-sm"
-                    onClick={() => setChosen(new Set(cases))}>Όλες</button>
+                    onClick={() => setChosen(new Set(cases))}>{_t("Όλες")}</button>
             <button type="button" className="btn btn-sm"
-                    onClick={() => setChosen(new Set())}>Καμία</button>
+                    onClick={() => setChosen(new Set())}>{_t("Καμία")}</button>
             {currentCaseId && (
               <button type="button" className="btn btn-sm"
                       onClick={() => setChosen(new Set([Number(currentCaseId)]))}>
-                Μόνο η τρέχουσα
+                {_t("Μόνο η τρέχουσα")}
               </button>
             )}
           </div>
@@ -172,8 +173,8 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
             <thead>
               <tr>
                 <th style={{ width: 40 }}></th>
-                <th>Υπόθεση</th>
-                <th style={{ width: 110, textAlign: 'right' }}>Εγγραφές</th>
+                <th>{_t("Υπόθεση")}</th>
+                <th style={{ width: 110, textAlign: 'right' }}>{_t("Εγγραφές")}</th>
               </tr>
             </thead>
             <tbody>
@@ -184,7 +185,7 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
                   </td>
                   <td>
                     <Link to={`/cases/${id}?tab=finance`}>
-                      {String(id) === String(currentCaseId) ? 'Τρέχουσα υπόθεση' : `Υπόθεση #${id}`}
+                      {String(id) === String(currentCaseId) ? _t("Τρέχουσα υπόθεση") : _t("Υπόθεση #{0}", [id])}
                     </Link>
                   </td>
                   <td style={{ textAlign: 'right' }}>{countFor(id)}</td>
@@ -194,9 +195,9 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
           </table>
 
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 14 }}>
-            <span style={{ color: '#4a5568', fontSize: 13 }}>Γλώσσα εντύπου:</span>
+            <span style={{ color: '#4a5568', fontSize: 13 }}>{_t("Γλώσσα εντύπου:")}</span>
             <select value={lang} onChange={e => setLang(e.target.value)} style={{ width: 'auto' }}>
-              <option value="el">Ελληνικά</option>
+              <option value="el">{_t("Ελληνικά")}</option>
               <option value="en">English</option>
               <option value="fr">Français</option>
             </select>
@@ -209,16 +210,16 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
           <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             <button type="button" className="btn btn-sm"
                     onClick={() => print(false)} disabled={busy || sel.size === 0}>
-              {busy ? 'Παραγωγή…' : '👁 Προεπισκόπηση'}
+              {busy ? _t("Παραγωγή…") : _t("👁 Προεπισκόπηση")}
             </button>
             <button type="button" className="btn btn-sm btn-primary"
                     onClick={() => print(true)} disabled={busy || sel.size === 0}
-                    title="Δίνει αύξοντα αριθμό λογαριασμού">
-              {busy ? 'Παραγωγή…' : '⬇ Έκδοση λογαριασμού'}
+                    title={_t("Δίνει αύξοντα αριθμό λογαριασμού")}>
+              {busy ? _t("Παραγωγή…") : _t("⬇ Έκδοση λογαριασμού")}
             </button>
             {sel.size === 0 && (
               <span style={{ color: '#718096', fontSize: 13, alignSelf: 'center' }}>
-                Διάλεξε τουλάχιστον μία υπόθεση.
+                {_t("Διάλεξε τουλάχιστον μία υπόθεση.")}
               </span>
             )}
           </div>

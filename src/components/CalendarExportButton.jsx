@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { downloadICS, googleCalendarUrl, outlookCalendarUrl } from '../utils/calendar';
+import { _t } from '../i18n';
 
 /**
  * CalendarExportButton — dropdown με 3 επιλογές (Google, Outlook Web, .ics).
@@ -46,7 +47,7 @@ function CalendarExportButton({ event, filename, size = 'sm', label = '📅' }) 
       <button
         type="button"
         className={`btn btn-${size} btn-secondary`}
-        title="Προσθήκη σε ημερολόγιο"
+        title={_t("Προσθήκη σε ημερολόγιο")}
         onClick={(e) => { stop(e); setOpen(o => !o); }}
       >
         {label}
@@ -73,7 +74,7 @@ function CalendarExportButton({ event, filename, size = 'sm', label = '📅' }) 
             <span style={{ marginRight: 6 }}>📆</span> Outlook Web
           </button>
           <button type="button" className="cal-export-item" onClick={doDownload}>
-            <span style={{ marginRight: 6 }}>💾</span> Λήψη .ics
+            <span style={{ marginRight: 6 }}>💾</span> {_t("Λήψη .ics")}
           </button>
         </div>
       )}

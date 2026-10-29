@@ -5,6 +5,7 @@
 // ενεργός δικηγόρος εμφανίζεται μόνο αν είναι ήδη επιλεγμένος, ώστε να μη
 // χαθεί η τιμή.
 // checkboxFirst: ίδια διάταξη με τη λίστα χειριστών της Νέας υπόθεσης
+import { _t } from '../i18n';
 function EisforaSelect({ lawyers, value = [], onChange, checkboxFirst = false }) {
   const sel = new Set((value || []).map(Number));
   const name = (l) => `${l.eponymo || ''} ${l.onoma || ''}`.trim() || `#${l.aa || l.id}`;
@@ -23,7 +24,7 @@ function EisforaSelect({ lawyers, value = [], onChange, checkboxFirst = false })
   return (
     <div style={{ maxHeight: 200, overflow: 'hidden auto', border: '1px solid #e2e8f0', borderRadius: 6, padding: 8 }}>
       {list.length === 0 ? (
-        <div style={{ color: '#a0aec0', padding: 8 }}>Δεν υπάρχουν δικηγόροι γραφείου.</div>
+        <div style={{ color: '#a0aec0', padding: 8 }}>{_t("Δεν υπάρχουν δικηγόροι γραφείου.")}</div>
       ) : list.map((l, idx) => {
         const id = Number(l.aa || l.id);
         if (checkboxFirst) {
@@ -31,7 +32,7 @@ function EisforaSelect({ lawyers, value = [], onChange, checkboxFirst = false })
             <label key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 6, cursor: 'pointer', borderRadius: 4 }}>
               <input type="checkbox" checked={sel.has(id)} onChange={() => toggle(id)} />
               <span>{name(l)}</span>
-              {l.energos === false && <small style={{ color: '#a0aec0' }}>(μη ενεργός)</small>}
+              {l.energos === false && <small style={{ color: '#a0aec0' }}>{_t("(μη ενεργός)")}</small>}
             </label>
           );
         }
@@ -43,7 +44,7 @@ function EisforaSelect({ lawyers, value = [], onChange, checkboxFirst = false })
                  onMouseEnter={e => { e.currentTarget.style.background = '#f7fafc'; }}
                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}>
             <span style={{ flex: '1 1 auto', minWidth: 0, textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {name(l)}{l.energos === false ? ' (μη ενεργός)' : ''}
+              {name(l)}{l.energos === false ? _t(" (μη ενεργός)") : ''}
             </span>
             <input type="checkbox" checked={sel.has(id)} onChange={() => toggle(id)}
                    style={{ width: 16, height: 16, flexShrink: 0, margin: 0, padding: 0, cursor: 'pointer' }} />

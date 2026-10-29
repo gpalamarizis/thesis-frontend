@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { _t } from '../i18n';
 
 // Πεδίο ημερομηνίας σε ελληνική μορφή, ΠΑΝΤΑ ημ/μμ/εεεε.
 //
@@ -99,7 +100,7 @@ function DateInput({ value, onChange, disabled, required, className, style, plac
         onBlur={handleBlur}
         disabled={disabled}
         required={required}
-        placeholder={placeholder || 'ημ/μμ/εεεε'}
+        placeholder={placeholder || _t("ημ/μμ/εεεε")}
         maxLength={10}
         style={{
           flex: 1, minWidth: 0,
@@ -112,8 +113,8 @@ function DateInput({ value, onChange, disabled, required, className, style, plac
         type="button"
         onClick={openPicker}
         disabled={disabled}
-        title="Ημερολόγιο"
-        aria-label="Άνοιγμα ημερολογίου"
+        title={_t("Ημερολόγιο")}
+        aria-label={_t("Άνοιγμα ημερολογίου")}
         style={{
           position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)',
           background: 'none', border: 'none', cursor: disabled ? 'default' : 'pointer',

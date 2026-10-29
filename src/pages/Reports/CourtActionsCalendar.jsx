@@ -5,6 +5,7 @@ import { reports, people, lists } from '../../api';
 import { fmtDate, trunc, toISODate } from '../../utils/format';
 import CalendarExportButton from '../../components/CalendarExportButton';
 import { eventFromCourtAction } from '../../utils/calendar';
+import { _t, LOCALE } from '../../i18n';
 
 /**
  * CourtActionsCalendar — Ημερολόγιο δικαστικών ενεργειών με φίλτρα και calendar view.
@@ -47,7 +48,7 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
 
   const y = monthCursor.getFullYear();
   const m = monthCursor.getMonth();
-  const monthName = monthCursor.toLocaleDateString('el-GR', { month: 'long', year: 'numeric' });
+  const monthName = monthCursor.toLocaleDateString(LOCALE, { month: 'long', year: 'numeric' });
   const firstDay = new Date(y, m, 1);
   const lastDay = new Date(y, m + 1, 0);
   const startWeekday = (firstDay.getDay() + 6) % 7; // Monday=0
@@ -99,31 +100,31 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
   const selectedEvents = selectedDate ? (byDay[selectedDate.getDate()] || []) : [];
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Ημερολόγιο Δικαστικών Ενεργειών">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Ημερολόγιο Δικαστικών Ενεργειών")}>
       {error && <div className="error">{error}</div>}
 
       <div className="section" style={{ marginBottom: 20 }}>
         <div className="form-grid-3">
           <div className="form-group">
-            <label>Δικηγόρος</label>
+            <label>{_t("Δικηγόρος")}</label>
             <select value={xeiristId} onChange={e => setXeiristId(e.target.value)}>
-              <option value="">— όλοι —</option>
+              <option value="">{_t("— όλοι —")}</option>
               {lawyers.map(l => <option key={l.aa} value={l.aa}>{`${l.eponymo || ''} ${l.onoma || ''}`.trim()}</option>)}
             </select>
           </div>
           <div className="form-group">
-            <label>Διαδικασία</label>
+            <label>{_t("Διαδικασία")}</label>
             <select value={diadikasiaId} onChange={e => setDiadikasiaId(e.target.value)}>
-              <option value="">— όλες —</option>
+              <option value="">{_t("— όλες —")}</option>
               {procedures.map(p => <option key={p.aa} value={p.aa}>{p.name}</option>)}
             </select>
           </div>
           <div className="form-group">
-            <label>Κατάσταση</label>
+            <label>{_t("Κατάσταση")}</label>
             <select value={ekkremis} onChange={e => setEkkremis(e.target.value)}>
-              <option value="all">— όλες —</option>
-              <option value="true">Εκκρεμείς</option>
-              <option value="false">Έκλεισαν</option>
+              <option value="all">{_t("— όλες —")}</option>
+              <option value="true">{_t("Εκκρεμείς")}</option>
+              <option value="false">{_t("Έκλεισαν")}</option>
             </select>
           </div>
         </div>
@@ -131,28 +132,28 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
 
       <div className="section">
         <div className="cal-header-row">
-          <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date(y, m - 1, 1))}>‹ Προηγ.</button>
+          <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date(y, m - 1, 1))}>{_t("‹ Προηγ.")}</button>
           <h2 style={{ margin: 0 }}>{monthName}</h2>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date())}>Σήμερα</button>
-            <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date(y, m + 1, 1))}>Επόμ. ›</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date())}>{_t("Σήμερα")}</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date(y, m + 1, 1))}>{_t("Επόμ. ›")}</button>
           </div>
         </div>
 
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : (
           <div className="cal-grid">
-            {['Δευ','Τρι','Τετ','Πεμ','Παρ','Σαβ','Κυρ'].map(d => <div key={d} className="cal-header">{d}</div>)}
+            {['Δευ','Τρι','Τετ','Πεμ','Παρ','Σαβ','Κυρ'].map(d => <div key={d} className="cal-header">{_t(d)}</div>)}
             {cells}
           </div>
         )}
 
         {selectedEvents.length > 0 && (
           <div style={{ marginTop: 20 }}>
-            <h3>Δικάσιμοι {fmtDate(selectedDate)}</h3>
+            <h3>{_t("Δικάσιμοι")} {fmtDate(selectedDate)}</h3>
             <table className="data-table">
-              <thead><tr><th>Πρωτόκολλο</th><th>Δικαστήριο</th><th>Διαδικασία</th><th>Πελάτης</th><th>Περιγραφή</th><th style={{width:60}}></th></tr></thead>
+              <thead><tr><th>{_t("Πρωτόκολλο")}</th><th>{_t("Δικαστήριο")}</th><th>{_t("Διαδικασία")}</th><th>{_t("Πελάτης")}</th><th>{_t("Περιγραφή")}</th><th style={{width:60}}></th></tr></thead>
               <tbody>
                 {selectedEvents.map((e, i) => (
                   <tr key={i} className="clickable" onClick={() => e.ypothesi_id && navigate(`/cases/${e.ypothesi_id}`)}>
@@ -171,7 +172,7 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
           </div>
         )}
         <div style={{ marginTop: 12, fontSize: 12, color: '#a0aec0' }}>
-          Σύνολο δικασίμων μηνός: <strong>{events.length}</strong>
+          {_t("Σύνολο δικασίμων μηνός:")} <strong>{events.length}</strong>
         </div>
       </div>
     </Layout>

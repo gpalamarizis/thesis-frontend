@@ -1,6 +1,7 @@
 import Modal from './Modal';
+import { _t } from '../i18n';
 
-function ConfirmDialog({ title = 'Επιβεβαίωση', message, confirmLabel = 'Ναι', cancelLabel = 'Ακύρωση', danger = true, hideConfirm = false, onConfirm, onClose }) {
+function ConfirmDialog({ title = _t("Επιβεβαίωση"), message, confirmLabel = _t("Ναι"), cancelLabel = _t("Ακύρωση"), danger = true, hideConfirm = false, onConfirm, onClose }) {
   return (
     <Modal
       title={title}

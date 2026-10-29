@@ -9,6 +9,7 @@ import useConfirm from '../components/useConfirm';
 import Modal from '../components/Modal';
 import { subscriptions } from '../api';
 import { DEFAULT_VAT } from '../utils/region';
+import { _t } from '../i18n';
 
 function fmtDate(d) {
   if (!d) return '—';
@@ -39,8 +40,7 @@ function StatusBanner({ current }) {
         padding: 16, background: '#EBF4FF', border: '1px solid #90CDF4',
         borderRadius: 6, marginBottom: 20, color: '#2B6CB0',
       }}>
-        ℹ️ Ο λογαριασμός σας δεν ανήκει σε δικηγορικό γραφείο (platform admin).
-        Οι συνδρομές διαχειρίζονται από το <strong>Platform Admin</strong>.
+        {_t("ℹ️ Ο λογαριασμός σας δεν ανήκει σε δικηγορικό γραφείο (platform admin). Οι συνδρομές διαχειρίζονται από το")} <strong>Platform Admin</strong>.
       </div>
     );
   }
@@ -48,7 +48,7 @@ function StatusBanner({ current }) {
   if (org.suspended) {
     return (
       <div style={{ padding: 16, background: '#fed7d7', border: '1px solid #fc8181', borderRadius: 6, marginBottom: 20, color: '#742a2a' }}>
-        ⛔ <strong>Ο λογαριασμός είναι σε αναστολή.</strong> {org.suspended_reason || 'Επικοινώνησε με τη διαχείριση.'}
+        ⛔ <strong>{_t("Ο λογαριασμός είναι σε αναστολή.")}</strong> {org.suspended_reason || _t("Επικοινώνησε με τη διαχείριση.")}
       </div>
     );
   }
@@ -63,7 +63,7 @@ function StatusBanner({ current }) {
         borderRadius: 6, marginBottom: 20,
         color: urgent ? '#744210' : '#234e52',
       }}>
-        {urgent ? '⚠️' : '🎁'} <strong>Δοκιμαστική περίοδος:</strong> απομένουν {daysLeft} ημέρες (λήγει {fmtDate(org.trial_ends_at)})
+        {urgent ? '⚠️' : '🎁'} <strong>{_t("Δοκιμαστική περίοδος:")}</strong> {_t("απομένουν")} {daysLeft} {_t("ημέρες (λήγει")} {fmtDate(org.trial_ends_at)})
       </div>
     );
   }
@@ -71,7 +71,7 @@ function StatusBanner({ current }) {
   if (org.subscription_status === 'expired') {
     return (
       <div style={{ padding: 16, background: '#fed7d7', border: '1px solid #fc8181', borderRadius: 6, marginBottom: 20, color: '#742a2a' }}>
-        ⛔ <strong>Η συνδρομή έληξε.</strong> Ανανέωσε για να συνεχίσεις να χρησιμοποιείς την πλατφόρμα.
+        ⛔ <strong>{_t("Η συνδρομή έληξε.")}</strong> {_t("Ανανέωσε για να συνεχίσεις να χρησιμοποιείς την πλατφόρμα.")}
       </div>
     );
   }
@@ -80,7 +80,7 @@ function StatusBanner({ current }) {
     const daysLeft = daysBetween(new Date(), org.subscription_ends_at);
     return (
       <div style={{ padding: 16, background: '#c6f6d5', border: '1px solid #68d391', borderRadius: 6, marginBottom: 20, color: '#22543d' }}>
-        ✅ <strong>Ενεργή συνδρομή</strong> — ανανέωση: {fmtDate(org.subscription_ends_at)} ({daysLeft} ημέρες)
+        ✅ <strong>{_t("Ενεργή συνδρομή")}</strong> {_t("— ανανέωση:")} {fmtDate(org.subscription_ends_at)} ({daysLeft} {_t("ημέρες)")}
       </div>
     );
   }
@@ -119,12 +119,12 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
 
       <div style={{ fontSize: 22, fontWeight: 700, color: '#2d3748' }}>
         {fmtCurrency(perUser)}
-        <span style={{ fontSize: 13, fontWeight: 400, color: '#718096' }}> / χρήστη / έτος</span>
+        <span style={{ fontSize: 13, fontWeight: 400, color: '#718096' }}> {_t("/ χρήστη / έτος")}</span>
       </div>
 
       <ul style={{ listStyle: 'none', padding: 0, margin: '8px 0', color: '#4a5568', fontSize: 14 }}>
-        <li>👤 {min === max ? `${min} χρήστης` : `${min} έως ${max} χρήστες`}</li>
-        <li>💾 {(plan.storage_quota_mb / 1024).toFixed(0)} GB αποθηκευτικός χώρος</li>
+        <li>👤 {min === max ? _t("{0} χρήστης", [min]) : _t("{0} έως {1} χρήστες", [min, max])}</li>
+        <li>💾 {(plan.storage_quota_mb / 1024).toFixed(0)} {_t("GB αποθηκευτικός χώρος")}</li>
       </ul>
 
       {plan.description && <p style={{ fontSize: 12, color: '#718096', margin: 0 }}>{plan.description}</p>}
@@ -133,7 +133,7 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
       {!isCurrent && !tooFewForOrg && max > min && (
         <div style={{ marginTop: 10 }}>
           <label style={{ fontSize: 13, color: '#4a5568', display: 'block', marginBottom: 6 }}>
-            Πόσοι χρήστες;
+            {_t("Πόσοι χρήστες;")}
           </label>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <button
@@ -168,12 +168,12 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
             <span>{fmtCurrency(net)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', color: '#718096', marginTop: 4 }}>
-            <span>ΦΠΑ {vatRate}%</span>
+            <span>{_t("ΦΠΑ")} {vatRate}%</span>
             <span>{fmtCurrency(vat)}</span>
           </div>
           <hr style={{ margin: '8px 0', border: 'none', borderTop: '1px solid #E2E8F0' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 16, color: '#1A202C' }}>
-            <span>Σύνολο</span>
+            <span>{_t("Σύνολο")}</span>
             <span>{fmtCurrency(gross)}</span>
           </div>
         </div>
@@ -184,20 +184,20 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
           marginTop: 10, padding: 10, background: '#FEEBC8',
           borderRadius: 6, fontSize: 12, color: '#9C4221',
         }}>
-          Έχετε {minUsers} ενεργούς χρήστες — αυτό το πλάνο καλύπτει έως {max}.
+          {_t("Έχετε")} {minUsers} {_t("ενεργούς χρήστες — αυτό το πλάνο καλύπτει έως")} {max}.
         </div>
       )}
 
       <div style={{ flex: 1 }} />
 
       {isCurrent ? (
-        <button className="btn btn-secondary" disabled>Τρέχον πλάνο</button>
+        <button className="btn btn-secondary" disabled>{_t("Τρέχον πλάνο")}</button>
       ) : tooFewForOrg ? (
-        <button className="btn btn-secondary" disabled>Δεν επαρκεί</button>
+        <button className="btn btn-secondary" disabled>{_t("Δεν επαρκεί")}</button>
       ) : (
         <>
           <button className="btn" onClick={() => onSelect(plan, users, gross)} disabled={disabled}>
-            Πληρωμή με κάρτα
+            {_t("Πληρωμή με κάρτα")}
           </button>
           <button
             className="btn btn-secondary"
@@ -205,7 +205,7 @@ function PlanCard({ plan, currentPlanCode, onSelect, onBankTransfer, disabled, m
             onClick={() => onBankTransfer(plan, users, gross)}
             disabled={disabled}
           >
-            Πληρωμή με έμβασμα
+            {_t("Πληρωμή με έμβασμα")}
           </button>
         </>
       )}
@@ -232,9 +232,9 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
     if (t) {
       // Verify με backend για επιτυχία
       subscriptions.verify(t, s).then(() => {
-        setSuccessMsg('✅ Η πληρωμή επιβεβαιώθηκε! Ενημέρωση συνδρομής...');
+        setSuccessMsg(_t("✅ Η πληρωμή επιβεβαιώθηκε! Ενημέρωση συνδρομής..."));
         setTimeout(() => window.location.href = '/settings/subscription', 2000);
-      }).catch(e => setErr(`Σφάλμα επιβεβαίωσης: ${e.message}. Δοκίμασε να ανανεώσεις τη σελίδα.`));
+      }).catch(e => setErr(_t("Σφάλμα επιβεβαίωσης: {0}. Δοκίμασε να ανανεώσεις τη σελίδα.", [e.message])));
     }
     // eslint-disable-next-line
   }, []);
@@ -252,10 +252,10 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
   useEffect(load, []);
 
   const selectPlan = async (plan, users, gross) => {
-    const msg = `Πλάνο ${plan.name} — ${users} ${users === 1 ? 'χρήστης' : 'χρήστες'}\n` +
-                `Πληρωτέο: ${fmtCurrency(gross)} (με ΦΠΑ)\n\n` +
-                `Θα μεταφερθείτε στη σελίδα πληρωμής.`;
-    if (!await ask({ title: 'Επιλογή πλάνου', message: msg, confirmLabel: 'Συνέχεια στην πληρωμή', danger: false })) return;
+    const msg = _t("Πλάνο {0} — {1} {2}\n", [plan.name, users, users === 1 ? _t("χρήστης") : _t("χρήστες")]) +
+                _t("Πληρωτέο: {0} (με ΦΠΑ)\n\n", [fmtCurrency(gross)]) +
+                _t("Θα μεταφερθείτε στη σελίδα πληρωμής.");
+    if (!await ask({ title: _t("Επιλογή πλάνου"), message: msg, confirmLabel: _t("Συνέχεια στην πληρωμή"), danger: false })) return;
     setCheckoutBusy(true);
     setErr('');
     try {
@@ -270,11 +270,11 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
   // Πληρωμή με τραπεζικό έμβασμα — δημιουργεί εκκρεμή συνδρομή
   // και στέλνει email με IBAN + μοναδική αιτιολογία.
   const bankTransfer = async (plan, users, gross) => {
-    const msg = `Πλάνο ${plan.name} — ${users} ${users === 1 ? 'χρήστης' : 'χρήστες'}\n` +
-                `Πληρωτέο: ${fmtCurrency(gross)} (με ΦΠΑ)\n\n` +
-                `Θα λάβετε email με τα στοιχεία του λογαριασμού και μοναδική αιτιολογία.\n` +
-                `Η συνδρομή ενεργοποιείται μόλις εμφανιστούν τα χρήματα.`;
-    if (!await ask({ title: 'Πληρωμή με τραπεζική κατάθεση', message: msg, confirmLabel: 'Συνέχεια', danger: false })) return;
+    const msg = _t("Πλάνο {0} — {1} {2}\n", [plan.name, users, users === 1 ? _t("χρήστης") : _t("χρήστες")]) +
+                _t("Πληρωτέο: {0} (με ΦΠΑ)\n\n", [fmtCurrency(gross)]) +
+                _t("Θα λάβετε email με τα στοιχεία του λογαριασμού και μοναδική αιτιολογία.\n") +
+                _t("Η συνδρομή ενεργοποιείται μόλις εμφανιστούν τα χρήματα.");
+    if (!await ask({ title: _t("Πληρωμή με τραπεζική κατάθεση"), message: msg, confirmLabel: _t("Συνέχεια"), danger: false })) return;
     setCheckoutBusy(true);
     setErr('');
     try {
@@ -299,37 +299,37 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
   const isOwner = hasOrg && (user.role === 'admin' || user.role === 'owner');
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Συνδρομή">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Συνδρομή")}>
       {err && <div className="error">{err}</div>}
       {successMsg && <div style={{ padding: 12, background: '#c6f6d5', border: '1px solid #68d391', borderRadius: 6, marginBottom: 16 }}>{successMsg}</div>}
 
-      {loading ? <div className="empty-state">Φόρτωση...</div> : (
+      {loading ? <div className="empty-state">{_t("Φόρτωση...")}</div> : (
         <>
           <StatusBanner current={current} />
 
           {current && current.organization && (
             <div className="section" style={{ marginBottom: 20 }}>
-              <h2 style={{ marginBottom: 12 }}>Τρέχουσα κατάσταση</h2>
+              <h2 style={{ marginBottom: 12 }}>{_t("Τρέχουσα κατάσταση")}</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 12 }}>
                 <div>
-                  <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Χρήστες</div>
+                  <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>{_t("Χρήστες")}</div>
                   <div style={{ fontSize: 22, fontWeight: 700 }}>
                     {current.usage.active_users} / {current.organization.max_users || '?'}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Αποθηκευτικός χώρος</div>
+                  <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>{_t("Αποθηκευτικός χώρος")}</div>
                   <div style={{ fontSize: 22, fontWeight: 700 }}>
                     {fmtBytes(current.usage.storage_bytes_used)}
                     <span style={{ fontSize: 13, color: '#718096', fontWeight: 400 }}> / {(current.usage.storage_quota_mb/1024).toFixed(0)} GB</span>
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Πλάνο</div>
+                  <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>{_t("Πλάνο")}</div>
                   <div style={{ fontSize: 18, fontWeight: 600 }}>{current.organization.plan_code || 'Trial'}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>Τύπος</div>
+                  <div style={{ fontSize: 12, color: '#718096', textTransform: 'uppercase' }}>{_t("Τύπος")}</div>
                   <div style={{ fontSize: 18, fontWeight: 600 }}>{current.organization.plan_type}</div>
                 </div>
               </div>
@@ -338,21 +338,20 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
 
           {!hasOrg ? (
             <div className="empty-state">
-              Δεν υπάρχει γραφείο συνδεδεμένο με τον λογαριασμό σας.
+              {_t("Δεν υπάρχει γραφείο συνδεδεμένο με τον λογαριασμό σας.")}
             </div>
           ) : !isOwner ? (
-            <div className="empty-state">Μόνο ο υπεύθυνος του γραφείου μπορεί να διαχειριστεί τη συνδρομή.</div>
+            <div className="empty-state">{_t("Μόνο ο υπεύθυνος του γραφείου μπορεί να διαχειριστεί τη συνδρομή.")}</div>
           ) : (
             <>
-              <h2 style={{ marginBottom: 16 }}>Διαθέσιμα πλάνα</h2>
+              <h2 style={{ marginBottom: 16 }}>{_t("Διαθέσιμα πλάνα")}</h2>
 
               {wantedExists && (
                 <div style={{
                   padding: 12, marginBottom: 16, borderRadius: 6,
                   background: '#EBF4FF', border: '1px solid #C3DAFE', color: '#4C51BF', fontSize: 14,
                 }}>
-                  Επέλεξες το πλάνο <strong>{plans.find(p => p.code === wantedPlan)?.name}</strong>.
-                  Έλεγξε τον αριθμό χρηστών και συνέχισε στην πληρωμή.
+                  {_t("Επέλεξες το πλάνο")} <strong>{plans.find(p => p.code === wantedPlan)?.name}</strong>{_t(". Έλεγξε τον αριθμό χρηστών και συνέχισε στην πληρωμή.")}
                 </div>
               )}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
@@ -371,12 +370,11 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
               </div>
               {plans.length === 0 && (
                 <div className="empty-state">
-                  Δεν έχουν οριστεί ακόμα τιμές πλάνων. Επικοινώνησε με τη διαχείριση.
+                  {_t("Δεν έχουν οριστεί ακόμα τιμές πλάνων. Επικοινώνησε με τη διαχείριση.")}
                 </div>
               )}
               <p style={{ marginTop: 16, fontSize: 13, color: '#718096' }}>
-                Οι τιμές είναι ανά χρήστη ανά έτος και <strong>δεν περιλαμβάνουν ΦΠΑ</strong>.
-                Ο ΦΠΑ {DEFAULT_VAT}% προστίθεται στο τελικό ποσό.
+                {_t("Οι τιμές είναι ανά χρήστη ανά έτος και")} <strong>{_t("δεν περιλαμβάνουν ΦΠΑ")}</strong>{_t(". Ο ΦΠΑ")} {DEFAULT_VAT}{_t("% προστίθεται στο τελικό ποσό.")}
               </p>
             </>
           )}
@@ -386,26 +384,25 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
       {/* Στοιχεία πληρωμής με έμβασμα */}
       {bankInfo && (
         <Modal
-          title="Στοιχεία πληρωμής"
+          title={_t("Στοιχεία πληρωμής")}
           onClose={() => { setBankInfo(null); load(); }}
           actions={
-            <button className="btn" onClick={() => { setBankInfo(null); load(); }}>Κλείσιμο</button>
+            <button className="btn" onClick={() => { setBankInfo(null); load(); }}>{_t("Κλείσιμο")}</button>
           }
         >
           <p style={{ marginTop: 0 }}>
-            Καταθέστε το ποσό στον παρακάτω λογαριασμό. Η συνδρομή ενεργοποιείται
-            αυτόματα μόλις εμφανιστούν τα χρήματα.
+            {_t("Καταθέστε το ποσό στον παρακάτω λογαριασμό. Η συνδρομή ενεργοποιείται αυτόματα μόλις εμφανιστούν τα χρήματα.")}
           </p>
 
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <tbody>
               <tr>
-                <td style={{ padding: '8px 0', color: '#718096' }}>Δικαιούχος</td>
+                <td style={{ padding: '8px 0', color: '#718096' }}>{_t("Δικαιούχος")}</td>
                 <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: 600 }}>{bankInfo.beneficiary}</td>
               </tr>
               {bankInfo.bank_name && (
                 <tr>
-                  <td style={{ padding: '8px 0', color: '#718096' }}>Τράπεζα</td>
+                  <td style={{ padding: '8px 0', color: '#718096' }}>{_t("Τράπεζα")}</td>
                   <td style={{ padding: '8px 0', textAlign: 'right' }}>{bankInfo.bank_name}</td>
                 </tr>
               )}
@@ -418,16 +415,16 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
               <tr><td colSpan={2}><hr style={{ border: 'none', borderTop: '1px solid #E2E8F0', margin: '6px 0' }} /></td></tr>
               <tr>
                 <td style={{ padding: '6px 0', color: '#718096' }}>
-                  {bankInfo.plan_name} — {bankInfo.users} {bankInfo.users === 1 ? 'χρήστης' : 'χρήστες'}
+                  {bankInfo.plan_name} — {bankInfo.users} {bankInfo.users === 1 ? _t("χρήστης") : _t("χρήστες")}
                 </td>
                 <td style={{ padding: '6px 0', textAlign: 'right' }}>{fmtCurrency(bankInfo.amount_net)}</td>
               </tr>
               <tr>
-                <td style={{ padding: '6px 0', color: '#718096' }}>ΦΠΑ {bankInfo.vat_rate}%</td>
+                <td style={{ padding: '6px 0', color: '#718096' }}>{_t("ΦΠΑ")} {bankInfo.vat_rate}%</td>
                 <td style={{ padding: '6px 0', textAlign: 'right' }}>{fmtCurrency(bankInfo.vat_amount)}</td>
               </tr>
               <tr>
-                <td style={{ padding: '8px 0', fontWeight: 700, fontSize: 16 }}>Πληρωτέο</td>
+                <td style={{ padding: '8px 0', fontWeight: 700, fontSize: 16 }}>{_t("Πληρωτέο")}</td>
                 <td style={{ padding: '8px 0', textAlign: 'right', fontWeight: 700, fontSize: 18 }}>
                   {fmtCurrency(bankInfo.amount)}
                 </td>
@@ -440,8 +437,7 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
             border: '1px solid #ECC94B', borderRadius: 8,
           }}>
             <div style={{ fontSize: 13, color: '#9C4221', marginBottom: 6 }}>
-              <strong>Σημαντικό:</strong> γράψτε την παρακάτω αιτιολογία στην κατάθεση,
-              ώστε να ενεργοποιηθεί αυτόματα η συνδρομή σας.
+              <strong>{_t("Σημαντικό:")}</strong> {_t("γράψτε την παρακάτω αιτιολογία στην κατάθεση, ώστε να ενεργοποιηθεί αυτόματα η συνδρομή σας.")}
             </div>
             <div style={{
               fontSize: 20, fontWeight: 700, letterSpacing: 1,
@@ -453,7 +449,7 @@ function SubscriptionSettings({ user, onLogout, onOpenCaseSearch }) {
           </div>
 
           <p style={{ fontSize: 12, color: '#A0AEC0', marginBottom: 0 }}>
-            Σας στείλαμε και email με τα ίδια στοιχεία.
+            {_t("Σας στείλαμε και email με τα ίδια στοιχεία.")}
           </p>
         </Modal>
       )}

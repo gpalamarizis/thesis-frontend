@@ -13,6 +13,7 @@ import { platform } from '../api';
 import { toISODate } from '../utils/format';
 import DateInput from '../components/DateInput';
 import { TERM, DEFAULT_VAT } from '../utils/region';
+import { _t, _tc } from '../i18n';
 function fmtDate(d) {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('el-GR');
@@ -33,10 +34,10 @@ function fmtBytes(b) {
 }
 function statusBadge(status) {
   const map = {
-    active:    { color: '#38a169', bg: '#c6f6d5', label: 'Ενεργή' },
-    trial:     { color: '#3182ce', bg: '#bee3f8', label: 'Δοκιμαστική' },
-    expired:   { color: '#e53e3e', bg: '#fed7d7', label: 'Ληγμένη' },
-    cancelled: { color: '#718096', bg: '#e2e8f0', label: 'Ακυρωμένη' },
+    active:    { color: '#38a169', bg: '#c6f6d5', label: _t("Ενεργή") },
+    trial:     { color: '#3182ce', bg: '#bee3f8', label: _t("Δοκιμαστική") },
+    expired:   { color: '#e53e3e', bg: '#fed7d7', label: _t("Ληγμένη") },
+    cancelled: { color: '#718096', bg: '#e2e8f0', label: _t("Ακυρωμένη") },
   };
   const s = map[status] || { color: '#718096', bg: '#e2e8f0', label: status };
   return <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600, color: s.color, background: s.bg }}>{s.label}</span>;
@@ -50,20 +51,20 @@ function DashboardTab() {
     platform.stats().then(d => setStats(d.data || d)).catch(e => setErr(e.message));
   }, []);
   if (err) return <div className="error">{err}</div>;
-  if (!stats) return <div className="empty-state">Φόρτωση...</div>;
+  if (!stats) return <div className="empty-state">{_t("Φόρτωση...")}</div>;
 
   const cards = [
-    { label: 'Σύνολο οργανισμών', value: stats.organizations?.total, color: '#3182ce' },
-    { label: 'Ενεργές συνδρομές',  value: stats.organizations?.active, color: '#38a169' },
+    { label: _t("Σύνολο οργανισμών"), value: stats.organizations?.total, color: '#3182ce' },
+    { label: _t("Ενεργές συνδρομές"),  value: stats.organizations?.active, color: '#38a169' },
     { label: 'Trial',              value: stats.organizations?.trial, color: '#d69e2e' },
-    { label: 'Ληγμένες',           value: stats.organizations?.expired, color: '#e53e3e' },
-    { label: 'Νέες (30 ημερών)',   value: stats.organizations?.new_last_30d, color: '#805ad5' },
-    { label: 'Ενεργοί χρήστες',    value: stats.users, color: '#3182ce' },
-    { label: 'MRR (μηνιαία)',      value: fmtCurrency(stats.mrr), color: '#38a169' },
-    { label: 'Έσοδα 30 ημερών',    value: fmtCurrency(stats.subscriptions?.revenue_last_30d), color: '#38a169' },
-    { label: 'Έσοδα σύνολο',       value: fmtCurrency(stats.subscriptions?.revenue_total), color: '#2d3748' },
-    { label: 'Ενεργοί partners',   value: stats.partners_active, color: '#805ad5' },
-    { label: 'Commissions που οφείλονται', value: fmtCurrency(stats.subscriptions?.commissions_owed), color: '#e53e3e' },
+    { label: _t("Ληγμένες"),           value: stats.organizations?.expired, color: '#e53e3e' },
+    { label: _t("Νέες (30 ημερών)"),   value: stats.organizations?.new_last_30d, color: '#805ad5' },
+    { label: _t("Ενεργοί χρήστες"),    value: stats.users, color: '#3182ce' },
+    { label: _t("MRR (μηνιαία)"),      value: fmtCurrency(stats.mrr), color: '#38a169' },
+    { label: _t("Έσοδα 30 ημερών"),    value: fmtCurrency(stats.subscriptions?.revenue_last_30d), color: '#38a169' },
+    { label: _t("Έσοδα σύνολο"),       value: fmtCurrency(stats.subscriptions?.revenue_total), color: '#2d3748' },
+    { label: _t("Ενεργοί partners"),   value: stats.partners_active, color: '#805ad5' },
+    { label: _t("Commissions που οφείλονται"), value: fmtCurrency(stats.subscriptions?.commissions_owed), color: '#e53e3e' },
     { label: 'Suspended',          value: stats.organizations?.suspended, color: '#e53e3e' },
   ];
 
@@ -103,20 +104,20 @@ function OrganizationsTab() {
   return (
     <div>
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-        <button className="btn btn-success" onClick={() => setCreateOpen(true)}>+ Νέα Εταιρεία</button>
+        <button className="btn btn-success" onClick={() => setCreateOpen(true)}>{_t("+ Νέα Εταιρεία")}</button>
       </div>
 
       <div className="filter-bar" style={{ marginBottom: 16 }}>
-        <input type="text" placeholder="Αναζήτηση (όνομα, slug, email)" value={filters.q} onChange={e => setFilters(f => ({ ...f, q: e.target.value }))} style={{ minWidth: 300 }} />
+        <input type="text" placeholder={_t("Αναζήτηση (όνομα, slug, email)")} value={filters.q} onChange={e => setFilters(f => ({ ...f, q: e.target.value }))} style={{ minWidth: 300 }} />
         <select value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
-          <option value="">— κατάσταση —</option>
-          <option value="active">Ενεργή</option>
+          <option value="">{_t("— κατάσταση —")}</option>
+          <option value="active">{_t("Ενεργή")}</option>
           <option value="trial">Trial</option>
-          <option value="expired">Ληγμένη</option>
-          <option value="cancelled">Ακυρωμένη</option>
+          <option value="expired">{_t("Ληγμένη")}</option>
+          <option value="cancelled">{_t("Ακυρωμένη")}</option>
         </select>
         <select value={filters.plan_type} onChange={e => setFilters(f => ({ ...f, plan_type: e.target.value }))}>
-          <option value="">— τύπος —</option>
+          <option value="">{_t("— τύπος —")}</option>
           <option value="solo">Solo</option>
           <option value="partnership_shared">Partnership Shared</option>
           <option value="partnership_private">Partnership Private</option>
@@ -125,19 +126,19 @@ function OrganizationsTab() {
       </div>
 
       {err && <div className="error">{err}</div>}
-      {loading ? <div className="empty-state">Φόρτωση...</div> : (
+      {loading ? <div className="empty-state">{_t("Φόρτωση...")}</div> : (
         <table className="table">
           <thead><tr>
-            <th>Όνομα</th>
-            <th>Τύπος</th>
-            <th>Κατάσταση</th>
-            <th>Χρήστες</th>
-            <th>Υποθέσεις</th>
+            <th>{_t("Όνομα")}</th>
+            <th>{_t("Τύπος")}</th>
+            <th>{_t("Κατάσταση")}</th>
+            <th>{_t("Χρήστες")}</th>
+            <th>{_t("Υποθέσεις")}</th>
             <th>Storage</th>
-            <th>Trial λήγει</th>
-            <th>Συνδρομή λήγει</th>
+            <th>{_t("Trial λήγει")}</th>
+            <th>{_t("Συνδρομή λήγει")}</th>
             <th>Partner</th>
-            <th>Έσοδα</th>
+            <th>{_t("Έσοδα")}</th>
             <th></th>
           </tr></thead>
           <tbody>
@@ -153,7 +154,7 @@ function OrganizationsTab() {
                 <td style={{ fontSize: 12 }}>{fmtDate(r.subscription_ends_at)}</td>
                 <td style={{ fontSize: 12 }}>{r.partner_name || '—'}</td>
                 <td style={{ textAlign: 'right' }}>{fmtCurrency(r.revenue_ytd)}</td>
-                <td><button className="btn btn-sm btn-secondary" onClick={() => setSelectedOrg(r.id)}>Λεπτ.</button></td>
+                <td><button className="btn btn-sm btn-secondary" onClick={() => setSelectedOrg(r.id)}>{_t("Λεπτ.")}</button></td>
               </tr>
             ))}
           </tbody>
@@ -191,37 +192,37 @@ function CreateOrgModal({ onClose, onCreated }) {
   };
 
   return (
-    <Modal title="Νέα Εταιρεία" onClose={onClose} size="xl" actions={<>
-      <button className="btn btn-secondary" onClick={onClose}>Άκυρο</button>
+    <Modal title={_t("Νέα Εταιρεία")} onClose={onClose} size="xl" actions={<>
+      <button className="btn btn-secondary" onClick={onClose}>{_t("Άκυρο")}</button>
       <button className="btn btn-success" onClick={submit} disabled={busy}>
-        {busy ? 'Δημιουργία...' : 'Δημιουργία'}
+        {busy ? _t("Δημιουργία...") : _t("Δημιουργία")}
       </button>
     </>}>
       {err && <div className="error">{err}</div>}
-      <h3>Στοιχεία εταιρείας</h3>
+      <h3>{_t("Στοιχεία εταιρείας")}</h3>
       <div className="form-grid-2">
-        <div className="form-group"><label>Επωνυμία*</label><input value={form.name} onChange={e => upd('name', e.target.value)} /></div>
+        <div className="form-group"><label>{_t("Επωνυμία*")}</label><input value={form.name} onChange={e => upd('name', e.target.value)} /></div>
         <div className="form-group"><label>Slug*</label><input value={form.slug} onChange={e => upd('slug', e.target.value)} placeholder="onoma-etaireias" /></div>
-        <div className="form-group"><label>Πλάνο</label>
+        <div className="form-group"><label>{_t("Πλάνο")}</label>
           <select value={form.plan_type} onChange={e => upd('plan_type', e.target.value)}>
             <option value="solo">Solo</option>
             <option value="pro">Pro</option>
             <option value="enterprise">Enterprise</option>
           </select>
         </div>
-        <div className="form-group"><label>Έναρξη συνδρομής</label><DateInput value={form.subscription_start} onChange={e => upd('subscription_start', e.target.value)} /></div>
-        <div className="form-group"><label>Διάρκεια (έτη)</label><input type="number" min="1" max="10" value={form.subscription_years} onChange={e => upd('subscription_years', parseInt(e.target.value))} /></div>
-        <div className="form-group"><label>Max χρήστες</label><input type="number" value={form.max_users} onChange={e => upd('max_users', parseInt(e.target.value))} /></div>
-        <div className="form-group"><label>Email τιμολόγησης</label><input type="email" value={form.billing_email} onChange={e => upd('billing_email', e.target.value)} /></div>
+        <div className="form-group"><label>{_t("Έναρξη συνδρομής")}</label><DateInput value={form.subscription_start} onChange={e => upd('subscription_start', e.target.value)} /></div>
+        <div className="form-group"><label>{_t("Διάρκεια (έτη)")}</label><input type="number" min="1" max="10" value={form.subscription_years} onChange={e => upd('subscription_years', parseInt(e.target.value))} /></div>
+        <div className="form-group"><label>{_t("Max χρήστες")}</label><input type="number" value={form.max_users} onChange={e => upd('max_users', parseInt(e.target.value))} /></div>
+        <div className="form-group"><label>{_t("Email τιμολόγησης")}</label><input type="email" value={form.billing_email} onChange={e => upd('billing_email', e.target.value)} /></div>
         <div className="form-group"><label>{TERM.afm}</label><input value={form.billing_afm} onChange={e => upd('billing_afm', e.target.value)} /></div>
-        <div className="form-group"><label>Τηλέφωνο</label><input value={form.billing_phone} onChange={e => upd('billing_phone', e.target.value)} /></div>
+        <div className="form-group"><label>{_t("Τηλέφωνο")}</label><input value={form.billing_phone} onChange={e => upd('billing_phone', e.target.value)} /></div>
       </div>
-      <div className="form-group"><label>Σημειώσεις</label><textarea rows="2" value={form.notes} onChange={e => upd('notes', e.target.value)} /></div>
+      <div className="form-group"><label>{_t("Σημειώσεις")}</label><textarea rows="2" value={form.notes} onChange={e => upd('notes', e.target.value)} /></div>
 
-      <h3 style={{ marginTop: 20 }}>Πρώτος χρήστης (Admin)</h3>
+      <h3 style={{ marginTop: 20 }}>{_t("Πρώτος χρήστης (Admin)")}</h3>
       <div className="form-grid-2">
-        <div className="form-group"><label>Όνομα</label><input value={form.admin_first_name} onChange={e => upd('admin_first_name', e.target.value)} /></div>
-        <div className="form-group"><label>Επώνυμο</label><input value={form.admin_last_name} onChange={e => upd('admin_last_name', e.target.value)} /></div>
+        <div className="form-group"><label>{_t("Όνομα")}</label><input value={form.admin_first_name} onChange={e => upd('admin_first_name', e.target.value)} /></div>
+        <div className="form-group"><label>{_t("Επώνυμο")}</label><input value={form.admin_last_name} onChange={e => upd('admin_last_name', e.target.value)} /></div>
         <div className="form-group"><label>Email admin*</label><input type="email" value={form.admin_email} onChange={e => upd('admin_email', e.target.value)} /></div>
         <div className="form-group"><label>Password admin* (min 8)</label><input type="text" value={form.admin_password} onChange={e => upd('admin_password', e.target.value)} /></div>
       </div>
@@ -265,11 +266,11 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
 
   const extendTrial = async () => {
     const days = await askText({
-      title: 'Επέκταση trial',
-      label: 'Πόσες ημέρες;',
+      title: _t("Επέκταση trial"),
+      label: _t("Πόσες ημέρες;"),
       defaultValue: '30',
       type: 'number',
-      confirmLabel: 'Επέκταση',
+      confirmLabel: _t("Επέκταση"),
     });
     if (!days) return;
     try {
@@ -284,11 +285,11 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
         await platform.unsuspend(orgId);
       } else {
         const reason = await askText({
-          title: 'Αναστολή λειτουργίας',
-          message: `Η εταιρεία ${data.organization.name} δεν θα μπορεί να χρησιμοποιεί την εφαρμογή.`,
-          label: 'Λόγος',
-          defaultValue: 'Καθυστέρηση πληρωμής',
-          confirmLabel: 'Αναστολή',
+          title: _t("Αναστολή λειτουργίας"),
+          message: _t("Η εταιρεία {0} δεν θα μπορεί να χρησιμοποιεί την εφαρμογή.", [data.organization.name]),
+          label: _t("Λόγος"),
+          defaultValue: _t("Καθυστέρηση πληρωμής"),
+          confirmLabel: _t("Αναστολή"),
           danger: true,
         });
         if (reason == null) return;
@@ -299,7 +300,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
   };
 
   const extendOneYear = async () => {
-    if (!await ask({ title: 'Παράταση συνδρομής', message: 'Παράταση της συνδρομής κατά 1 έτος;', confirmLabel: 'Παράταση', danger: false })) return;
+    if (!await ask({ title: _t("Παράταση συνδρομής"), message: _t("Παράταση της συνδρομής κατά 1 έτος;"), confirmLabel: _t("Παράταση"), danger: false })) return;
     try {
       await platform.extendYears(orgId, 1);
       load(); onReload && onReload();
@@ -308,12 +309,12 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
 
   const deleteOrg = async () => {
     const c = await askText({
-      title: 'Οριστική διαγραφή εταιρείας',
-      message: `Διαγράφεται η «${data.organization.name}» με όλα τα δεδομένα της.\n\nΗ ενέργεια ΔΕΝ αναιρείται.`,
-      label: `Πληκτρολόγησε DELETE-${orgId} για επιβεβαίωση`,
+      title: _t("Οριστική διαγραφή εταιρείας"),
+      message: _t("Διαγράφεται η «{0}» με όλα τα δεδομένα της.\n\nΗ ενέργεια ΔΕΝ αναιρείται.", [data.organization.name]),
+      label: _t("Πληκτρολόγησε DELETE-{0} για επιβεβαίωση", [orgId]),
       placeholder: `DELETE-${orgId}`,
       mustMatch: `DELETE-${orgId}`,
-      confirmLabel: 'Οριστική διαγραφή',
+      confirmLabel: _t("Οριστική διαγραφή"),
       danger: true,
     });
     if (c !== `DELETE-${orgId}`) return;
@@ -327,7 +328,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
   const [showAddUser, setShowAddUser] = useState(false);
 
   const deleteUser = async (userId, email) => {
-    if (!await ask({ title: 'Διαγραφή χρήστη', message: `Διαγραφή του χρήστη ${email}; Η ενέργεια δεν αναιρείται.`, confirmLabel: 'Διαγραφή' })) return;
+    if (!await ask({ title: _t("Διαγραφή χρήστη"), message: _t("Διαγραφή του χρήστη {0}; Η ενέργεια δεν αναιρείται.", [email]), confirmLabel: _t("Διαγραφή") })) return;
     try {
       await platform.deleteUser(userId);
       load();
@@ -343,42 +344,42 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
 
   const resetUserPassword = async (u) => {
     const pwd = await askText({
-      title: 'Νέο password',
-      message: `Ορίζεται νέο password για τον χρήστη ${u.email}.`,
-      label: 'Password (τουλάχιστον 8 χαρακτήρες)',
+      title: _t("Νέο password"),
+      message: _t("Ορίζεται νέο password για τον χρήστη {0}.", [u.email]),
+      label: _t("Password (τουλάχιστον 8 χαρακτήρες)"),
       type: 'password',
       minLength: 8,
-      confirmLabel: 'Αλλαγή',
+      confirmLabel: _t("Αλλαγή"),
     });
     if (!pwd || pwd.length < 8) return;
     try {
       await platform.updateUser(u.id, { password: pwd });
       await ask({
-        title: 'Έγινε',
-        message: 'Το password άλλαξε.',
+        title: _t("Έγινε"),
+        message: _t("Το password άλλαξε."),
         hideConfirm: true,
-        cancelLabel: 'Κλείσιμο',
+        cancelLabel: _t("Κλείσιμο"),
       });
     } catch (e) { setErr(e.message); }
   };
 
-  if (!data) return <Modal title="Φόρτωση..." onClose={onClose}><div>Φόρτωση</div></Modal>;
+  if (!data) return <Modal title={_t("Φόρτωση...")} onClose={onClose}><div>{_t("Φόρτωση")}</div></Modal>;
   const o = data.organization;
 
   return (
     <Modal title={o.name} onClose={onClose} size="xl" actions={<>
-      <button className="btn btn-secondary" onClick={onClose}>Κλείσιμο</button>
-      {!editing && <button className="btn btn-sm" onClick={extendTrial}>+ Trial ημέρες</button>}
-      {!editing && <button className="btn btn-sm btn-info" onClick={extendOneYear}>+ 1 έτος</button>}
-      {!editing && <button className={`btn btn-sm ${o.suspended ? '' : 'btn-danger'}`} onClick={toggleSuspend}>{o.suspended ? 'Επανενεργοποίηση' : 'Suspend'}</button>}
-      {!editing && <button className="btn btn-sm btn-danger" onClick={deleteOrg}>🗑 Διαγραφή</button>}
-      {editing ? <button className="btn" onClick={save}>Αποθήκευση</button> : <button className="btn" onClick={() => setEditing(true)}>Επεξεργασία</button>}
+      <button className="btn btn-secondary" onClick={onClose}>{_t("Κλείσιμο")}</button>
+      {!editing && <button className="btn btn-sm" onClick={extendTrial}>{_t("+ Trial ημέρες")}</button>}
+      {!editing && <button className="btn btn-sm btn-info" onClick={extendOneYear}>{_t("+ 1 έτος")}</button>}
+      {!editing && <button className={`btn btn-sm ${o.suspended ? '' : 'btn-danger'}`} onClick={toggleSuspend}>{o.suspended ? _t("Επανενεργοποίηση") : 'Suspend'}</button>}
+      {!editing && <button className="btn btn-sm btn-danger" onClick={deleteOrg}>{_t("🗑 Διαγραφή")}</button>}
+      {editing ? <button className="btn" onClick={save}>{_t("Αποθήκευση")}</button> : <button className="btn" onClick={() => setEditing(true)}>{_t("Επεξεργασία")}</button>}
     </>}>
       {err && <div className="error">{err}</div>}
 
       <div className="form-grid-2" style={{ marginBottom: 20 }}>
         <div><strong>Slug:</strong> {o.slug}</div>
-        <div><strong>Δημιουργήθηκε:</strong> {fmtDate(o.created_at)}</div>
+        <div><strong>{_t("Δημιουργήθηκε:")}</strong> {fmtDate(o.created_at)}</div>
         <div><strong>Billing email:</strong> {o.billing_email || '—'}</div>
         <div><strong>Billing AFM:</strong> {o.billing_afm || '—'}</div>
         <div><strong>Partner:</strong> {o.partner_name ? `${o.partner_name} (${o.partner_commission_rate}%)` : '—'}</div>
@@ -387,9 +388,9 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
 
       {editing && (
         <div className="section" style={{ marginBottom: 20 }}>
-          <h3>Επεξεργασία</h3>
+          <h3>{_t("Επεξεργασία")}</h3>
           <div className="form-grid-2">
-            <div className="form-group"><label>Όνομα</label><input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+            <div className="form-group"><label>{_t("Όνομα")}</label><input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
             <div className="form-group"><label>Plan type</label>
               <select value={form.plan_type} onChange={e => setForm(f => ({ ...f, plan_type: e.target.value }))}>
                 <option value="solo">Solo</option>
@@ -398,7 +399,7 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
                 <option value="law_firm">Law Firm</option>
               </select>
             </div>
-            <div className="form-group"><label>Κατάσταση</label>
+            <div className="form-group"><label>{_t("Κατάσταση")}</label>
               <select value={form.subscription_status} onChange={e => setForm(f => ({ ...f, subscription_status: e.target.value }))}>
                 <option value="trial">Trial</option>
                 <option value="active">Active</option>
@@ -406,21 +407,21 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
                 <option value="cancelled">Cancelled</option>
               </select>
             </div>
-            <div className="form-group"><label>Max χρήστες</label><input type="number" value={form.max_users} onChange={e => setForm(f => ({ ...f, max_users: parseInt(e.target.value) }))} /></div>
+            <div className="form-group"><label>{_t("Max χρήστες")}</label><input type="number" value={form.max_users} onChange={e => setForm(f => ({ ...f, max_users: parseInt(e.target.value) }))} /></div>
             <div className="form-group"><label>Storage quota (MB)</label><input type="number" value={form.storage_quota_mb} onChange={e => setForm(f => ({ ...f, storage_quota_mb: parseInt(e.target.value) }))} /></div>
             <div className="form-group"><label>Trial ends</label><DateInput value={form.trial_ends_at} onChange={e => setForm(f => ({ ...f, trial_ends_at: e.target.value }))} /></div>
             <div className="form-group"><label>Subscription ends</label><DateInput value={form.subscription_ends_at} onChange={e => setForm(f => ({ ...f, subscription_ends_at: e.target.value }))} /></div>
           </div>
-          <div className="form-group"><label>Σημειώσεις</label><textarea rows="2" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
+          <div className="form-group"><label>{_t("Σημειώσεις")}</label><textarea rows="2" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
         </div>
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <h3 style={{ margin: 0 }}>Χρήστες ({data.users.length})</h3>
-        <button className="btn btn-sm btn-success" onClick={() => setShowAddUser(true)}>+ Νέος χρήστης</button>
+        <h3 style={{ margin: 0 }}>{_t("Χρήστες (")}{data.users.length})</h3>
+        <button className="btn btn-sm btn-success" onClick={() => setShowAddUser(true)}>{_t("+ Νέος χρήστης")}</button>
       </div>
       <table className="table" style={{ marginBottom: 20 }}>
-        <thead><tr><th>Email</th><th>Όνομα</th><th>Ρόλος</th><th>Ενεργός</th><th>Ενέργειες</th></tr></thead>
+        <thead><tr><th>Email</th><th>{_t("Όνομα")}</th><th>{_t("Ρόλος")}</th><th>{_t("Ενεργός")}</th><th>{_t("Ενέργειες")}</th></tr></thead>
         <tbody>{data.users.map(u => (
           <tr key={u.id}>
             <td>{u.email}</td>
@@ -430,22 +431,22 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
             <td style={{ fontSize: 12 }}>
               <button className="btn btn-sm" onClick={() => resetUserPassword(u)}>Reset PW</button>
               {' '}
-              <button className="btn btn-sm btn-danger" onClick={() => deleteUser(u.id, u.email)}>Διαγραφή</button>
+              <button className="btn btn-sm btn-danger" onClick={() => deleteUser(u.id, u.email)}>{_t("Διαγραφή")}</button>
             </td>
           </tr>
         ))}</tbody>
       </table>
       {showAddUser && <AddUserModal orgId={orgId} onClose={() => setShowAddUser(false)} onAdded={load} />}
 
-      <h3>Συνδρομές ({data.subscriptions.length})</h3>
+      <h3>{_t("Συνδρομές (")}{data.subscriptions.length})</h3>
       <table className="table" style={{ marginBottom: 20 }}>
-        <thead><tr><th>Plan</th><th>Ποσό</th><th>Περίοδος</th><th>Κατάσταση</th><th>Viva Order</th></tr></thead>
+        <thead><tr><th>Plan</th><th>{_t("Ποσό")}</th><th>{_t("Περίοδος")}</th><th>{_t("Κατάσταση")}</th><th>Viva Order</th></tr></thead>
         <tbody>{data.subscriptions.map(s => <tr key={s.aa}><td>{s.plan_code}</td><td>{fmtCurrency(s.amount_gross)}</td><td>{fmtDate(s.period_start)} – {fmtDate(s.period_end)}</td><td>{statusBadge(s.status)}</td><td style={{ fontSize: 12 }}>{s.viva_order_code || '—'}</td></tr>)}</tbody>
       </table>
 
       <h3>Activity log ({data.activity_log.length})</h3>
       <div style={{ maxHeight: 200, overflow: 'auto', background: '#f7fafc', padding: 8, borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }}>
-        {data.activity_log.map(a => <div key={a.aa}>{fmtDateTime(a.created_at)} — <strong>{a.action}</strong> από {a.admin_email}</div>)}
+        {data.activity_log.map(a => <div key={a.aa}>{fmtDateTime(a.created_at)} — <strong>{a.action}</strong> {_t("από")} {a.admin_email}</div>)}
       </div>
       {confirmNode}
       {promptNode}
@@ -467,24 +468,24 @@ function AddUserModal({ orgId, onClose, onAdded }) {
     finally { setBusy(false); }
   };
   return (
-    <Modal title="Νέος χρήστης" onClose={onClose} actions={<>
-      <button className="btn btn-secondary" onClick={onClose}>Άκυρο</button>
-      <button className="btn btn-success" onClick={submit} disabled={busy}>{busy ? 'Προσθήκη...' : 'Προσθήκη'}</button>
+    <Modal title={_t("Νέος χρήστης")} onClose={onClose} actions={<>
+      <button className="btn btn-secondary" onClick={onClose}>{_t("Άκυρο")}</button>
+      <button className="btn btn-success" onClick={submit} disabled={busy}>{busy ? _t("Προσθήκη...") : _t("Προσθήκη")}</button>
     </>}>
       {err && <div className="error">{err}</div>}
       <div className="form-grid-2">
         <div className="form-group"><label>Email*</label><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} /></div>
         <div className="form-group"><label>Password* (min 8)</label><input type="text" value={f.password} onChange={e => setF({ ...f, password: e.target.value })} /></div>
-        <div className="form-group"><label>Όνομα</label><input value={f.first_name} onChange={e => setF({ ...f, first_name: e.target.value })} /></div>
-        <div className="form-group"><label>Επώνυμο</label><input value={f.last_name} onChange={e => setF({ ...f, last_name: e.target.value })} /></div>
-        <div className="form-group"><label>Ρόλος</label>
+        <div className="form-group"><label>{_t("Όνομα")}</label><input value={f.first_name} onChange={e => setF({ ...f, first_name: e.target.value })} /></div>
+        <div className="form-group"><label>{_t("Επώνυμο")}</label><input value={f.last_name} onChange={e => setF({ ...f, last_name: e.target.value })} /></div>
+        <div className="form-group"><label>{_t("Ρόλος")}</label>
           <select value={f.role} onChange={e => setF({ ...f, role: e.target.value })}>
             <option value="admin">Admin</option>
-            <option value="lawyer">Δικηγόρος</option>
-            <option value="secretary">Γραμματεία</option>
+            <option value="lawyer">{_t("Δικηγόρος")}</option>
+            <option value="secretary">{_t("Γραμματεία")}</option>
           </select>
         </div>
-        <div className="form-group"><label><input type="checkbox" checked={f.is_active} onChange={e => setF({ ...f, is_active: e.target.checked })} /> Ενεργός</label></div>
+        <div className="form-group"><label><input type="checkbox" checked={f.is_active} onChange={e => setF({ ...f, is_active: e.target.checked })} /> {_t("Ενεργός")}</label></div>
       </div>
     </Modal>
   );
@@ -507,12 +508,12 @@ function PartnersTab() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <h2>Partners ({rows.length})</h2>
-        <button className="btn" onClick={() => setShowNew(true)}>+ Νέος partner</button>
+        <button className="btn" onClick={() => setShowNew(true)}>{_t("+ Νέος partner")}</button>
       </div>
       {err && <div className="error">{err}</div>}
-      {loading ? <div className="empty-state">Φόρτωση...</div> : (
+      {loading ? <div className="empty-state">{_t("Φόρτωση...")}</div> : (
         <table className="table">
-          <thead><tr><th>Code</th><th>Όνομα</th><th>Email</th><th>Commission %</th><th>Οργανισμοί</th><th>Σύνολο commission</th><th>Οφείλεται</th><th>Ενεργός</th></tr></thead>
+          <thead><tr><th>Code</th><th>{_t("Όνομα")}</th><th>Email</th><th>Commission %</th><th>{_t("Οργανισμοί")}</th><th>{_t("Σύνολο commission")}</th><th>{_t("Οφείλεται")}</th><th>{_t("Ενεργός")}</th></tr></thead>
           <tbody>
             {rows.map(r => (
               <tr key={r.aa}>
@@ -546,21 +547,21 @@ function NewPartnerModal({ onClose, onCreated }) {
   };
   const c = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
   return (
-    <Modal title="Νέος partner" onClose={onClose} actions={<>
-      <button className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-      <button className="btn" onClick={save} disabled={saving}>{saving ? 'Δημιουργία...' : 'Δημιουργία'}</button>
+    <Modal title={_t("Νέος partner")} onClose={onClose} actions={<>
+      <button className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+      <button className="btn" onClick={save} disabled={saving}>{saving ? _t("Δημιουργία...") : _t("Δημιουργία")}</button>
     </>}>
       {err && <div className="error">{err}</div>}
       <div className="form-grid-2">
-        <div className="form-group"><label>Code *</label><input value={form.code} onChange={c('code')} placeholder="π.χ. PART001" /></div>
-        <div className="form-group"><label>Ονοματεπώνυμο *</label><input value={form.full_name} onChange={c('full_name')} /></div>
+        <div className="form-group"><label>Code *</label><input value={form.code} onChange={c('code')} placeholder={_t("π.χ. PART001")} /></div>
+        <div className="form-group"><label>{_t("Ονοματεπώνυμο *")}</label><input value={form.full_name} onChange={c('full_name')} /></div>
         <div className="form-group"><label>Email</label><input type="email" value={form.email} onChange={c('email')} /></div>
-        <div className="form-group"><label>Τηλέφωνο</label><input value={form.phone} onChange={c('phone')} /></div>
+        <div className="form-group"><label>{_t("Τηλέφωνο")}</label><input value={form.phone} onChange={c('phone')} /></div>
         <div className="form-group"><label>{TERM.afm}</label><input value={form.afm} onChange={c('afm')} /></div>
         <div className="form-group"><label>Commission %</label><input type="number" step="0.5" value={form.commission_rate} onChange={c('commission_rate')} /></div>
-        <div className="form-group" style={{ gridColumn: 'span 2' }}><label>IBAN (για πληρωμή commission)</label><input value={form.iban} onChange={c('iban')} /></div>
+        <div className="form-group" style={{ gridColumn: 'span 2' }}><label>{_t("IBAN (για πληρωμή commission)")}</label><input value={form.iban} onChange={c('iban')} /></div>
       </div>
-      <div className="form-group"><label>Σημειώσεις</label><textarea rows="2" value={form.notes} onChange={c('notes')} /></div>
+      <div className="form-group"><label>{_t("Σημειώσεις")}</label><textarea rows="2" value={form.notes} onChange={c('notes')} /></div>
     </Modal>
   );
 }
@@ -579,18 +580,18 @@ function SubscriptionsTab() {
   useEffect(load, []);
 
   const markPaid = async (id) => {
-    if (!await ask({ title: 'Καταβολή commission', message: 'Επιβεβαιώνεις ότι το commission καταβλήθηκε στον partner;', confirmLabel: 'Ναι, καταβλήθηκε', danger: false })) return;
+    if (!await ask({ title: _t("Καταβολή commission"), message: _t("Επιβεβαιώνεις ότι το commission καταβλήθηκε στον partner;"), confirmLabel: _t("Ναι, καταβλήθηκε"), danger: false })) return;
     try { await platform.markCommissionPaid(id); load(); }
     catch (e) { setErr(e.message); }
   };
 
   return (
     <div>
-      <h2>Συνδρομές ({rows.length})</h2>
+      <h2>{_t("Συνδρομές (")}{rows.length})</h2>
       {err && <div className="error">{err}</div>}
-      {loading ? <div className="empty-state">Φόρτωση...</div> : (
+      {loading ? <div className="empty-state">{_t("Φόρτωση...")}</div> : (
         <table className="table">
-          <thead><tr><th>Οργανισμός</th><th>Plan</th><th>Ποσό</th><th>Περίοδος</th><th>Κατάσταση</th><th>Partner</th><th>Commission</th><th>Πληρώθηκε;</th><th></th></tr></thead>
+          <thead><tr><th>{_t("Οργανισμός")}</th><th>Plan</th><th>{_t("Ποσό")}</th><th>{_t("Περίοδος")}</th><th>{_t("Κατάσταση")}</th><th>Partner</th><th>Commission</th><th>{_t("Πληρώθηκε;")}</th><th></th></tr></thead>
           <tbody>
             {rows.map(s => (
               <tr key={s.aa}>
@@ -602,7 +603,7 @@ function SubscriptionsTab() {
                 <td>{s.partner_name || '—'}</td>
                 <td>{fmtCurrency(s.commission_amount)}</td>
                 <td>{s.commission_paid ? '✓ ' + fmtDate(s.commission_paid_at) : (s.partner_id ? '✗' : '—')}</td>
-                <td>{s.partner_id && !s.commission_paid && <button className="btn btn-sm" onClick={() => markPaid(s.aa)}>✓ Πληρώθηκε</button>}</td>
+                <td>{s.partner_id && !s.commission_paid && <button className="btn btn-sm" onClick={() => markPaid(s.aa)}>{_t("✓ Πληρώθηκε")}</button>}</td>
               </tr>
             ))}
           </tbody>
@@ -651,8 +652,8 @@ function PlanModal({ plan, onClose, onSaved }) {
 
   const save = async () => {
     setErr('');
-    if (!(perUser > 0)) { setErr('Η τιμή ανά χρήστη πρέπει να είναι μεγαλύτερη από μηδέν, αλλιώς η αγορά αποτυγχάνει.'); return; }
-    if (maxU < minU)    { setErr('Ο μέγιστος αριθμός χρηστών δεν μπορεί να είναι μικρότερος από τον ελάχιστο.'); return; }
+    if (!(perUser > 0)) { setErr(_t("Η τιμή ανά χρήστη πρέπει να είναι μεγαλύτερη από μηδέν, αλλιώς η αγορά αποτυγχάνει.")); return; }
+    if (maxU < minU)    { setErr(_t("Ο μέγιστος αριθμός χρηστών δεν μπορεί να είναι μικρότερος από τον ελάχιστο.")); return; }
     setSaving(true);
     try {
       await platform.updatePlan(plan.aa, {
@@ -674,13 +675,13 @@ function PlanModal({ plan, onClose, onSaved }) {
 
   return (
     <Modal
-      title={`Πλάνο — ${plan.code}`}
+      title={_t("Πλάνο — {0}", [plan.code])}
       onClose={onClose}
       actions={
         <>
-          <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
+          <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
           <button type="button" className="btn" onClick={save} disabled={saving}>
-            {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
+            {saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}
           </button>
         </>
       }
@@ -688,24 +689,24 @@ function PlanModal({ plan, onClose, onSaved }) {
       {err && <div className="error">{err}</div>}
 
       <div className="form-group">
-        <label>Ονομασία</label>
+        <label>{_t("Ονομασία")}</label>
         <input value={form.name} onChange={e => set('name', e.target.value)} />
       </div>
 
       <div className="form-grid-3">
         <div className="form-group">
-          <label>Τιμή ανά χρήστη / έτος (χωρίς ΦΠΑ)</label>
+          <label>{_t("Τιμή ανά χρήστη / έτος (χωρίς ΦΠΑ)")}</label>
           <input type="number" min="0" step="0.01"
                  value={form.price_per_user_year}
                  onChange={e => set('price_per_user_year', e.target.value)} />
         </div>
         <div className="form-group">
-          <label>ΦΠΑ %</label>
+          <label>{_t("ΦΠΑ %")}</label>
           <input type="number" min="0" max="100" step="0.5"
                  value={form.vat_rate} onChange={e => set('vat_rate', e.target.value)} />
         </div>
         <div className="form-group">
-          <label>Αποθηκευτικός χώρος (MB)</label>
+          <label>{_t("Αποθηκευτικός χώρος (MB)")}</label>
           <input type="number" min="0" step="512"
                  value={form.storage_quota_mb} onChange={e => set('storage_quota_mb', e.target.value)} />
         </div>
@@ -713,39 +714,39 @@ function PlanModal({ plan, onClose, onSaved }) {
 
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Ελάχιστοι χρήστες</label>
+          <label>{_t("Ελάχιστοι χρήστες")}</label>
           <input type="number" min="1" value={form.min_users}
                  onChange={e => set('min_users', e.target.value)} />
         </div>
         <div className="form-group">
-          <label>Μέγιστοι χρήστες</label>
+          <label>{_t("Μέγιστοι χρήστες")}</label>
           <input type="number" min="1" value={form.max_users_allowed}
                  onChange={e => set('max_users_allowed', e.target.value)} />
         </div>
       </div>
 
       <div className="form-group">
-        <label>Περιγραφή</label>
+        <label>{_t("Περιγραφή")}</label>
         <input value={form.description} onChange={e => set('description', e.target.value)} />
       </div>
 
       <label className="filter-check" style={{ marginBottom: 12 }}>
         <input type="checkbox" checked={!!form.active}
                onChange={e => set('active', e.target.checked)} />
-        Ενεργό — εμφανίζεται στη σελίδα συνδρομής
+        {_t("Ενεργό — εμφανίζεται στη σελίδα συνδρομής")}
       </label>
 
       <div style={{
         background: '#EBF8FF', border: '1px solid #BEE3F8', borderRadius: 6,
         padding: 12, fontSize: 13, color: '#2A4365',
       }}>
-        <strong>Τι θα χρεωθεί ο πελάτης</strong>
+        <strong>{_t("Τι θα χρεωθεί ο πελάτης")}</strong>
         <div style={{ marginTop: 6 }}>
-          {minU} {minU === 1 ? 'χρήστης' : 'χρήστες'}: {money(netMin)} + ΦΠΑ {vat}% = <strong>{money(grossMin)}</strong>
+          {minU} {minU === 1 ? _t("χρήστης") : _t("χρήστες")}: {money(netMin)} {_t("+ ΦΠΑ")} {vat}% = <strong>{money(grossMin)}</strong>
         </div>
         {maxU !== minU && (
           <div>
-            {maxU} χρήστες: {money(netMax)} + ΦΠΑ {vat}% = <strong>{money(grossMax)}</strong>
+            {maxU} {_t("χρήστες:")} {money(netMax)} {_t("+ ΦΠΑ")} {vat}% = <strong>{money(grossMax)}</strong>
           </div>
         )}
       </div>
@@ -770,7 +771,7 @@ function PlansTab() {
 
   const withoutPrice = rows.filter(r => !(Number(r.price_per_user_year ?? r.price_year) > 0));
 
-  if (loading) return <div className="empty-state">Φόρτωση...</div>;
+  if (loading) return <div className="empty-state">{_t("Φόρτωση...")}</div>;
 
   return (
     <div>
@@ -779,22 +780,21 @@ function PlansTab() {
       {withoutPrice.length > 0 && (
         <div className="error" style={{ background: '#FEEBC8', color: '#744210', borderColor: '#FBD38D' }}>
           {withoutPrice.length === 1
-            ? '1 πλάνο δεν έχει τιμή'
-            : `${withoutPrice.length} πλάνα δεν έχουν τιμή`}. Όσο η τιμή είναι μηδέν, η
-          αγορά αποτυγχάνει με μήνυμα «Το πλάνο δεν έχει έγκυρη τιμή».
+            ? _t("1 πλάνο δεν έχει τιμή")
+            : _t("{0} πλάνα δεν έχουν τιμή", [withoutPrice.length])}{_t(". Όσο η τιμή είναι μηδέν, η αγορά αποτυγχάνει με μήνυμα «Το πλάνο δεν έχει έγκυρη τιμή».")}
         </div>
       )}
 
       <table className="table">
         <thead>
           <tr>
-            <th>Κωδικός</th>
-            <th>Ονομασία</th>
-            <th style={{ width: 150 }}>Τιμή / χρήστη / έτος</th>
-            <th style={{ width: 120 }}>Χρήστες</th>
-            <th style={{ width: 80 }}>ΦΠΑ</th>
-            <th style={{ width: 110 }}>Χώρος</th>
-            <th style={{ width: 90 }}>Κατάσταση</th>
+            <th>{_tc("plan", "Κωδικός")}</th>
+            <th>{_t("Ονομασία")}</th>
+            <th style={{ width: 150 }}>{_t("Τιμή / χρήστη / έτος")}</th>
+            <th style={{ width: 120 }}>{_t("Χρήστες")}</th>
+            <th style={{ width: 80 }}>{_t("ΦΠΑ")}</th>
+            <th style={{ width: 110 }}>{_t("Χώρος")}</th>
+            <th style={{ width: 90 }}>{_t("Κατάσταση")}</th>
             <th style={{ width: 1 }}></th>
           </tr>
         </thead>
@@ -810,18 +810,18 @@ function PlansTab() {
                 <td>
                   {per > 0
                     ? money(per)
-                    : <span style={{ color: '#C53030', fontWeight: 600 }}>χωρίς τιμή</span>}
+                    : <span style={{ color: '#C53030', fontWeight: 600 }}>{_t("χωρίς τιμή")}</span>}
                 </td>
                 <td>{min === max ? min : `${min}–${max}`}</td>
                 <td>{Number(r.vat_rate ?? DEFAULT_VAT)}%</td>
                 <td>{Math.round((r.storage_quota_mb || 0) / 1024)} GB</td>
                 <td>
                   {r.active !== false
-                    ? <span style={{ color: '#38A169' }}>Ενεργό</span>
-                    : <span style={{ color: '#718096' }}>Ανενεργό</span>}
+                    ? <span style={{ color: '#38A169' }}>{_t("Ενεργό")}</span>
+                    : <span style={{ color: '#718096' }}>{_t("Ανενεργό")}</span>}
                 </td>
                 <td onClick={e => e.stopPropagation()}>
-                  <button className="btn btn-sm btn-secondary" onClick={() => setEditing(r)}>Επεξ.</button>
+                  <button className="btn btn-sm btn-secondary" onClick={() => setEditing(r)}>{_t("Επεξ.")}</button>
                 </td>
               </tr>
             );
@@ -847,11 +847,11 @@ function AdminsTab() {
 
   const grant = async () => {
     const email = await askText({
-      title: 'Νέος co-admin',
-      label: 'Email του χρήστη',
+      title: _t("Νέος co-admin"),
+      label: _t("Email του χρήστη"),
       type: 'email',
       placeholder: 'name@example.gr',
-      confirmLabel: 'Απόδοση δικαιώματος',
+      confirmLabel: _t("Απόδοση δικαιώματος"),
     });
     if (!email) return;
     try { await platform.grantAdmin(email); load(); }
@@ -859,7 +859,7 @@ function AdminsTab() {
   };
 
   const revoke = async (userId, email) => {
-    if (!await ask({ title: 'Αφαίρεση co-admin', message: `Αφαίρεση του δικαιώματος co-admin από ${email};`, confirmLabel: 'Αφαίρεση' })) return;
+    if (!await ask({ title: _t("Αφαίρεση co-admin"), message: _t("Αφαίρεση του δικαιώματος co-admin από {0};", [email]), confirmLabel: _t("Αφαίρεση") })) return;
     try { await platform.revokeAdmin(userId); load(); }
     catch (e) { setErr(e.message); }
   };
@@ -868,11 +868,11 @@ function AdminsTab() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
         <h2>Co-admins ({rows.length})</h2>
-        <button className="btn" onClick={grant}>+ Νέος co-admin</button>
+        <button className="btn" onClick={grant}>{_t("+ Νέος co-admin")}</button>
       </div>
       {err && <div className="error">{err}</div>}
       <table className="table">
-        <thead><tr><th>Email</th><th>Όνομα</th><th>Οργανισμός</th><th>Δημιουργία</th><th></th></tr></thead>
+        <thead><tr><th>Email</th><th>{_t("Όνομα")}</th><th>{_t("Οργανισμός")}</th><th>{_tc("col", "Δημιουργία")}</th><th></th></tr></thead>
         <tbody>
           {rows.map(r => (
             <tr key={r.id}>
@@ -880,7 +880,7 @@ function AdminsTab() {
               <td>{r.first_name} {r.last_name}</td>
               <td style={{ fontSize: 12 }}>{r.organization_name}</td>
               <td style={{ fontSize: 12 }}>{fmtDate(r.created_at)}</td>
-              <td><button className="btn btn-sm btn-danger" onClick={() => revoke(r.id, r.email)}>Αφαίρεση</button></td>
+              <td><button className="btn btn-sm btn-danger" onClick={() => revoke(r.id, r.email)}>{_t("Αφαίρεση")}</button></td>
             </tr>
           ))}
         </tbody>
@@ -894,8 +894,8 @@ function AdminsTab() {
 // ==================== MAIN ====================
 function PlatformAdmin({ user, onLogout, onOpenCaseSearch }) {
   if (!user?.is_platform_admin) {
-    return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Πρόσβαση χωρίς δικαίωμα">
-      <div className="error">Απαιτείται δικαίωμα platform admin. Επικοινώνησε με τον διαχειριστή.</div>
+    return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Πρόσβαση χωρίς δικαίωμα")}>
+      <div className="error">{_t("Απαιτείται δικαίωμα platform admin. Επικοινώνησε με τον διαχειριστή.")}</div>
     </Layout>;
   }
 
@@ -903,9 +903,9 @@ function PlatformAdmin({ user, onLogout, onOpenCaseSearch }) {
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Platform Admin">
       <Tabs tabs={[
         { label: '📊 Dashboard',      content: <DashboardTab /> },
-        { label: '🏢 Οργανισμοί',     content: <OrganizationsTab /> },
-        { label: '💰 Συνδρομές',      content: <SubscriptionsTab /> },
-        { label: '🏷️ Πλάνα',          content: <PlansTab /> },
+        { label: _t("🏢 Οργανισμοί"),     content: <OrganizationsTab /> },
+        { label: _t("💰 Συνδρομές"),      content: <SubscriptionsTab /> },
+        { label: _t("🏷️ Πλάνα"),          content: <PlansTab /> },
         { label: '🤝 Partners',        content: <PartnersTab /> },
         { label: '👤 Co-admins',      content: <AdminsTab /> },
       ]} />

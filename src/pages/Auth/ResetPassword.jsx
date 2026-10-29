@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api';
+import { _t } from '../../i18n';
 
 /**
  * ResetPassword — Set a new password using token from email.
@@ -34,11 +35,11 @@ export default function ResetPassword() {
     e.preventDefault();
     setError('');
     if (pwd.length < 8) {
-      setError('Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες.');
+      setError(_t("Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες."));
       return;
     }
     if (pwd !== pwd2) {
-      setError('Οι δύο κωδικοί δεν ταιριάζουν.');
+      setError(_t("Οι δύο κωδικοί δεν ταιριάζουν."));
       return;
     }
     setSubmitting(true);
@@ -47,7 +48,7 @@ export default function ResetPassword() {
       setDone(true);
       setTimeout(() => navigate('/login'), 3000);
     } catch (err) {
-      setError(err.message || 'Κάτι πήγε στραβά.');
+      setError(err.message || _t("Κάτι πήγε στραβά."));
     } finally {
       setSubmitting(false);
     }
@@ -57,20 +58,20 @@ export default function ResetPassword() {
     <div className="auth-container">
       <div className="auth-card">
         <h1>Thesis</h1>
-        <p className="subtitle">Νέος κωδικός</p>
+        <p className="subtitle">{_t("Νέος κωδικός")}</p>
 
         {status === 'checking' && (
-          <p style={{ color: '#4a5568' }}>Έλεγχος συνδέσμου...</p>
+          <p style={{ color: '#4a5568' }}>{_t("Έλεγχος συνδέσμου...")}</p>
         )}
 
         {status === 'invalid' && (
           <>
-            <div className="error">Ο σύνδεσμος έχει λήξει ή είναι μη έγκυρος.</div>
+            <div className="error">{_t("Ο σύνδεσμος έχει λήξει ή είναι μη έγκυρος.")}</div>
             <p style={{ fontSize: 14, color: '#4a5568', lineHeight: 1.6 }}>
-              Οι σύνδεσμοι επαναφοράς λήγουν σε 60 λεπτά. Ζητήστε νέο σύνδεσμο.
+              {_t("Οι σύνδεσμοι επαναφοράς λήγουν σε 60 λεπτά. Ζητήστε νέο σύνδεσμο.")}
             </p>
             <div className="link">
-              <Link to="/forgot-password">Νέος σύνδεσμος επαναφοράς</Link>
+              <Link to="/forgot-password">{_t("Νέος σύνδεσμος επαναφοράς")}</Link>
             </div>
           </>
         )}
@@ -79,11 +80,11 @@ export default function ResetPassword() {
           <>
             {error && <div className="error">{error}</div>}
             <p style={{ fontSize: 14, color: '#4a5568', lineHeight: 1.6, marginBottom: 16 }}>
-              Ορίστε τον νέο σας κωδικό.
+              {_t("Ορίστε τον νέο σας κωδικό.")}
             </p>
             <form onSubmit={submit}>
               <div className="form-group">
-                <label>Νέος κωδικός</label>
+                <label>{_t("Νέος κωδικός")}</label>
                 <input
                   type="password"
                   value={pwd}
@@ -91,11 +92,11 @@ export default function ResetPassword() {
                   autoFocus
                   required
                   minLength={8}
-                  placeholder="τουλάχιστον 8 χαρακτήρες"
+                  placeholder={_t("τουλάχιστον 8 χαρακτήρες")}
                 />
               </div>
               <div className="form-group">
-                <label>Επιβεβαίωση κωδικού</label>
+                <label>{_t("Επιβεβαίωση κωδικού")}</label>
                 <input
                   type="password"
                   value={pwd2}
@@ -105,7 +106,7 @@ export default function ResetPassword() {
                 />
               </div>
               <button type="submit" className="btn btn-full" disabled={submitting}>
-                {submitting ? 'Αποθήκευση...' : 'Ορισμός νέου κωδικού'}
+                {submitting ? _t("Αποθήκευση...") : _t("Ορισμός νέου κωδικού")}
               </button>
             </form>
           </>
@@ -114,11 +115,11 @@ export default function ResetPassword() {
         {done && (
           <>
             <div style={{ background: '#c6f6d5', color: '#22543d', padding: '12px 14px', borderRadius: 6, marginBottom: 16, fontWeight: 600 }}>
-              ✓ Ο κωδικός σας ενημερώθηκε.
+              {_t("✓ Ο κωδικός σας ενημερώθηκε.")}
             </div>
-            <p style={{ color: '#4a5568' }}>Ανακατεύθυνση στη σελίδα σύνδεσης...</p>
+            <p style={{ color: '#4a5568' }}>{_t("Ανακατεύθυνση στη σελίδα σύνδεσης...")}</p>
             <div className="link">
-              <Link to="/login">Πηγαίνετε τώρα →</Link>
+              <Link to="/login">{_t("Πηγαίνετε τώρα →")}</Link>
             </div>
           </>
         )}

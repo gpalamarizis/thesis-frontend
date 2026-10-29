@@ -4,14 +4,15 @@
 import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { phonebook } from '../api';
+import { _t } from '../i18n';
 
 const SOURCES = [
-  { key: 'fysika',              label: 'Φυσικά Πρόσωπα (πελάτες)',        color: '#3182ce' },
-  { key: 'nomika',              label: 'Νομικά Πρόσωπα (πελάτες)',        color: '#2b6cb0' },
-  { key: 'sxetika',             label: 'Σχετικά Πρόσωπα',                 color: '#38a169' },
-  { key: 'dikigoroi_grafeiou',  label: 'Δικηγόροι Γραφείου',              color: '#6b46c1' },
-  { key: 'dikigoroi_antidikon', label: 'Δικηγόροι Αντιδίκων',             color: '#d53f8c' },
-  { key: 'antidikoi',           label: 'Αντίδικοι',                       color: '#e53e3e' },
+  { key: 'fysika',              label: _t("Φυσικά Πρόσωπα (πελάτες)"),        color: '#3182ce' },
+  { key: 'nomika',              label: _t("Νομικά Πρόσωπα (πελάτες)"),        color: '#2b6cb0' },
+  { key: 'sxetika',             label: _t("Σχετικά Πρόσωπα"),                 color: '#38a169' },
+  { key: 'dikigoroi_grafeiou',  label: _t("Δικηγόροι Γραφείου"),              color: '#6b46c1' },
+  { key: 'dikigoroi_antidikon', label: _t("Δικηγόροι Αντιδίκων"),             color: '#d53f8c' },
+  { key: 'antidikoi',           label: _t("Αντίδικοι"),                       color: '#e53e3e' },
 ];
 
 const SOURCE_LABEL = Object.fromEntries(SOURCES.map(s => [s.key, s.label]));
@@ -56,13 +57,13 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
   const selectNone = () => setSelectedSources([]);
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Τηλεφωνικός Κατάλογος">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Τηλεφωνικός Κατάλογος")}>
       <div className="section">
         <div className="section-header">
-          <h2>Αναζήτηση σε όλα τα πρόσωπα ({total})</h2>
+          <h2>{_t("Αναζήτηση σε όλα τα πρόσωπα (")}{total})</h2>
           <input
             type="text"
-            placeholder="🔍 Επώνυμο, όνομα, email, τηλέφωνο..."
+            placeholder={_t("🔍 Επώνυμο, όνομα, email, τηλέφωνο...")}
             value={q}
             onChange={e => setQ(e.target.value)}
             style={{
@@ -85,20 +86,20 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
           borderRadius: 6,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-            <strong style={{ fontSize: 13 }}>Πηγές:</strong>
+            <strong style={{ fontSize: 13 }}>{_t("Πηγές:")}</strong>
             <button
               type="button"
               onClick={selectAll}
               style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
-              Όλες
+              {_t("Όλες")}
             </button>
             <button
               type="button"
               onClick={selectNone}
               style={{ padding: '2px 8px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
-              Καμία
+              {_t("Καμία")}
             </button>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -138,20 +139,20 @@ function Phonebook({ user, onLogout, onOpenCaseSearch }) {
         {error && <div className="error">{error}</div>}
 
         {loading ? (
-          <div className="empty-state">Αναζήτηση...</div>
+          <div className="empty-state">{_t("Αναζήτηση...")}</div>
         ) : items.length === 0 ? (
           <div className="empty-state">
-            {q ? `Δεν βρέθηκαν αποτελέσματα για "${q}".` : 'Επίλεξε πηγές ή πληκτρολόγησε αναζήτηση.'}
+            {q ? _t("Δεν βρέθηκαν αποτελέσματα για \"{0}\".", [q]) : _t("Επίλεξε πηγές ή πληκτρολόγησε αναζήτηση.")}
           </div>
         ) : (
           <table className="table">
             <thead>
               <tr>
-                <th style={{ width: 160 }}>Πηγή</th>
-                <th>Επώνυμο / Επωνυμία</th>
-                <th>Όνομα</th>
-                <th>Τηλέφωνο</th>
-                <th>Κινητό</th>
+                <th style={{ width: 160 }}>{_t("Πηγή")}</th>
+                <th>{_t("Επώνυμο / Επωνυμία")}</th>
+                <th>{_t("Όνομα")}</th>
+                <th>{_t("Τηλέφωνο")}</th>
+                <th>{_t("Κινητό")}</th>
                 <th>Fax</th>
                 <th>Email</th>
               </tr>

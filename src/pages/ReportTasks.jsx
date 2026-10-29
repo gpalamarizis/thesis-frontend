@@ -10,6 +10,7 @@ import { api, people, lists, downloadFile } from '../api';
 
 import { toISODate } from '../utils/format';
 import DateInput from '../components/DateInput';
+import { _t, LOCALE } from '../i18n';
 // Τοπική ώρα: το toISOString() έδινε τη ΧΘΕΣΙΝΗ ημερομηνία από τα
 // μεσάνυχτα ως τις 2-3 π.μ. — ώρες που δουλεύουν δικηγόροι.
 const todayISO = () => toISODate(new Date());
@@ -57,7 +58,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
       await downloadFile('/api/reports/pending-tasks?' + params.toString(),
                          'Ekkremeis-Energeies.docx');
     } catch (e) {
-      setError(e.message || 'Η εξαγωγή απέτυχε');
+      setError(e.message || _t("Η εξαγωγή απέτυχε"));
     } finally {
       setExporting(false);
     }
@@ -89,7 +90,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
     // eslint-disable-next-line
   }, [fromDate, toDate, onlyPending, dikigorosId, onomasiaId, antidikosId]);
 
-  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('el-GR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString(LOCALE, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
 
   const isPast = (d) => {
     if (!d) return false;
@@ -102,10 +103,10 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Εκκρεμείς Ενέργειες">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Εκκρεμείς Ενέργειες")}>
       <div className="section">
         <div className="section-header">
-          <h2>Αναφορά ({total})</h2>
+          <h2>{_t("Αναφορά (")}{total})</h2>
         </div>
 
         <div style={{
@@ -114,13 +115,13 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
           borderRadius: 6, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center'
         }}>
           <div>
-            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Από (προθεσμία)</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Από (προθεσμία)")}</label>
             <DateInput value={fromDate}
               onChange={e => setFromDate(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }} />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Έως</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Έως")}</label>
             <DateInput value={toDate}
               onChange={e => setToDate(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }} />
@@ -131,44 +132,44 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                 type="checkbox" checked={onlyPending}
                 onChange={e => setOnlyPending(e.target.checked)}
               />
-              Μόνο εκκρεμείς
+              {_t("Μόνο εκκρεμείς")}
             </label>
           </div>
 
           <div>
-            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Δικηγόρος</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Δικηγόρος")}</label>
             <select
               value={dikigorosId}
               onChange={e => setDikigorosId(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 200 }}
             >
-              <option value="">— Όλοι —</option>
+              <option value="">{_t("— Όλοι —")}</option>
               {lawyers.map(l => (
                 <option key={l.aa} value={l.aa}>{`${l.eponymo || ''} ${l.onoma || ''}`.trim()}</option>
               ))}
             </select>
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Είδος υπόθεσης</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Είδος υπόθεσης")}</label>
             <select
               value={onomasiaId}
               onChange={e => setOnomasiaId(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 200 }}
             >
-              <option value="">— Όλα —</option>
+              <option value="">{_t("— Όλα —")}</option>
               {caseTypes.map(t => (
                 <option key={t.aa} value={t.aa}>{t.name}</option>
               ))}
             </select>
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Αντίδικος</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Αντίδικος")}</label>
             <select
               value={antidikosId}
               onChange={e => setAntidikosId(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 200 }}
             >
-              <option value="">— Όλοι —</option>
+              <option value="">{_t("— Όλοι —")}</option>
               {opponents.map(o => (
                 <option key={o.aa} value={o.aa}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>
               ))}
@@ -181,25 +182,25 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
               disabled={exporting || loading}
               style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1A202C', borderRadius: 4, backgroundColor: '#1A202C', color: '#fff', fontWeight: 600 }}
             >
-              {exporting ? 'Εξαγωγή...' : 'Εξαγωγή σε Word'}
+              {exporting ? _t("Εξαγωγή...") : _t("Εξαγωγή σε Word")}
             </button>
             <button
               onClick={() => setRange(null, null)}
               style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
-              Όλες
+              {_t("Όλες")}
             </button>
             <button
               onClick={() => setRange(0, 7)}
               style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
-              Επόμενες 7 ημέρες
+              {_t("Επόμενες 7 ημέρες")}
             </button>
             <button
               onClick={() => setRange(0, 30)}
               style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
-              Επόμενες 30 ημέρες
+              {_t("Επόμενες 30 ημέρες")}
             </button>
           </div>
         </div>
@@ -207,21 +208,21 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
         {error && <div className="error">{error}</div>}
 
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : items.length === 0 ? (
-          <div className="empty-state">Δεν βρέθηκαν ενέργειες.</div>
+          <div className="empty-state">{_t("Δεν βρέθηκαν ενέργειες.")}</div>
         ) : (
           <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 4 }}>
             <table className="table" style={{ fontSize: 13 }}>
               <thead>
                 <tr>
-                  <th style={{ width: 180 }}>Προθεσμία</th>
-                  <th style={{ width: 100 }}>Κατάσταση</th>
-                  <th>Περιγραφή</th>
-                  <th style={{ width: 130 }}>Πρωτόκολλο</th>
-                  <th>Πελάτης</th>
-                  <th style={{ width: 160 }}>Είδος υπόθεσης</th>
-                  <th style={{ width: 180 }}>Χειριστής ενέργειας</th>
+                  <th style={{ width: 180 }}>{_t("Προθεσμία")}</th>
+                  <th style={{ width: 100 }}>{_t("Κατάσταση")}</th>
+                  <th>{_t("Περιγραφή")}</th>
+                  <th style={{ width: 130 }}>{_t("Πρωτόκολλο")}</th>
+                  <th>{_t("Πελάτης")}</th>
+                  <th style={{ width: 160 }}>{_t("Είδος υπόθεσης")}</th>
+                  <th style={{ width: 180 }}>{_t("Χειριστής ενέργειας")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -231,7 +232,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                   return (
                     <tr key={`${r.kind || 'task'}:${r.aa}`}
                         onClick={r.ypothesi_id ? () => navigate(`/cases/${r.ypothesi_id}?tab=${tab}`) : undefined}
-                        title={r.ypothesi_id ? 'Άνοιγμα υπόθεσης' : undefined}
+                        title={r.ypothesi_id ? _t("Άνοιγμα υπόθεσης") : undefined}
                         style={{
                           ...(overdue ? { backgroundColor: '#feebc8' } : {}),
                           ...(r.ypothesi_id ? { cursor: 'pointer' } : {}),
@@ -242,22 +243,22 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                             {fmtDate(r.date_dead_line)}
                             {overdue && (
                               <span style={{ marginLeft: 6, fontSize: 12, color: '#c53030', fontWeight: 'bold' }}>
-                                ⚠️ ΕΚΠΡΟΘΕΣΜΗ
+                                {_t("⚠️ ΕΚΠΡΟΘΕΣΜΗ")}
                               </span>
                             )}
                           </>
                         ) : (
-                          <span style={{ color: '#718096' }}>— χωρίς προθεσμία —</span>
+                          <span style={{ color: '#718096' }}>{_t("— χωρίς προθεσμία —")}</span>
                         )}
                       </td>
                       <td>
                         {r.ekkremis ? (
                           <span style={{ padding: '2px 8px', backgroundColor: '#feebc8', color: '#744210', borderRadius: 10, fontSize: 12, fontWeight: 'bold' }}>
-                            Εκκρεμής
+                            {_t("Εκκρεμής")}
                           </span>
                         ) : (
                           <span style={{ padding: '2px 8px', backgroundColor: '#c6f6d5', color: '#22543d', borderRadius: 10, fontSize: 12 }}>
-                            Ολοκληρωμένη
+                            {_t("Ολοκληρωμένη")}
                           </span>
                         )}
                       </td>
@@ -265,7 +266,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                         {r.perigrafi_energias || '—'}
                         {r.kind === 'court_sub' && (
                           <div style={{ fontSize: 12, color: '#718096' }}>
-                            Ενέργεια δικασίμου {r.dikasimos_date ? new Date(r.dikasimos_date).toLocaleDateString('el-GR') : ''}
+                            {_t("Ενέργεια δικασίμου")} {r.dikasimos_date ? new Date(r.dikasimos_date).toLocaleDateString('el-GR') : ''}
                             {r.dikastirio_name ? ` · ${r.dikastirio_name}` : ''}
                           </div>
                         )}
@@ -283,7 +284,7 @@ function ReportTasks({ user, onLogout, onOpenCaseSearch }) {
                       <td>
                         {r.xeiristis
                           ? (r.xeiristis_apo_ypothesi
-                              ? <span style={{ color: '#a0aec0' }} title="Η ενέργεια δεν έχει δικηγόρο — εμφανίζεται ο χειριστής της υπόθεσης">{r.xeiristis}</span>
+                              ? <span style={{ color: '#a0aec0' }} title={_t("Η ενέργεια δεν έχει δικηγόρο — εμφανίζεται ο χειριστής της υπόθεσης")}>{r.xeiristis}</span>
                               : r.xeiristis)
                           : '—'}
                       </td>

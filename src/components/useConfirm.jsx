@@ -14,6 +14,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import ConfirmDialog from './ConfirmDialog';
+import { _t } from '../i18n';
 
 function useConfirm() {
   const [state, setState] = useState(null);
@@ -37,10 +38,10 @@ function useConfirm() {
 
   const confirmNode = state ? (
     <ConfirmDialog
-      title={state.title || 'Επιβεβαίωση'}
+      title={state.title || _t("Επιβεβαίωση")}
       message={state.message}
-      confirmLabel={state.confirmLabel || 'Ναι'}
-      cancelLabel={state.cancelLabel || 'Ακύρωση'}
+      confirmLabel={state.confirmLabel || _t("Ναι")}
+      cancelLabel={state.cancelLabel || _t("Ακύρωση")}
       danger={state.danger !== false}
       onConfirm={() => finish(true)}
       onClose={() => finish(false)}

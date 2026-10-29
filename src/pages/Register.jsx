@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, subscriptions } from '../api';
 import { TERM } from '../utils/region';
+import { _t } from '../i18n';
 
 // ΑΓΟΡΑ ΑΠΕΥΘΕΙΑΣ ΑΠΟ ΤΟ SITE
 //
@@ -24,10 +25,10 @@ const PLAN_TO_TYPE = {
 };
 
 const TYPES = [
-  { code: 'solo',                label: 'Μεμονωμένος δικηγόρος',              desc: 'Δουλεύεις μόνος σου. 1 χρήστης.', icon: '👤' },
-  { code: 'partnership_shared',  label: 'Συνεργασία (μοιραζόμενες υποθέσεις)', desc: 'Οι συνεργάτες βλέπουν όλες τις υποθέσεις.', icon: '🤝' },
-  { code: 'partnership_private', label: 'Συνεργασία (χωριστές υποθέσεις)',     desc: 'Κάθε δικηγόρος βλέπει μόνο τις δικές του — εκτός αν του δώσει πρόσβαση ο διαχειριστής.', icon: '🔒' },
-  { code: 'law_firm',            label: 'Δικηγορική εταιρεία',                 desc: 'Owner με πλήρη έλεγχο, συνεργάτες με περιορισμένη πρόσβαση.', icon: '🏛️' },
+  { code: 'solo',                label: _t("Μεμονωμένος δικηγόρος"),              desc: _t("Δουλεύεις μόνος σου. 1 χρήστης."), icon: '👤' },
+  { code: 'partnership_shared',  label: _t("Συνεργασία (μοιραζόμενες υποθέσεις)"), desc: _t("Οι συνεργάτες βλέπουν όλες τις υποθέσεις."), icon: '🤝' },
+  { code: 'partnership_private', label: _t("Συνεργασία (χωριστές υποθέσεις)"),     desc: _t("Κάθε δικηγόρος βλέπει μόνο τις δικές του — εκτός αν του δώσει πρόσβαση ο διαχειριστής."), icon: '🔒' },
+  { code: 'law_firm',            label: _t("Δικηγορική εταιρεία"),                 desc: _t("Owner με πλήρη έλεγχο, συνεργάτες με περιορισμένη πρόσβαση."), icon: '🏛️' },
 ];
 
 function pwStrength(pw) {
@@ -38,7 +39,7 @@ function pwStrength(pw) {
   if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
   if (/\d/.test(pw)) s++;
   if (/[^A-Za-z0-9]/.test(pw)) s++;
-  const labels = ['Πολύ αδύναμος', 'Αδύναμος', 'Μέτριος', 'Καλός', 'Ισχυρός', 'Πολύ ισχυρός'];
+  const labels = ['Πολύ αδύναμος', 'Αδύναμος', 'Μέτριος', 'Καλός', 'Ισχυρός', 'Πολύ ισχυρός'].map(x => _t(x));
   const colors = ['#e53e3e', '#dd6b20', '#d69e2e', '#38a169', '#38a169', '#2b6cb0'];
   return { level: s, label: labels[s], color: colors[s] };
 }
@@ -128,7 +129,7 @@ function Register({ onLogin }) {
             return;
           }
         } catch (e) {
-          console.warn('[register] η αγορά δεν ξεκίνησε:', e.message);
+          console.warn(_t("[register] η αγορά δεν ξεκίνησε:"), e.message);
         }
         navigate('/settings/subscription?plan=' + encodeURIComponent(wantedPlan));
         return;
@@ -150,13 +151,13 @@ function Register({ onLogin }) {
         <h1 style={{ textAlign: 'center', marginBottom: 4 }}>Thesis</h1>
         <p className="subtitle" style={{ textAlign: 'center' }}>
           {wantedPlan
-            ? 'Μετά την εγγραφή θα μεταφερθείς στην πληρωμή'
-            : 'Δωρεάν δοκιμαστική περίοδος 30 ημερών'}
+            ? _t("Μετά την εγγραφή θα μεταφερθείς στην πληρωμή")
+            : _t("Δωρεάν δοκιμαστική περίοδος 30 ημερών")}
         </p>
 
         {/* Progress bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', margin: '20px 0 24px' }}>
-          {['Τύπος', 'Πρόσβαση', 'Στοιχεία', 'Ολοκλήρωση'].map((s, i) => (
+          {['Τύπος', 'Πρόσβαση', 'Στοιχεία', 'Ολοκλήρωση'].map(x => _t(x)).map((s, i) => (
             <div key={i} style={{
               flex: 1, textAlign: 'center', padding: '6px 4px',
               borderBottom: `3px solid ${step >= i+1 ? '#3182ce' : '#e2e8f0'}`,
@@ -171,7 +172,7 @@ function Register({ onLogin }) {
         {/* Step 1: Τύπος */}
         {step === 1 && (
           <>
-            <h3 style={{ marginBottom: 12 }}>Ποιος τύπος γραφείου είσαι;</h3>
+            <h3 style={{ marginBottom: 12 }}>{_t("Ποιος τύπος γραφείου είσαι;")}</h3>
             {TYPES.map(t => (
               <TypeCard key={t.code} type={t} selected={form.plan_type === t.code} onClick={() => chooseType(t.code)} />
             ))}
@@ -181,20 +182,20 @@ function Register({ onLogin }) {
         {/* Step 2: Visibility (partnership only) */}
         {step === 2 && (
           <>
-            <h3 style={{ marginBottom: 8 }}>Τρόπος πρόσβασης σε υποθέσεις</h3>
-            <p style={{ color: '#4a5568', marginBottom: 16, fontSize: 14 }}>Πώς θα βλέπουν οι συνεργάτες τις υποθέσεις;</p>
+            <h3 style={{ marginBottom: 8 }}>{_t("Τρόπος πρόσβασης σε υποθέσεις")}</h3>
+            <p style={{ color: '#4a5568', marginBottom: 16, fontSize: 14 }}>{_t("Πώς θα βλέπουν οι συνεργάτες τις υποθέσεις;")}</p>
             <TypeCard
-              type={{ label: 'Όλοι βλέπουν όλα', desc: 'Κάθε συνεργάτης βλέπει όλες τις υποθέσεις του γραφείου.', icon: '👥' }}
+              type={{ label: _t("Όλοι βλέπουν όλα"), desc: _t("Κάθε συνεργάτης βλέπει όλες τις υποθέσεις του γραφείου."), icon: '👥' }}
               selected={form.visibility_mode === 'shared'}
               onClick={() => { setForm(f => ({ ...f, visibility_mode: 'shared' })); setStep(3); }}
             />
             <TypeCard
-              type={{ label: 'Ο καθένας τα δικά του', desc: 'Οι συνεργάτες βλέπουν μόνο ό,τι τους δίνει ο owner. Ιδανικό για ανεξάρτητους δικηγόρους με κοινό γραφείο.', icon: '🔒' }}
+              type={{ label: _t("Ο καθένας τα δικά του"), desc: _t("Οι συνεργάτες βλέπουν μόνο ό,τι τους δίνει ο owner. Ιδανικό για ανεξάρτητους δικηγόρους με κοινό γραφείο."), icon: '🔒' }}
               selected={form.visibility_mode === 'private'}
               onClick={() => { setForm(f => ({ ...f, visibility_mode: 'private' })); setStep(3); }}
             />
             <div style={{ marginTop: 16 }}>
-              <button type="button" className="btn btn-secondary" onClick={back}>← Πίσω</button>
+              <button type="button" className="btn btn-secondary" onClick={back}>{_t("← Πίσω")}</button>
             </div>
           </>
         )}
@@ -202,62 +203,62 @@ function Register({ onLogin }) {
         {/* Step 3: Στοιχεία (form με autocomplete) */}
         {step === 3 && (
           <form onSubmit={(e) => { e.preventDefault(); setStep(4); }} method="post" autoComplete="on">
-            <h3 style={{ marginBottom: 12 }}>Στοιχεία γραφείου &amp; owner</h3>
+            <h3 style={{ marginBottom: 12 }}>{_t("Στοιχεία γραφείου & owner")}</h3>
 
             <div className="form-group">
-              <label htmlFor="reg-org">Όνομα Δικηγορικού Γραφείου *</label>
+              <label htmlFor="reg-org">{_t("Όνομα Δικηγορικού Γραφείου *")}</label>
               <input id="reg-org" type="text" name="organizationName" value={form.organizationName}
                      onChange={upd('organizationName')} autoComplete="organization" required autoFocus />
             </div>
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="reg-afm">{TERM.afm} γραφείου</label>
+                <label htmlFor="reg-afm">{TERM.afm} {_t("γραφείου")}</label>
                 <input id="reg-afm" type="text" name="billing_afm" value={form.billing_afm}
                        onChange={upd('billing_afm')} autoComplete="off" />
               </div>
               <div className="form-group">
-                <label htmlFor="reg-org-phone">Τηλέφωνο γραφείου</label>
+                <label htmlFor="reg-org-phone">{_t("Τηλέφωνο γραφείου")}</label>
                 <input id="reg-org-phone" type="tel" name="billing_phone" value={form.billing_phone}
                        onChange={upd('billing_phone')} autoComplete="tel" />
               </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="reg-billing-email">Email τιμολόγησης</label>
+              <label htmlFor="reg-billing-email">{_t("Email τιμολόγησης")}</label>
               <input id="reg-billing-email" type="email" name="billing_email" value={form.billing_email}
                      onChange={upd('billing_email')} autoComplete="off" />
             </div>
 
-            <h4 style={{ margin: '20px 0 8px', borderTop: '1px solid #e2e8f0', paddingTop: 16 }}>Owner λογαριασμός</h4>
+            <h4 style={{ margin: '20px 0 8px', borderTop: '1px solid #e2e8f0', paddingTop: 16 }}>{_t("Owner λογαριασμός")}</h4>
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="reg-first">Όνομα *</label>
+                <label htmlFor="reg-first">{_t("Όνομα *")}</label>
                 <input id="reg-first" type="text" name="firstName" value={form.firstName}
                        onChange={upd('firstName')} autoComplete="given-name" required />
               </div>
               <div className="form-group">
-                <label htmlFor="reg-last">Επώνυμο *</label>
+                <label htmlFor="reg-last">{_t("Επώνυμο *")}</label>
                 <input id="reg-last" type="text" name="lastName" value={form.lastName}
                        onChange={upd('lastName')} autoComplete="family-name" required />
               </div>
             </div>
 
             <div className="form-group">
-              <label htmlFor="reg-email">Email σύνδεσης *</label>
+              <label htmlFor="reg-email">{_t("Email σύνδεσης *")}</label>
               <input id="reg-email" type="email" name="email" value={form.email}
                      onChange={upd('email')} autoComplete="username email" required />
             </div>
 
             <div className="form-group">
-              <label htmlFor="reg-password">Κωδικός (min 8) *</label>
+              <label htmlFor="reg-password">{_t("Κωδικός (min 8) *")}</label>
               <div style={{ position: 'relative' }}>
                 <input id="reg-password" type={showPw ? 'text' : 'password'} name="password"
                        value={form.password} onChange={upd('password')}
                        autoComplete="new-password" required minLength="8" aria-describedby="pw-hint" />
                 <button type="button" onClick={() => setShowPw(s => !s)}
-                        title={showPw ? 'Απόκρυψη' : 'Εμφάνιση'}
+                        title={showPw ? _t("Απόκρυψη") : _t("Εμφάνιση")}
                         style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                                  background: 'transparent', border: 'none', cursor: 'pointer',
                                  fontSize: 16, padding: 4, color: '#718096' }}>
@@ -276,15 +277,15 @@ function Register({ onLogin }) {
                 </div>
               )}
               <small style={{ color: '#718096', fontSize: 12, display: 'block', marginTop: 4 }}>
-                💡 Ο browser σας μπορεί να προτείνει ισχυρό κωδικό — δεξί κλικ → «Suggest strong password»
+                {_t("💡 Ο browser σας μπορεί να προτείνει ισχυρό κωδικό — δεξί κλικ → «Suggest strong password»")}
               </small>
             </div>
 
             <div style={{ marginTop: 16, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
-              <button type="button" className="btn btn-secondary" onClick={back}>← Πίσω</button>
+              <button type="button" className="btn btn-secondary" onClick={back}>{_t("← Πίσω")}</button>
               <button type="submit" className="btn"
                       disabled={!form.organizationName || !form.email || !form.password || !form.firstName || form.password.length < 8}>
-                Επόμενο →
+                {_t("Επόμενο →")}
               </button>
             </div>
           </form>
@@ -293,31 +294,31 @@ function Register({ onLogin }) {
         {/* Step 4: Confirm */}
         {step === 4 && (
           <>
-            <h3 style={{ marginBottom: 12 }}>Επιβεβαίωση εγγραφής</h3>
+            <h3 style={{ marginBottom: 12 }}>{_t("Επιβεβαίωση εγγραφής")}</h3>
             <div style={{ padding: 16, background: '#f7fafc', borderRadius: 8, marginBottom: 16 }}>
-              <p style={{ margin: '4px 0' }}><strong>Τύπος:</strong> {TYPES.find(t => t.code === form.plan_type)?.label}</p>
+              <p style={{ margin: '4px 0' }}><strong>{_t("Τύπος:")}</strong> {TYPES.find(t => t.code === form.plan_type)?.label}</p>
               {(form.plan_type === 'partnership_shared' || form.plan_type === 'partnership_private') && (
-                <p style={{ margin: '4px 0' }}><strong>Πρόσβαση:</strong> {form.visibility_mode === 'shared' ? 'Όλοι βλέπουν όλα' : 'Ο καθένας τα δικά του'}</p>
+                <p style={{ margin: '4px 0' }}><strong>{_t("Πρόσβαση:")}</strong> {form.visibility_mode === 'shared' ? _t("Όλοι βλέπουν όλα") : _t("Ο καθένας τα δικά του")}</p>
               )}
-              <p style={{ margin: '4px 0' }}><strong>Γραφείο:</strong> {form.organizationName}</p>
+              <p style={{ margin: '4px 0' }}><strong>{_t("Γραφείο:")}</strong> {form.organizationName}</p>
               <p style={{ margin: '4px 0' }}><strong>Owner:</strong> {form.firstName} {form.lastName} ({form.email})</p>
             </div>
 
             <div style={{ padding: 12, background: '#ebf8ff', border: '1px solid #90cdf4', borderRadius: 6, marginBottom: 16, fontSize: 14 }}>
-              <strong>🎁 Δωρεάν δοκιμαστική:</strong> Ξεκινάς με 30 ημέρες trial χωρίς κόστος. Μετά τη λήξη, επιλέγεις πλάνο και πληρώνεις μέσω Viva.
+              <strong>{_t("🎁 Δωρεάν δοκιμαστική:")}</strong> {_t("Ξεκινάς με 30 ημέρες trial χωρίς κόστος. Μετά τη λήξη, επιλέγεις πλάνο και πληρώνεις μέσω Viva.")}
             </div>
 
             <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
-              <button type="button" className="btn btn-secondary" onClick={back} disabled={submitting}>← Πίσω</button>
+              <button type="button" className="btn btn-secondary" onClick={back} disabled={submitting}>{_t("← Πίσω")}</button>
               <button type="button" className="btn" onClick={submit} disabled={submitting}>
-                {submitting ? 'Δημιουργία...' : '✓ Ολοκλήρωση εγγραφής'}
+                {submitting ? _t("Δημιουργία...") : _t("✓ Ολοκλήρωση εγγραφής")}
               </button>
             </div>
           </>
         )}
 
         <div className="link" style={{ textAlign: 'center', marginTop: 20 }}>
-          Έχετε λογαριασμό; <Link to="/login">Σύνδεση εδώ</Link>
+          {_t("Έχετε λογαριασμό;")} <Link to="/login">{_t("Σύνδεση εδώ")}</Link>
         </div>
       </div>
     </div>

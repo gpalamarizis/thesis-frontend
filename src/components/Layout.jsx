@@ -3,59 +3,61 @@
 import { useEffect, useRef } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { HELP_LINKS } from '../utils/region';
+import LangSwitch from './LangSwitch';
+import { _t } from '../i18n';
 
-const roleLabel = { owner: 'Διαχειριστής', admin: 'Διαχειριστής', lawyer: 'Δικηγόρος', secretary: 'Γραμματέας' };
+const roleLabel = { owner: _t("Διαχειριστής"), admin: _t("Διαχειριστής"), lawyer: _t("Δικηγόρος"), secretary: _t("Γραμματέας") };
 
 // Σελίδες που απαιτούν «Πρόσβαση στα Οικονομικά» (owner/admin ή can_view_finance).
 // Χωρίς αυτήν ο server απαντά 403 — δεν τις δείχνουμε καθόλου στο μενού.
 const hasFinance = (u) => !!u && (u.role === 'owner' || u.role === 'admin' || u.can_view_finance === true);
 
 const menuGroups = [
-  { title: null, items: [{ path: '/dashboard', label: 'Πίνακας Ελέγχου', icon: '📊' }] },
-  { title: 'Υποθέσεις', items: [
-      { path: '/cases',     label: 'Λίστα υποθέσεων', icon: '📁' },
-      { path: '/cases/new', label: 'Νέα υπόθεση',     icon: '➕' },
+  { title: null, items: [{ path: '/dashboard', label: _t("Πίνακας Ελέγχου"), icon: '📊' }] },
+  { title: _t("Υποθέσεις"), items: [
+      { path: '/cases',     label: _t("Λίστα υποθέσεων"), icon: '📁' },
+      { path: '/cases/new', label: _t("Νέα υπόθεση"),     icon: '➕' },
   ]},
-  { title: 'Πρόσωπα', items: [
-      { path: '/fysika',           label: 'Φυσικά πρόσωπα',       icon: '👤' },
-      { path: '/nomika',           label: 'Νομικά πρόσωπα',       icon: '🏢' },
-      { path: '/lawyers',          label: 'Δικηγόροι γραφείου',   icon: '⚖️' },
-      { path: '/opponents',        label: 'Αντίδικοι / Συμβαλλόμενοι', icon: '🔷' },
-      { path: '/related',          label: 'Σχετικά πρόσωπα',      icon: '🔗' },
-      { path: '/phonebook',        label: 'Τηλεφωνικός κατάλογος', icon: '📞' },
+  { title: _t("Πρόσωπα"), items: [
+      { path: '/fysika',           label: _t("Φυσικά πρόσωπα"),       icon: '👤' },
+      { path: '/nomika',           label: _t("Νομικά πρόσωπα"),       icon: '🏢' },
+      { path: '/lawyers',          label: _t("Δικηγόροι γραφείου"),   icon: '⚖️' },
+      { path: '/opponents',        label: _t("Αντίδικοι / Συμβαλλόμενοι"), icon: '🔷' },
+      { path: '/related',          label: _t("Σχετικά πρόσωπα"),      icon: '🔗' },
+      { path: '/phonebook',        label: _t("Τηλεφωνικός κατάλογος"), icon: '📞' },
   ]},
-  { title: 'Δικαστήρια', items: [{ path: '/courts', label: 'Δικαστήρια', icon: '🏛️' }] },
-  { title: 'Αναφορές', items: [
-      { path: '/reports/pending',        label: 'Εκκρεμείς υποθέσεις',           icon: '📋' },
-      { path: '/reports/hearings',       label: 'Προσεχείς δικάσιμοι',           icon: '📆' },
-      { path: '/reports/tasks',          label: 'Εκκρεμείς ενέργειες',            icon: '📝' },
-      { path: '/reports/calendar-court', label: 'Ημερολόγιο δικαστικών ενεργ.',  icon: '🗓️' },
-      { path: '/reports/calendar-tasks', label: 'Ημερολόγιο ενεργειών',          icon: '📅' },
-      { path: '/reports/courts',         label: 'Αναφορά Δικαστηρίων',           icon: '⚖️' },
-      { path: '/reports/tax-property',   label: 'Φορολογικά & Ιδιοκτησία',       icon: '🏠' },
-      { path: '/reports/clients-nationality', label: 'Πελατεία ανά υπηκοότητα', icon: '🌍' },
-      { path: '/reports/finance',        label: 'Συγκεντρωτικά οικονομικά',      icon: '💶', finance: true },
-      { path: '/reports/billing-analysis', label: 'Ανάλυση τιμολόγησης',     icon: '📈', finance: true },
+  { title: _t("Δικαστήρια"), items: [{ path: '/courts', label: _t("Δικαστήρια"), icon: '🏛️' }] },
+  { title: _t("Αναφορές"), items: [
+      { path: '/reports/pending',        label: _t("Εκκρεμείς υποθέσεις"),           icon: '📋' },
+      { path: '/reports/hearings',       label: _t("Προσεχείς δικάσιμοι"),           icon: '📆' },
+      { path: '/reports/tasks',          label: _t("Εκκρεμείς ενέργειες"),            icon: '📝' },
+      { path: '/reports/calendar-court', label: _t("Ημερολόγιο δικαστικών ενεργ."),  icon: '🗓️' },
+      { path: '/reports/calendar-tasks', label: _t("Ημερολόγιο ενεργειών"),          icon: '📅' },
+      { path: '/reports/courts',         label: _t("Αναφορά Δικαστηρίων"),           icon: '⚖️' },
+      { path: '/reports/tax-property',   label: _t("Φορολογικά & Ιδιοκτησία"),       icon: '🏠' },
+      { path: '/reports/clients-nationality', label: _t("Πελατεία ανά υπηκοότητα"), icon: '🌍' },
+      { path: '/reports/finance',        label: _t("Συγκεντρωτικά οικονομικά"),      icon: '💶', finance: true },
+      { path: '/reports/billing-analysis', label: _t("Ανάλυση τιμολόγησης"),     icon: '📈', finance: true },
   ]},
-  { title: 'Τιμολόγηση', items: [
-      { path: '/accounts',                 label: 'Λογαριασμοί',        icon: '📑', finance: true },
-      { path: '/invoices',                 label: 'Τιμολόγια',          icon: '🧾', finance: true },
-      { path: '/invoices/new',             label: 'Νέο τιμολόγιο',      icon: '➕', finance: true },
-      { path: '/settings/invoice-series',  label: 'Σειρές τιμολογίων',  icon: '🔢' },
-      { path: '/settings/organization',    label: 'Στοιχεία γραφείου',  icon: '🏢' },
+  { title: _t("Τιμολόγηση"), items: [
+      { path: '/accounts',                 label: _t("Λογαριασμοί"),        icon: '📑', finance: true },
+      { path: '/invoices',                 label: _t("Τιμολόγια"),          icon: '🧾', finance: true },
+      { path: '/invoices/new',             label: _t("Νέο τιμολόγιο"),      icon: '➕', finance: true },
+      { path: '/settings/invoice-series',  label: _t("Σειρές τιμολογίων"),  icon: '🔢' },
+      { path: '/settings/organization',    label: _t("Στοιχεία γραφείου"),  icon: '🏢' },
   ]},
-  { title: 'Ρυθμίσεις', items: [
-      { path: '/settings/templates',     label: 'Υποδείγματα Word', icon: '📋' },
-      { path: '/settings/subscription',  label: 'Συνδρομή',         icon: '💳' },
+  { title: _t("Ρυθμίσεις"), items: [
+      { path: '/settings/templates',     label: _t("Υποδείγματα Word"), icon: '📋' },
+      { path: '/settings/subscription',  label: _t("Συνδρομή"),         icon: '💳' },
       { path: '/settings/gdpr',          label: 'GDPR',             icon: '🛡️' },
-      { path: '/lists',                  label: 'Επεξεργασία λιστών', icon: '⚙️' },
-      { path: '/team',                   label: 'Ομάδα (χρήστες)',    icon: '👥' },
+      { path: '/lists',                  label: _t("Επεξεργασία λιστών"), icon: '⚙️' },
+      { path: '/team',                   label: _t("Ομάδα (χρήστες)"),    icon: '👥' },
   ]},
   { title: 'Platform (admin only)', items: [
       { path: '/platform', label: 'Platform Admin', icon: '🛡️', platformOnly: true },
   ]},
   // Σύνδεσμοι ανά χώρα (Ελλάδα: ΔΣΑ, ΓΓΠΣ… · Κύπρος: ΠΔΣ, CyLaw…)
-  { title: 'Βοήθεια', items: HELP_LINKS.map(l => ({ ...l, external: true })) },
+  { title: _t("Βοήθεια"), items: HELP_LINKS.map(l => ({ ...l, external: true })) },
 ];
 
 const SIDEBAR_WIDTH = 240;
@@ -122,6 +124,7 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
           <div className="user">
             {(user.first_name || user.firstName || '')} {(user.last_name || user.lastName || '')}<br/>
             <small>{roleLabel[user.role] || user.role}</small>
+            <div style={{ marginTop: 10 }}><LangSwitch dark /></div>
           </div>
         </div>
 
@@ -153,7 +156,7 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
           <div className="sidebar-footer">
             <a href="#" onClick={(e) => { e.preventDefault(); onLogout(); navigate('/login'); }}>
               <span className="menu-icon">🚪</span>
-              <span className="menu-label">Αποσύνδεση</span>
+              <span className="menu-label">{_t("Αποσύνδεση")}</span>
             </a>
           </div>
         </nav>
@@ -163,8 +166,8 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
         <div className="topbar">
           <h1>{title}</h1>
           {onOpenCaseSearch && (
-            <button className="btn btn-secondary btn-sm" onClick={onOpenCaseSearch} title="Αναζήτηση υπόθεσης (F3)">
-              🔍 Αναζήτηση υπόθεσης <span style={{ opacity: 0.6, marginLeft: 6, fontSize: 12 }}>F3</span>
+            <button className="btn btn-secondary btn-sm" onClick={onOpenCaseSearch} title={_t("Αναζήτηση υπόθεσης (F3)")}>
+              {_t("🔍 Αναζήτηση υπόθεσης")} <span style={{ opacity: 0.6, marginLeft: 6, fontSize: 12 }}>F3</span>
             </button>
           )}
         </div>

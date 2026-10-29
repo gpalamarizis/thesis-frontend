@@ -4,6 +4,7 @@ import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { templates } from '../api';
 import { fmtDateTime } from '../utils/format';
+import { _t } from '../i18n';
 
 function formatBytes(b) {
   if (b == null) return '';
@@ -39,38 +40,38 @@ function TemplatesPage({ user, onLogout, onOpenCaseSearch }) {
   // Group by category for display
   const grouped = {};
   rows.forEach(r => {
-    const cat = r.category || 'Χωρίς κατηγορία';
+    const cat = r.category || _t("Χωρίς κατηγορία");
     if (!grouped[cat]) grouped[cat] = [];
     grouped[cat].push(r);
   });
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Υποδείγματα Word">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Υποδείγματα Word")}>
       {error && <div className="error">{error}</div>}
 
       <div className="section">
         <div className="section-header">
-          <h2>Υποδείγματα εγγράφων (Word)</h2>
+          <h2>{_t("Υποδείγματα εγγράφων (Word)")}</h2>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-sm btn-secondary" onClick={() => setShowHelp(true)}>📖 Placeholders</button>
             {isAdmin && (
               <>
-        <button className="btn" onClick={() => { window.location.href = '/settings/templates/bulk'; }} style={{ marginRight: 8, background: '#edf2f7', color: '#2d3748' }}>📁 Μαζική εισαγωγή</button>
-        <button className="btn" onClick={() => setShowUpload(true)}>+ Ανέβασμα υποδείγματος</button>
+        <button className="btn" onClick={() => { window.location.href = '/settings/templates/bulk'; }} style={{ marginRight: 8, background: '#edf2f7', color: '#2d3748' }}>{_t("📁 Μαζική εισαγωγή")}</button>
+        <button className="btn" onClick={() => setShowUpload(true)}>{_t("+ Ανέβασμα υποδείγματος")}</button>
       </>
             )}
           </div>
         </div>
         <div style={{ color: '#718096', fontSize: 13, marginBottom: 16 }}>
-          Ανέβασε .docx αρχεία με placeholders όπως <code>{'{{PELATIS_EPONYMO}}'}</code>. Οι χρήστες μπορούν να δημιουργήσουν έγγραφα σε υποθέσεις με αυτόματο γέμισμα από τα στοιχεία.
+          {_t("Ανέβασε .docx αρχεία με placeholders όπως")} <code>{'{{PELATIS_EPONYMO}}'}</code>{_t(". Οι χρήστες μπορούν να δημιουργήσουν έγγραφα σε υποθέσεις με αυτόματο γέμισμα από τα στοιχεία.")}
         </div>
 
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : rows.length === 0 ? (
           <div className="empty-state">
-            Δεν υπάρχουν υποδείγματα.
-            {isAdmin && <><br /><small>Πάτησε «+ Ανέβασμα υποδείγματος» για να ξεκινήσεις.</small></>}
+            {_t("Δεν υπάρχουν υποδείγματα.")}
+            {isAdmin && <><br /><small>{_t("Πάτησε «+ Ανέβασμα υποδείγματος» για να ξεκινήσεις.")}</small></>}
           </div>
         ) : (
           Object.entries(grouped).map(([category, items]) => (
@@ -80,10 +81,10 @@ function TemplatesPage({ user, onLogout, onOpenCaseSearch }) {
               </h3>
               <table className="table">
                 <thead><tr>
-                  <th>Ονομασία</th>
-                  <th>Περιγραφή</th>
-                  <th style={{width:100}}>Μέγεθος</th>
-                  <th style={{width:160}}>Ανέβηκε</th>
+                  <th>{_t("Ονομασία")}</th>
+                  <th>{_t("Περιγραφή")}</th>
+                  <th style={{width:100}}>{_t("Μέγεθος")}</th>
+                  <th style={{width:160}}>{_t("Ανέβηκε")}</th>
                   <th style={{width:1}}></th>
                 </tr></thead>
                 <tbody>
@@ -112,7 +113,7 @@ function TemplatesPage({ user, onLogout, onOpenCaseSearch }) {
                             a.click();
                             URL.revokeObjectURL(url);
                           }}
-                        >⬇ Λήψη</a>
+                        >{_t("⬇ Λήψη")}</a>
                         {' '}
                         {isAdmin && (
                           <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
@@ -138,9 +139,9 @@ function TemplatesPage({ user, onLogout, onOpenCaseSearch }) {
       )}
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή υποδείγματος"
-          message={`Διαγραφή του "${confirmDel.name}"; Η ενέργεια δεν αναιρείται.`}
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή υποδείγματος")}
+          message={_t("Διαγραφή του \"{0}\"; Η ενέργεια δεν αναιρείται.", [confirmDel.name])}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -159,8 +160,8 @@ function UploadModal({ onClose, onSaved }) {
 
   const save = async () => {
     setError('');
-    if (!file) { setError('Επίλεξε ένα .docx αρχείο.'); return; }
-    if (!name.trim()) { setError('Δώσε ονομασία υποδείγματος.'); return; }
+    if (!file) { setError(_t("Επίλεξε ένα .docx αρχείο.")); return; }
+    if (!name.trim()) { setError(_t("Δώσε ονομασία υποδείγματος.")); return; }
     setUploading(true);
     try {
       const fd = new FormData();
@@ -179,16 +180,16 @@ function UploadModal({ onClose, onSaved }) {
 
   return (
     <Modal
-      title="Ανέβασμα υποδείγματος"
+      title={_t("Ανέβασμα υποδείγματος")}
       onClose={onClose}
       actions={<>
-        <button className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button className="btn" disabled={uploading} onClick={save}>{uploading ? 'Ανέβασμα...' : 'Ανέβασμα'}</button>
+        <button className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button className="btn" disabled={uploading} onClick={save}>{uploading ? _t("Ανέβασμα...") : _t("Ανέβασμα")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       <div className="form-group">
-        <label>Αρχείο .docx *</label>
+        <label>{_t("Αρχείο .docx *")}</label>
         <input
           type="file"
           accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -200,19 +201,19 @@ function UploadModal({ onClose, onSaved }) {
         />
       </div>
       <div className="form-group">
-        <label>Ονομασία *</label>
-        <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="π.χ. Αγωγή αποζημίωσης" />
+        <label>{_t("Ονομασία *")}</label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={_t("π.χ. Αγωγή αποζημίωσης")} />
       </div>
       <div className="form-group">
-        <label>Κατηγορία</label>
-        <input type="text" value={category} onChange={e => setCategory(e.target.value)} placeholder="π.χ. Αγωγές, Συμφωνητικά, Επιστολές" />
+        <label>{_t("Κατηγορία")}</label>
+        <input type="text" value={category} onChange={e => setCategory(e.target.value)} placeholder={_t("π.χ. Αγωγές, Συμφωνητικά, Επιστολές")} />
       </div>
       <div className="form-group">
-        <label>Περιγραφή</label>
-        <textarea rows="3" value={description} onChange={e => setDescription(e.target.value)} placeholder="Σύντομη περιγραφή του υποδείγματος" />
+        <label>{_t("Περιγραφή")}</label>
+        <textarea rows="3" value={description} onChange={e => setDescription(e.target.value)} placeholder={_t("Σύντομη περιγραφή του υποδείγματος")} />
       </div>
       <div style={{ background: '#fffaf0', padding: 10, borderRadius: 4, fontSize: 12, color: '#7b341e' }}>
-        💡 Στο .docx μπορείς να χρησιμοποιήσεις placeholders όπως <code>{'{{PELATIS_EPONYMO}}'}</code>, <code>{'{{XEIROKINITO_ID}}'}</code>, <code>{'{{DATE_TODAY_GREEK}}'}</code> κτλ. Δες όλα τα διαθέσιμα placeholders από το κουμπί «📖 Placeholders».
+        {_t("💡 Στο .docx μπορείς να χρησιμοποιήσεις placeholders όπως")} <code>{'{{PELATIS_EPONYMO}}'}</code>, <code>{'{{XEIROKINITO_ID}}'}</code>, <code>{'{{DATE_TODAY_GREEK}}'}</code> {_t("κτλ. Δες όλα τα διαθέσιμα placeholders από το κουμπί «📖 Placeholders».")}
       </div>
     </Modal>
   );
@@ -231,15 +232,15 @@ function PlaceholdersHelpModal({ onClose }) {
 
   return (
     <Modal
-      title="Διαθέσιμα Placeholders"
+      title={_t("Διαθέσιμα Placeholders")}
       onClose={onClose}
       size="lg"
-      actions={<button className="btn" onClick={onClose}>Κλείσιμο</button>}
+      actions={<button className="btn" onClick={onClose}>{_t("Κλείσιμο")}</button>}
     >
       <div style={{ color: '#718096', fontSize: 13, marginBottom: 12 }}>
-        Αντιγράψτε αυτούς τους κώδικες μέσα στο Word έγγραφο. Θα αντικατασταθούν αυτόματα από τα στοιχεία της υπόθεσης όταν δημιουργήσετε έγγραφο από αυτό το υπόδειγμα.
+        {_t("Αντιγράψτε αυτούς τους κώδικες μέσα στο Word έγγραφο. Θα αντικατασταθούν αυτόματα από τα στοιχεία της υπόθεσης όταν δημιουργήσετε έγγραφο από αυτό το υπόδειγμα.")}
       </div>
-      {loading ? <div className="empty-state">Φόρτωση...</div> : (
+      {loading ? <div className="empty-state">{_t("Φόρτωση...")}</div> : (
         groups.map(g => (
           <div key={g.category} style={{ marginBottom: 16 }}>
             <h3 style={{ fontSize: 13, color: '#4a5568', marginBottom: 6 }}>{g.category}</h3>
@@ -256,7 +257,7 @@ function PlaceholdersHelpModal({ onClose }) {
                     userSelect: 'all',
                   }}
                   onClick={() => navigator.clipboard?.writeText(`{{${v}}}`)}
-                  title="Κλικ για αντιγραφή"
+                  title={_t("Κλικ για αντιγραφή")}
                 >
                   {'{{' + v + '}}'}
                 </code>

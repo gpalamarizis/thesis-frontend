@@ -15,6 +15,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import Modal from './Modal';
+import { _t } from '../i18n';
 
 function usePrompt() {
   const [state, setState] = useState(null);
@@ -46,22 +47,22 @@ function usePrompt() {
   let invalid = null;
   if (state) {
     if (state.mustMatch != null && value !== state.mustMatch) {
-      invalid = `Πληκτρολόγησε ακριβώς: ${state.mustMatch}`;
+      invalid = _t("Πληκτρολόγησε ακριβώς: {0}", [state.mustMatch]);
     } else if (state.minLength && value.length < state.minLength) {
-      invalid = `Τουλάχιστον ${state.minLength} χαρακτήρες.`;
+      invalid = _t("Τουλάχιστον {0} χαρακτήρες.", [state.minLength]);
     } else if (state.required !== false && !String(value).trim()) {
-      invalid = 'Συμπλήρωσε το πεδίο.';
+      invalid = _t("Συμπλήρωσε το πεδίο.");
     }
   }
 
   const promptNode = state ? (
     <Modal
-      title={state.title || 'Συμπλήρωση'}
+      title={state.title || _t("Συμπλήρωση")}
       onClose={() => finish(null)}
       actions={
         <>
           <button type="button" className="btn btn-secondary" onClick={() => finish(null)}>
-            {state.cancelLabel || 'Ακύρωση'}
+            {state.cancelLabel || _t("Ακύρωση")}
           </button>
           <button
             type="button"

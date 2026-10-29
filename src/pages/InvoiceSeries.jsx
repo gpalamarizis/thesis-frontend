@@ -4,12 +4,13 @@ import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { invoiceSeries } from '../api';
 import { HAS_MYDATA } from '../utils/region';
+import { _t } from '../i18n';
 
 const TYPE_LABELS = {
-  invoice:     'Τιμολόγιο',
-  receipt:     'ΑΠΥ / Απόδειξη',
-  credit_note: 'Πιστωτικό',
-  debit_note:  'Χρεωστικό',
+  invoice:     _t("Τιμολόγιο"),
+  receipt:     _t("ΑΠΥ / Απόδειξη"),
+  credit_note: _t("Πιστωτικό"),
+  debit_note:  _t("Χρεωστικό"),
 };
 
 function InvoiceSeriesPage({ user, onLogout, onOpenCaseSearch }) {
@@ -35,28 +36,28 @@ function InvoiceSeriesPage({ user, onLogout, onOpenCaseSearch }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Σειρές Τιμολογίων">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Σειρές Τιμολογίων")}>
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">
-          <h2>Σειρές αρίθμησης τιμολογίων</h2>
-          <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέα σειρά</button>
+          <h2>{_t("Σειρές αρίθμησης τιμολογίων")}</h2>
+          <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>{_t("+ Νέα σειρά")}</button>
         </div>
         <div style={{ color: '#718096', fontSize: 13, marginBottom: 12 }}>
-          Κάθε σειρά έχει τη δική της αρίθμηση. Η προεπιλεγμένη σειρά χρησιμοποιείται αυτόματα στα νέα τιμολόγια.
+          {_t("Κάθε σειρά έχει τη δική της αρίθμηση. Η προεπιλεγμένη σειρά χρησιμοποιείται αυτόματα στα νέα τιμολόγια.")}
         </div>
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : rows.length === 0 ? (
-          <div className="empty-state">Δεν υπάρχουν σειρές. Δημιουργήστε την πρώτη σας.</div>
+          <div className="empty-state">{_t("Δεν υπάρχουν σειρές. Δημιουργήστε την πρώτη σας.")}</div>
         ) : (
           <table className="table">
             <thead><tr>
-              <th>Ονομασία</th>
-              <th>Τύπος</th>
-              <th>Επόμενος αρ.</th>
-              <th>Κατάσταση</th>
-              <th>Προεπιλογή</th>
+              <th>{_t("Ονομασία")}</th>
+              <th>{_t("Τύπος")}</th>
+              <th>{_t("Επόμενος αρ.")}</th>
+              <th>{_t("Κατάσταση")}</th>
+              <th>{_t("Προεπιλογή")}</th>
               <th style={{width:1}}></th>
             </tr></thead>
             <tbody>
@@ -67,12 +68,12 @@ function InvoiceSeriesPage({ user, onLogout, onOpenCaseSearch }) {
                   <td>{r.next_number}</td>
                   <td>
                     <span className={`badge ${r.active ? 'badge-open' : 'badge-closed'}`}>
-                      {r.active ? 'Ενεργή' : 'Ανενεργή'}
+                      {r.active ? _t("Ενεργή") : _t("Ανενεργή")}
                     </span>
                   </td>
                   <td>{r.is_default ? '⭐' : ''}</td>
                   <td style={{ whiteSpace: 'nowrap' }}>
-                    <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
+                    <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>{_t("Επεξ.")}</button>
                     {' '}
                     <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
                   </td>
@@ -92,9 +93,9 @@ function InvoiceSeriesPage({ user, onLogout, onOpenCaseSearch }) {
       )}
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή σειράς"
-          message={`Διαγραφή της σειράς "${confirmDel.name}";`}
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή σειράς")}
+          message={_t("Διαγραφή της σειράς \"{0}\";", [confirmDel.name])}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -122,7 +123,7 @@ function SeriesModal({ initial, onClose, onSaved }) {
   };
 
   const save = async () => {
-    if (!form.name.trim()) { setError('Η ονομασία είναι υποχρεωτική.'); return; }
+    if (!form.name.trim()) { setError(_t("Η ονομασία είναι υποχρεωτική.")); return; }
     setSaving(true); setError('');
     try {
       const payload = {
@@ -141,51 +142,51 @@ function SeriesModal({ initial, onClose, onSaved }) {
 
   return (
     <Modal
-      title={initial ? 'Επεξεργασία σειράς' : 'Νέα σειρά τιμολογίων'}
+      title={initial ? _t("Επεξεργασία σειράς") : _t("Νέα σειρά τιμολογίων")}
       onClose={onClose}
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Ονομασία σειράς *</label>
-          <input type="text" value={form.name} onChange={c('name')} placeholder="π.χ. Α, Β, ΑΠΥ" autoFocus />
+          <label>{_t("Ονομασία σειράς *")}</label>
+          <input type="text" value={form.name} onChange={c('name')} placeholder={_t("π.χ. Α, Β, ΑΠΥ")} autoFocus />
         </div>
         <div className="form-group">
-          <label>Τύπος</label>
+          <label>{_t("Τύπος")}</label>
           <select value={form.type} onChange={c('type')}>
             {Object.entries(TYPE_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
         </div>
       </div>
       <div className="form-group">
-        <label>Περιγραφή</label>
-        <input type="text" value={form.description} onChange={c('description')} placeholder="Προαιρετικά" />
+        <label>{_t("Περιγραφή")}</label>
+        <input type="text" value={form.description} onChange={c('description')} placeholder={_t("Προαιρετικά")} />
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Επόμενος αριθμός</label>
+          <label>{_t("Επόμενος αριθμός")}</label>
           <input type="number" value={form.next_number} onChange={c('next_number')} min="1" />
-          <small style={{ color: '#a0aec0' }}>Το επόμενο τιμολόγιο θα πάρει αυτόν τον αριθμό.</small>
+          <small style={{ color: '#a0aec0' }}>{_t("Το επόμενο τιμολόγιο θα πάρει αυτόν τον αριθμό.")}</small>
         </div>
         {HAS_MYDATA ? (
         <div className="form-group">
-          <label>myDATA τύπος παραστατικού</label>
-          <input type="text" value={form.mydata_invoice_type} onChange={c('mydata_invoice_type')} placeholder="π.χ. 1.1, 2.1" />
+          <label>{_t("myDATA τύπος παραστατικού")}</label>
+          <input type="text" value={form.mydata_invoice_type} onChange={c('mydata_invoice_type')} placeholder={_t("π.χ. 1.1, 2.1")} />
         </div>
         ) : <div />}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
           <input type="checkbox" checked={form.active} onChange={c('active')} />
-          <span>Ενεργή</span>
+          <span>{_t("Ενεργή")}</span>
         </label>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
           <input type="checkbox" checked={form.is_default} onChange={c('is_default')} />
-          <span>Προεπιλεγμένη σειρά (⭐)</span>
+          <span>{_t("Προεπιλεγμένη σειρά (⭐)")}</span>
         </label>
       </div>
     </Modal>

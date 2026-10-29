@@ -3,6 +3,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { templates } from '../api';
+import { _t } from '../i18n';
 
 const CATEGORIES = [
   'Αγωγές', 'Εξώδικα', 'Αιτήσεις', 'Συμφωνητικά', 'Προσφυγές',
@@ -389,27 +390,25 @@ export default function BulkTemplatesImport() {
     <div style={S.page}>
       <div style={S.headerRow}>
         <button style={S.backBtn} onClick={goBackToTemplates}>
-          ← Επιστροφή στα υποδείγματα
+          {_t("← Επιστροφή στα υποδείγματα")}
         </button>
-        <h1 style={S.h1}>Μαζική εισαγωγή υποδειγμάτων Word</h1>
+        <h1 style={S.h1}>{_t("Μαζική εισαγωγή υποδειγμάτων Word")}</h1>
       </div>
 
       <div style={S.subtitle}>
-        Ανεβάζει πολλά .docx αρχεία ταυτόχρονα από φάκελο. Η κατηγορία εντοπίζεται
-        αυτόματα από το όνομα. Ελέγχει διπλότυπα (ίδιο όνομα + κατηγορία) και
-        μπορείς να επιλέξεις Αντικατάσταση ή Παράλειψη.
+        {_t("Ανεβάζει πολλά .docx αρχεία ταυτόχρονα από φάκελο. Η κατηγορία εντοπίζεται αυτόματα από το όνομα. Ελέγχει διπλότυπα (ίδιο όνομα + κατηγορία) και μπορείς να επιλέξεις Αντικατάσταση ή Παράλειψη.")}
       </div>
 
       {items.length === 0 && !checking && (
         <div style={S.dropzone} onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
-          <div style={S.dropzoneText}>Σύρετε εδώ .docx αρχεία ή φάκελο</div>
-          <div style={S.dropzoneSep}>ή</div>
+          <div style={S.dropzoneText}>{_t("Σύρετε εδώ .docx αρχεία ή φάκελο")}</div>
+          <div style={S.dropzoneSep}>{_t("ή")}</div>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
             <button style={S.btn} onClick={() => folderInputRef.current.click()}>
-              📁 Επιλογή φακέλου
+              {_t("📁 Επιλογή φακέλου")}
             </button>
             <button style={S.btn} onClick={() => fileInputRef.current.click()}>
-              📄 Επιλογή αρχείων
+              {_t("📄 Επιλογή αρχείων")}
             </button>
           </div>
           <input
@@ -424,14 +423,14 @@ export default function BulkTemplatesImport() {
             onChange={e => handleFiles(e.target.files)}
           />
           <div style={S.hint}>
-            Θα φιλτραριστούν αυτόματα μόνο τα .docx.
+            {_t("Θα φιλτραριστούν αυτόματα μόνο τα .docx.")}
           </div>
         </div>
       )}
 
       {checking && (
         <div style={S.checkingBanner}>
-          🔍 Έλεγχος διπλότυπων στη βάση...
+          {_t("🔍 Έλεγχος διπλότυπων στη βάση...")}
         </div>
       )}
 
@@ -440,14 +439,13 @@ export default function BulkTemplatesImport() {
           {duplicateCount > 0 && !uploading && !allDone && (
             <div style={S.dupWarnBar}>
               <span>
-                ⚠️ Βρέθηκαν <b>{duplicateCount}</b> διπλότυπα με ίδιο όνομα + κατηγορία
-                (τώρα: {dupToReplace} για αντικατάσταση, {dupToSkip} για παράλειψη).
+                {_t("⚠️ Βρέθηκαν")} <b>{duplicateCount}</b> {_t("διπλότυπα με ίδιο όνομα + κατηγορία (τώρα:")} {dupToReplace} {_t("για αντικατάσταση,")} {dupToSkip} {_t("για παράλειψη).")}
               </span>
               <button style={S.btnWarning} onClick={() => setAllDuplicatesAction('replace')}>
-                🔄 Αντικατάσταση όλων ({duplicateCount})
+                {_t("🔄 Αντικατάσταση όλων (")}{duplicateCount})
               </button>
               <button style={S.btnWarning} onClick={() => setAllDuplicatesAction('skip')}>
-                ⏸️ Παράλειψη όλων ({duplicateCount})
+                {_t("⏸️ Παράλειψη όλων (")}{duplicateCount})
               </button>
             </div>
           )}
@@ -459,21 +457,21 @@ export default function BulkTemplatesImport() {
                 disabled={items.every(it => it.status === 'ok' || it.status === 'skipped')}
                 style={items.every(it => it.status === 'ok' || it.status === 'skipped') ? S.btnDisabled : S.btnPrimary}
               >
-                ⬆️ Ανέβασμα ({pendingCount + failCount} αρχεία)
+                {_t("⬆️ Ανέβασμα (")}{pendingCount + failCount} {_t("αρχεία)")}
               </button>
             )}
             {uploading && (
               <button onClick={abort} style={S.btnDanger}>
-                ⛔ Διακοπή
+                {_t("⛔ Διακοπή")}
               </button>
             )}
             {allDone && !anyFailed && (
               <button onClick={goBackToTemplates} style={S.btnSuccess}>
-                ✅ Ολοκληρώθηκε — Επιστροφή στα υποδείγματα
+                {_t("✅ Ολοκληρώθηκε — Επιστροφή στα υποδείγματα")}
               </button>
             )}
             <button onClick={resetAll} disabled={uploading} style={S.btn}>
-              🗑️ Καθαρισμός λίστας
+              {_t("🗑️ Καθαρισμός λίστας")}
             </button>
 
             <div style={S.counters}>
@@ -502,11 +500,11 @@ export default function BulkTemplatesImport() {
                 <span>⏳ ETA: <b>{formatTime(etaSec)}</b></span>
               )}
               {rate > 0 && (
-                <span>🚀 Ρυθμός: <b>{rate.toFixed(2)}/sec</b></span>
+                <span>{_t("🚀 Ρυθμός:")} <b>{rate.toFixed(2)}/sec</b></span>
               )}
               {uploading && (
                 <span style={{ color: '#3182ce' }}>
-                  🔄 {uploadingCount} ενεργά upload{uploadingCount !== 1 ? 's' : ''}
+                  🔄 {uploadingCount} {_t("ενεργά upload")}{uploadingCount !== 1 ? 's' : ''}
                 </span>
               )}
             </div>
@@ -515,16 +513,16 @@ export default function BulkTemplatesImport() {
           {allDone && !anyFailed && redirectIn !== null && (
             <div style={S.successBanner}>
               <span style={{ fontSize: 16 }}>
-                ✅ Ολοκληρώθηκαν {okCount} νέα, {skippedCount} παραλείφθηκαν σε {formatTime(elapsedSec)}.
+                {_t("✅ Ολοκληρώθηκαν")} {okCount} {_t("νέα,")} {skippedCount} {_t("παραλείφθηκαν σε")} {formatTime(elapsedSec)}.
               </span>
               <span style={{ color: '#22543d' }}>
-                Επιστροφή στα υποδείγματα σε <b>{redirectIn}s</b>...
+                {_t("Επιστροφή στα υποδείγματα σε")} <b>{redirectIn}s</b>...
               </span>
               <button onClick={cancelRedirect} style={S.btn}>
-                Ακύρωση redirect
+                {_t("Ακύρωση redirect")}
               </button>
               <button onClick={goBackToTemplates} style={S.btnSuccess}>
-                Επιστροφή τώρα
+                {_t("Επιστροφή τώρα")}
               </button>
             </div>
           )}
@@ -534,10 +532,10 @@ export default function BulkTemplatesImport() {
               <thead>
                 <tr>
                   <th style={{ ...S.th, width: 40 }}>#</th>
-                  <th style={S.th}>Όνομα υποδείγματος</th>
-                  <th style={{ ...S.th, width: 180 }}>Κατηγορία</th>
-                  <th style={{ ...S.th, width: 150 }}>Ενέργεια</th>
-                  <th style={{ ...S.th, width: 130, textAlign: 'center' }}>Κατάσταση</th>
+                  <th style={S.th}>{_t("Όνομα υποδείγματος")}</th>
+                  <th style={{ ...S.th, width: 180 }}>{_t("Κατηγορία")}</th>
+                  <th style={{ ...S.th, width: 150 }}>{_t("Ενέργεια")}</th>
+                  <th style={{ ...S.th, width: 130, textAlign: 'center' }}>{_t("Κατάσταση")}</th>
                   <th style={{ ...S.th, width: 40 }}></th>
                 </tr>
               </thead>
@@ -548,7 +546,7 @@ export default function BulkTemplatesImport() {
                     <td style={S.td}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         {it.isDuplicate && (
-                          <span title="Υπάρχει ήδη υπόδειγμα με ίδιο όνομα + κατηγορία" style={{ color: '#f6ad55', fontSize: 16 }}>⚠️</span>
+                          <span title={_t("Υπάρχει ήδη υπόδειγμα με ίδιο όνομα + κατηγορία")} style={{ color: '#f6ad55', fontSize: 16 }}>⚠️</span>
                         )}
                         <input
                           type="text" value={it.name}
@@ -565,7 +563,7 @@ export default function BulkTemplatesImport() {
                         disabled={uploading || it.status === 'ok' || it.status === 'skipped'}
                         style={S.select}
                       >
-                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        {CATEGORIES.map(c => <option key={c} value={c}>{_t(c)}</option>)}
                       </select>
                     </td>
                     <td style={S.td}>
@@ -580,18 +578,18 @@ export default function BulkTemplatesImport() {
                             fontWeight: 'bold'
                           }}
                         >
-                          <option value="replace">🔄 Αντικατάσταση</option>
-                          <option value="skip">⏸️ Παράλειψη</option>
+                          <option value="replace">{_t("🔄 Αντικατάσταση")}</option>
+                          <option value="skip">{_t("⏸️ Παράλειψη")}</option>
                         </select>
                       ) : (
-                        <span style={{ color: '#718096', fontSize: 12, fontStyle: 'italic' }}>— Νέο —</span>
+                        <span style={{ color: '#718096', fontSize: 12, fontStyle: 'italic' }}>{_t("— Νέο —")}</span>
                       )}
                     </td>
                     <td style={{ ...S.td, textAlign: 'center', fontSize: 13 }}>
-                      {it.status === 'pending'   && <span style={{ color: '#718096' }}>⏳ Αναμονή</span>}
-                      {it.status === 'uploading' && <span style={{ color: '#3182ce', fontWeight: 'bold' }}>⬆️ Ανεβαίνει...</span>}
+                      {it.status === 'pending'   && <span style={{ color: '#718096' }}>{_t("⏳ Αναμονή")}</span>}
+                      {it.status === 'uploading' && <span style={{ color: '#3182ce', fontWeight: 'bold' }}>{_t("⬆️ Ανεβαίνει...")}</span>}
                       {it.status === 'ok'        && <span style={{ color: '#2f855a', fontWeight: 'bold' }}>✅ OK</span>}
-                      {it.status === 'skipped'   && <span style={{ color: '#4a5568' }}>⏸️ Παραλείφθηκε</span>}
+                      {it.status === 'skipped'   && <span style={{ color: '#4a5568' }}>{_t("⏸️ Παραλείφθηκε")}</span>}
                       {it.status === 'error'     && (
                         <span style={{ color: '#c53030', fontWeight: 'bold', cursor: 'help' }} title={it.error}>
                           ❌ {(it.error || '').substring(0, 25)}
@@ -600,7 +598,7 @@ export default function BulkTemplatesImport() {
                     </td>
                     <td style={{ ...S.td, textAlign: 'center' }}>
                       {!uploading && it.status !== 'ok' && it.status !== 'skipped' && (
-                        <button style={S.xbtn} onClick={() => removeItem(idx)} title="Αφαίρεση από λίστα">
+                        <button style={S.xbtn} onClick={() => removeItem(idx)} title={_t("Αφαίρεση από λίστα")}>
                           ✕
                         </button>
                       )}
@@ -613,8 +611,7 @@ export default function BulkTemplatesImport() {
 
           {!uploading && failCount > 0 && (
             <div style={S.summaryBanner}>
-              <strong>Σύνοψη:</strong> {okCount} επιτυχή, {skippedCount} παραλείφθηκαν,
-              απέτυχαν <b>{failCount}</b> (hover στο ❌ για λεπτομέρειες, μετά «Ανέβασμα» ξανά για retry).
+              <strong>{_t("Σύνοψη:")}</strong> {okCount} {_t("επιτυχή,")} {skippedCount} {_t("παραλείφθηκαν, απέτυχαν")} <b>{failCount}</b> {_t("(hover στο ❌ για λεπτομέρειες, μετά «Ανέβασμα» ξανά για retry).")}
             </div>
           )}
         </>

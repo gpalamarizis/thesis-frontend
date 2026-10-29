@@ -8,6 +8,7 @@ import { api, people, lists, downloadFile } from '../api';
 
 import { toISODate } from '../utils/format';
 import DateInput from '../components/DateInput';
+import { _t, LOCALE } from '../i18n';
 // Utility: today, today+N as YYYY-MM-DD
 // Τοπική ώρα: το toISOString() έδινε τη ΧΘΕΣΙΝΗ ημερομηνία από τα
 // μεσάνυχτα ως τις 2-3 π.μ. — ώρες που δουλεύουν δικηγόροι.
@@ -54,7 +55,7 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
       await downloadFile('/api/reports/upcoming-hearings?' + params.toString(),
                          'Prosexeis-Dikasimoi.docx');
     } catch (e) {
-      setError(e.message || 'Η εξαγωγή απέτυχε');
+      setError(e.message || _t("Η εξαγωγή απέτυχε"));
     } finally {
       setExporting(false);
     }
@@ -86,7 +87,7 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
     people.opponents.list().then(d => setOpponents(unwrap(d))).catch(() => {});
   }, []);
 
-  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('el-GR', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString(LOCALE, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
 
   const setPreset = (days) => {
     setFromDate(todayISO());
@@ -94,10 +95,10 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Προσεχείς Δικάσιμοι">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Προσεχείς Δικάσιμοι")}>
       <div className="section">
         <div className="section-header">
-          <h2>Αναφορά ({total})</h2>
+          <h2>{_t("Αναφορά (")}{total})</h2>
         </div>
 
         <div style={{
@@ -106,25 +107,25 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
           borderRadius: 6, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center'
         }}>
           <div>
-            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Από</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Από")}</label>
             <DateInput value={fromDate}
               onChange={e => setFromDate(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }} />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Έως</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Έως")}</label>
             <DateInput value={toDate}
               onChange={e => setToDate(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }} />
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Δικηγόρος</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Δικηγόρος")}</label>
             <select
               value={dikigorosId}
               onChange={e => setDikigorosId(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }}
             >
-              <option value="">— Όλοι —</option>
+              <option value="">{_t("— Όλοι —")}</option>
               {lawyers.map(l => (
                 <option key={l.aa} value={l.aa}>{l.eponymo} {l.onoma || ''}</option>
               ))}
@@ -132,26 +133,26 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
           </div>
 
           <div>
-            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Είδος υπόθεσης</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Είδος υπόθεσης")}</label>
             <select
               value={onomasiaId}
               onChange={e => setOnomasiaId(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 220 }}
             >
-              <option value="">— Όλα —</option>
+              <option value="">{_t("— Όλα —")}</option>
               {caseTypes.map(t => (
                 <option key={t.aa} value={t.aa}>{t.name}</option>
               ))}
             </select>
           </div>
           <div>
-            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>Αντίδικος</label>
+            <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Αντίδικος")}</label>
             <select
               value={antidikosId}
               onChange={e => setAntidikosId(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 220 }}
             >
-              <option value="">— Όλοι —</option>
+              <option value="">{_t("— Όλοι —")}</option>
               {opponents.map(o => (
                 <option key={o.aa} value={o.aa}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>
               ))}
@@ -164,25 +165,25 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
               disabled={exporting || loading}
               style={{ padding: '5px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1A202C', borderRadius: 4, backgroundColor: '#1A202C', color: '#fff', fontWeight: 600 }}
             >
-              {exporting ? 'Εξαγωγή...' : 'Εξαγωγή σε Word'}
+              {exporting ? _t("Εξαγωγή...") : _t("Εξαγωγή σε Word")}
             </button>
             <button
               onClick={() => setPreset(7)}
               style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
-              7 ημέρες
+              {_t("7 ημέρες")}
             </button>
             <button
               onClick={() => setPreset(30)}
               style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
-              30 ημέρες
+              {_t("30 ημέρες")}
             </button>
             <button
               onClick={() => setPreset(90)}
               style={{ padding: '4px 10px', fontSize: 12, cursor: 'pointer', border: '1px solid #cbd5e0', borderRadius: 4, backgroundColor: '#fff' }}
             >
-              90 ημέρες
+              {_t("90 ημέρες")}
             </button>
           </div>
         </div>
@@ -190,25 +191,25 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
         {error && <div className="error">{error}</div>}
 
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : items.length === 0 ? (
-          <div className="empty-state">Δεν βρέθηκαν δικάσιμοι στο διάστημα.</div>
+          <div className="empty-state">{_t("Δεν βρέθηκαν δικάσιμοι στο διάστημα.")}</div>
         ) : (
           <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 4 }}>
             <table className="table" style={{ fontSize: 13 }}>
               <thead>
                 <tr>
-                  <th style={{ width: 170 }}>Ημερομηνία</th>
-                  <th>Δικαστήριο</th>
-                  <th style={{ width: 120 }}>Τμήμα</th>
-                  <th style={{ width: 100 }}>Πινάκιο</th>
-                  <th style={{ width: 130 }}>Διαδικασία</th>
-                  <th style={{ width: 100 }}>Πόλη</th>
-                  <th style={{ width: 130 }}>Πρωτόκολλο</th>
-                  <th>Πελάτης</th>
-                  <th>Αντίδικος</th>
-                  <th>Χειριστές</th>
-                  <th>Περιγραφή</th>
+                  <th style={{ width: 170 }}>{_t("Ημερομηνία")}</th>
+                  <th>{_t("Δικαστήριο")}</th>
+                  <th style={{ width: 120 }}>{_t("Τμήμα")}</th>
+                  <th style={{ width: 100 }}>{_t("Πινάκιο")}</th>
+                  <th style={{ width: 130 }}>{_t("Διαδικασία")}</th>
+                  <th style={{ width: 100 }}>{_t("Πόλη")}</th>
+                  <th style={{ width: 130 }}>{_t("Πρωτόκολλο")}</th>
+                  <th>{_t("Πελάτης")}</th>
+                  <th>{_t("Αντίδικος")}</th>
+                  <th>{_t("Χειριστές")}</th>
+                  <th>{_t("Περιγραφή")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -216,7 +217,7 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
                   <tr key={r.aa}
                       onClick={r.ypothesi_id ? () => navigate(`/cases/${r.ypothesi_id}?tab=court`) : undefined}
                       style={r.ypothesi_id ? { cursor: 'pointer' } : undefined}
-                      title={r.ypothesi_id ? 'Άνοιγμα υπόθεσης' : undefined}>
+                      title={r.ypothesi_id ? _t("Άνοιγμα υπόθεσης") : undefined}>
                     <td style={{ fontWeight: 500 }}>{fmtDate(r.date)}</td>
                     <td>{r.dikastirio_name || '—'}</td>
                     <td>{r.tmima_name || '—'}</td>

@@ -7,6 +7,7 @@
 //
 // Όπου η Κύπρος διαφέρει, ο κώδικας ρωτά εδώ.
 
+import { _t } from '../i18n';
 export const COUNTRY = String(import.meta.env.VITE_COUNTRY || 'GR').toUpperCase() === 'CY' ? 'CY' : 'GR';
 export const isCY = COUNTRY === 'CY';
 
@@ -21,21 +22,21 @@ export const HAS_GR_WITHHOLDINGS = !isCY; // παρακράτηση 20%, χαρ�
 // Όροι που αλλάζουν ανά χώρα
 export const TERM = isCY
   ? {
-      afm: 'ΑΦΤ',                          // Αριθμός Φορολογικής Ταυτότητας (TIC)
-      afmFull: 'Αριθμός Φορολογικής Ταυτότητας (ΑΦΤ)',
-      doy: 'Αρ. Εγγραφής ΦΠΑ',
-      gemi: 'Αρ. Εγγραφής (Έφορος Εταιρειών)',
-      kad: 'Κωδικός δραστηριότητας (NACE)',
-      bar: 'ΠΔΣ',
+      afm: _t("ΑΦΤ"),                          // Αριθμός Φορολογικής Ταυτότητας (TIC)
+      afmFull: _t("Αριθμός Φορολογικής Ταυτότητας (ΑΦΤ)"),
+      doy: _t("Αρ. Εγγραφής ΦΠΑ"),
+      gemi: _t("Αρ. Εγγραφής (Έφορος Εταιρειών)"),
+      kad: _t("Κωδικός δραστηριότητας (NACE)"),
+      bar: _t("ΠΔΣ"),
       country: 'ΚΥΠΡΟΣ',
     }
   : {
-      afm: 'ΑΦΜ',
-      afmFull: 'ΑΦΜ',
-      doy: 'ΔΟΥ',
-      gemi: 'ΓΕΜΗ',
-      kad: 'ΚΑΔ κύριας δραστηριότητας',
-      bar: 'ΔΣΑ',
+      afm: _t("ΑΦΜ"),
+      afmFull: _t("ΑΦΜ"),
+      doy: _t("ΔΟΥ"),
+      gemi: _t("ΓΕΜΗ"),
+      kad: _t("ΚΑΔ κύριας δραστηριότητας"),
+      bar: _t("ΔΣΑ"),
       country: 'ΕΛΛΑΔΑ',
     };
 
@@ -46,29 +47,29 @@ export function checkAfm(value) {
   const v = String(value || '').trim().toUpperCase();
   if (!v) return null;
   if (isCY) {
-    return /^\d{8}[A-Z]$/.test(v) ? null : 'Ο ΑΦΤ έχει 8 ψηφία και ένα γράμμα (π.χ. 12345678A).';
+    return /^\d{8}[A-Z]$/.test(v) ? null : _t("Ο ΑΦΤ έχει 8 ψηφία και ένα γράμμα (π.χ. 12345678A).");
   }
-  return /^\d{9}$/.test(v) ? null : 'Το ΑΦΜ πρέπει να έχει ακριβώς 9 ψηφία.';
+  return /^\d{9}$/.test(v) ? null : _t("Το ΑΦΜ πρέπει να έχει ακριβώς 9 ψηφία.");
 }
 export const AFM_MAXLEN = isCY ? 9 : 9;
-export const AFM_PLACEHOLDER = isCY ? '8 ψηφία + γράμμα' : '9 ψηφία';
+export const AFM_PLACEHOLDER = isCY ? _t("8 ψηφία + γράμμα") : _t("9 ψηφία");
 
 // Χρήσιμοι σύνδεσμοι στο μενού «Βοήθεια»
 export const HELP_LINKS = isCY
   ? [
-      { href: 'https://www.cyprusbarassociation.org',  label: 'Παγκύπριος Δικηγορικός Σύλλογος', icon: '⚖️' },
-      { href: 'https://www.cylaw.org',                 label: 'CyLaw (νομοθεσία & νομολογία)',   icon: '📚' },
-      { href: 'https://www.tax.gov.cy',                label: 'Τμήμα Φορολογίας',                icon: '💼' },
-      { href: 'https://efiling.drcor.mcit.gov.cy',     label: 'Έφορος Εταιρειών',                icon: '📊' },
-      { href: 'https://portal.dls.moi.gov.cy',         label: 'Κτηματολόγιο',                    icon: '🗺️' },
+      { href: 'https://www.cyprusbarassociation.org',  label: _t("Παγκύπριος Δικηγορικός Σύλλογος"), icon: '⚖️' },
+      { href: 'https://www.cylaw.org',                 label: _t("CyLaw (νομοθεσία & νομολογία)"),   icon: '📚' },
+      { href: 'https://www.tax.gov.cy',                label: _t("Τμήμα Φορολογίας"),                icon: '💼' },
+      { href: 'https://efiling.drcor.mcit.gov.cy',     label: _t("Έφορος Εταιρειών"),                icon: '📊' },
+      { href: 'https://portal.dls.moi.gov.cy',         label: _t("Κτηματολόγιο"),                    icon: '🗺️' },
     ]
   : [
-      { href: 'https://www.dsa.gr',              label: 'ΔΣΑ',                icon: '⚖️' },
-      { href: 'https://www.olomeleia.gr',        label: 'Ολομέλεια',          icon: '🏛️' },
-      { href: 'https://www.gsis.gr',             label: 'ΓΓΠΣ / TAXISnet',    icon: '💼' },
-      { href: 'https://www.businessregistry.gr', label: 'ΓΕΜΗ',               icon: '📊' },
-      { href: 'https://solon.gov.gr',            label: 'Νομοθεσία (ΣΟΛΩΝ)',  icon: '📚' },
-      { href: 'https://www.ktimatologio.gr',     label: 'Κτηματολόγιο',       icon: '🗺️' },
+      { href: 'https://www.dsa.gr',              label: _t("ΔΣΑ"),                icon: '⚖️' },
+      { href: 'https://www.olomeleia.gr',        label: _t("Ολομέλεια"),          icon: '🏛️' },
+      { href: 'https://www.gsis.gr',             label: _t("ΓΓΠΣ / TAXISnet"),    icon: '💼' },
+      { href: 'https://www.businessregistry.gr', label: _t("ΓΕΜΗ"),               icon: '📊' },
+      { href: 'https://solon.gov.gr',            label: _t("Νομοθεσία (ΣΟΛΩΝ)"),  icon: '📚' },
+      { href: 'https://www.ktimatologio.gr',     label: _t("Κτηματολόγιο"),       icon: '🗺️' },
     ];
 
 // Ιστοσελίδα προϊόντος (σύνδεσμος στη σελίδα εισόδου)

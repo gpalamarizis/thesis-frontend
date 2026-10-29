@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { _t } from '../i18n';
 
 /**
  * DataTable — reusable table with:
@@ -27,7 +28,7 @@ import { useState, useMemo, useEffect } from 'react';
 function readState(key) {
   try { return JSON.parse(sessionStorage.getItem(key) || 'null') || {}; } catch { return {}; }
 }
-function DataTable({ columns, rows, rowKey, actions, emptyMessage = 'Δεν υπάρχουν εγγραφές.', searchable = true, pageSize = 25, onRowClick, stateKey }) {
+function DataTable({ columns, rows, rowKey, actions, emptyMessage = _t("Δεν υπάρχουν εγγραφές."), searchable = true, pageSize = 25, onRowClick, stateKey }) {
   const key = 'dt:' + (stateKey || `${window.location.pathname}|${columns.map(c => c.key).join(',')}`);
   const saved = useMemo(() => readState(key), [key]);
   const [q, setQ] = useState(saved.q || '');
@@ -84,11 +85,11 @@ function DataTable({ columns, rows, rowKey, actions, emptyMessage = 'Δεν υπ
           <input
             type="search"
             className="search-input"
-            placeholder="🔍 Αναζήτηση..."
+            placeholder={_t("🔍 Αναζήτηση...")}
             value={q}
             onChange={e => { setQ(e.target.value); setPage(0); }}
           />
-          <div className="data-table-count">{filtered.length} εγγραφές</div>
+          <div className="data-table-count">{filtered.length} {_t("εγγραφές")}</div>
         </div>
       )}
       {pageRows.length === 0 ? (
@@ -125,9 +126,9 @@ function DataTable({ columns, rows, rowKey, actions, emptyMessage = 'Δεν υπ
       )}
       {totalPages > 1 && (
         <div className="pagination">
-          <button className="btn btn-secondary btn-sm" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>← Προηγ.</button>
-          <span>Σελίδα {currentPage + 1} από {totalPages}</span>
-          <button className="btn btn-secondary btn-sm" disabled={currentPage >= totalPages - 1} onClick={() => setPage(currentPage + 1)}>Επόμ. →</button>
+          <button className="btn btn-secondary btn-sm" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>{_t("← Προηγ.")}</button>
+          <span>{_t("Σελίδα")} {currentPage + 1} {_t("από")} {totalPages}</span>
+          <button className="btn btn-secondary btn-sm" disabled={currentPage >= totalPages - 1} onClick={() => setPage(currentPage + 1)}>{_t("Επόμ. →")}</button>
         </div>
       )}
     </div>

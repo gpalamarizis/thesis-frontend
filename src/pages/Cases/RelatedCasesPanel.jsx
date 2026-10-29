@@ -4,6 +4,7 @@ import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { cases, caseRelatedCases } from '../../api';
 import { fmtDate, trunc } from '../../utils/format';
+import { _t, _tServer } from '../../i18n';
 
 /**
  * RelatedCasesPanel — sidebar section shown inside the case "Υπόθεση" tab.
@@ -82,17 +83,17 @@ function RelatedCasesPanel({ caseId }) {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
           <h3 style={{ fontSize: 13, color: '#667eea', textTransform: 'uppercase', letterSpacing: 0.5, margin: 0 }}>
-            ✨ Προτεινόμενες υποθέσεις (AI)
+            {_t("✨ Προτεινόμενες υποθέσεις (AI)")}
           </h3>
           <a href="#" onClick={e => { e.preventDefault(); loadSuggestions(); }} style={{ fontSize: 12, color: '#a0aec0' }}>
-            ↻ Ανανέωση
+            {_t("↻ Ανανέωση")}
           </a>
         </div>
         {loadingSuggestions ? (
-          <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>Ανάλυση σε εξέλιξη...</div>
+          <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>{_t("Ανάλυση σε εξέλιξη...")}</div>
         ) : suggestions.length === 0 ? (
           <div style={{ color: '#a0aec0', fontSize: 12, padding: 8, fontStyle: 'italic' }}>
-            Δεν βρέθηκαν παρόμοιες υποθέσεις. Το AI μαθαίνει από τις χειροκίνητες συνδέσεις σου.
+            {_t("Δεν βρέθηκαν παρόμοιες υποθέσεις. Το AI μαθαίνει από τις χειροκίνητες συνδέσεις σου.")}
           </div>
         ) : (
           <ul className="related-cases-list">
@@ -107,19 +108,19 @@ function RelatedCasesPanel({ caseId }) {
                   {s.perilipsi && <div className="rc-summary">{trunc(s.perilipsi, 60)}</div>}
                   {s.reasons && s.reasons.length > 0 && (
                     <div className="rc-reasons">
-                      {s.reasons.map((r, i) => <span key={i} className="rc-reason-tag">{r}</span>)}
+                      {s.reasons.map((r, i) => <span key={i} className="rc-reason-tag">{_tServer(r)}</span>)}
                     </div>
                   )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <button
                     className="btn btn-sm"
-                    title="Σύνδεση ως σχετική"
+                    title={_t("Σύνδεση ως σχετική")}
                     onClick={(e) => { e.stopPropagation(); acceptSuggestion(s); }}
                   >✓</button>
                   <button
                     className="btn btn-sm btn-secondary"
-                    title="Απόρριψη (το AI θα μάθει)"
+                    title={_t("Απόρριψη (το AI θα μάθει)")}
                     onClick={(e) => { e.stopPropagation(); rejectSuggestion(s); }}
                   >✗</button>
                 </div>
@@ -132,13 +133,13 @@ function RelatedCasesPanel({ caseId }) {
       {/* Same-client cases */}
       <div>
         <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
-          Υποθέσεις του ίδιου πελάτη ({sameClient.length})
+          {_t("Υποθέσεις του ίδιου πελάτη (")}{sameClient.length})
         </h3>
         {loading ? (
-          <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>Φόρτωση...</div>
+          <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>{_t("Φόρτωση...")}</div>
         ) : sameClient.length === 0 ? (
           <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>
-            Δεν υπάρχουν άλλες υποθέσεις για αυτόν τον πελάτη.
+            {_t("Δεν υπάρχουν άλλες υποθέσεις για αυτόν τον πελάτη.")}
           </div>
         ) : (
           <ul className="related-cases-list">
@@ -147,7 +148,7 @@ function RelatedCasesPanel({ caseId }) {
                 <div className="rc-code">
                   <strong>{c.xeirokinito_id}</strong>
                   <span className={`badge ${c.ekkremis !== false ? 'badge-open' : 'badge-closed'}`}>
-                    {c.ekkremis !== false ? 'Εκκρεμής' : 'Κλεισμένη'}
+                    {c.ekkremis !== false ? _t("Εκκρεμής") : _t("Κλεισμένη")}
                   </span>
                 </div>
                 {c.onomasia_fakelou && <div className="rc-title">{c.onomasia_fakelou}</div>}
@@ -163,15 +164,15 @@ function RelatedCasesPanel({ caseId }) {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
           <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, margin: 0 }}>
-            Χειροκίνητες συνδέσεις ({related.length})
+            {_t("Χειροκίνητες συνδέσεις (")}{related.length})
           </h3>
-          <a href="#" onClick={e => { e.preventDefault(); setShowAdd(true); }} style={{ fontSize: 12 }}>+ Προσθήκη</a>
+          <a href="#" onClick={e => { e.preventDefault(); setShowAdd(true); }} style={{ fontSize: 12 }}>{_t("+ Προσθήκη")}</a>
         </div>
         {loading ? (
-          <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>Φόρτωση...</div>
+          <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>{_t("Φόρτωση...")}</div>
         ) : related.length === 0 ? (
           <div style={{ color: '#a0aec0', fontSize: 13, padding: 8 }}>
-            Δεν έχουν συνδεθεί σχετικές υποθέσεις χειροκίνητα.
+            {_t("Δεν έχουν συνδεθεί σχετικές υποθέσεις χειροκίνητα.")}
           </div>
         ) : (
           <ul className="related-cases-list">
@@ -181,7 +182,7 @@ function RelatedCasesPanel({ caseId }) {
                   <div className="rc-code">
                     <strong>{r.other_xeirokinito_id}</strong>
                     <span className={`badge ${r.other_ekkremis !== false ? 'badge-open' : 'badge-closed'}`}>
-                      {r.other_ekkremis !== false ? 'Εκκρεμής' : 'Κλεισμένη'}
+                      {r.other_ekkremis !== false ? _t("Εκκρεμής") : _t("Κλεισμένη")}
                     </span>
                   </div>
                   {r.other_perilipsi && <div className="rc-summary">{trunc(r.other_perilipsi, 80)}</div>}
@@ -190,7 +191,7 @@ function RelatedCasesPanel({ caseId }) {
                 </div>
                 <button
                   className="btn btn-sm btn-danger"
-                  title="Αφαίρεση σύνδεσης"
+                  title={_t("Αφαίρεση σύνδεσης")}
                   onClick={(e) => { e.stopPropagation(); setConfirmDel(r); }}
                 >×</button>
               </li>
@@ -209,9 +210,9 @@ function RelatedCasesPanel({ caseId }) {
       )}
       {confirmDel && (
         <ConfirmDialog
-          title="Αφαίρεση σύνδεσης"
-          message="Η υπόθεση δεν διαγράφεται — αφαιρείται μόνο η σύνδεση."
-          confirmLabel="Αφαίρεση"
+          title={_t("Αφαίρεση σύνδεσης")}
+          message={_t("Η υπόθεση δεν διαγράφεται — αφαιρείται μόνο η σύνδεση.")}
+          confirmLabel={_t("Αφαίρεση")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -249,7 +250,7 @@ function AddRelatedCaseModal({ caseId, onClose, onAdded, existingIds }) {
   });
 
   const save = async () => {
-    if (!selectedId) { setError('Επιλέξτε υπόθεση.'); return; }
+    if (!selectedId) { setError(_t("Επιλέξτε υπόθεση.")); return; }
     setError('');
     setSaving(true);
     try {
@@ -268,31 +269,31 @@ function AddRelatedCaseModal({ caseId, onClose, onAdded, existingIds }) {
 
   return (
     <Modal
-      title="Σύνδεση με σχετική υπόθεση"
+      title={_t("Σύνδεση με σχετική υπόθεση")}
       onClose={onClose}
       size="lg"
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving || !selectedId} onClick={save}>{saving ? 'Σύνδεση...' : 'Σύνδεση'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving || !selectedId} onClick={save}>{saving ? _t("Σύνδεση...") : _t("Σύνδεση")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       <div className="form-group">
-        <label>Αναζήτηση υπόθεσης (πρωτόκολλο, πελάτης, περίληψη)</label>
+        <label>{_t("Αναζήτηση υπόθεσης (πρωτόκολλο, πελάτης, περίληψη)")}</label>
         <input
           type="text"
           autoFocus
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="π.χ. 1Φ, Παπαδόπουλος, διαζύγιο..."
+          placeholder={_t("π.χ. 1Φ, Παπαδόπουλος, διαζύγιο...")}
         />
       </div>
       {loading ? (
-        <div className="empty-state">Φόρτωση...</div>
+        <div className="empty-state">{_t("Φόρτωση...")}</div>
       ) : (
         <div style={{ maxHeight: 260, overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: 6 }}>
           {availableCases.length === 0 ? (
-            <div className="empty-state">Δεν βρέθηκαν διαθέσιμες υποθέσεις.</div>
+            <div className="empty-state">{_t("Δεν βρέθηκαν διαθέσιμες υποθέσεις.")}</div>
           ) : (
             <table className="table" style={{ marginBottom: 0 }}>
               <tbody>
@@ -316,8 +317,8 @@ function AddRelatedCaseModal({ caseId, onClose, onAdded, existingIds }) {
         </div>
       )}
       <div className="form-group" style={{ marginTop: 12 }}>
-        <label>Σημείωση σχέσης (προαιρετικά)</label>
-        <input type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder="π.χ. Συνέχεια της ίδιας διαφοράς" />
+        <label>{_t("Σημείωση σχέσης (προαιρετικά)")}</label>
+        <input type="text" value={notes} onChange={e => setNotes(e.target.value)} placeholder={_t("π.χ. Συνέχεια της ίδιας διαφοράς")} />
       </div>
     </Modal>
   );

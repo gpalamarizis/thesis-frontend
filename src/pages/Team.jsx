@@ -7,10 +7,11 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import { usersAdmin } from '../api';
+import { _t, _tc } from '../i18n';
 
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString('el-GR') : '—'; }
 
-const roleLabel = { admin: 'Owner', owner: 'Owner', lawyer: 'Δικηγόρος', secretary: 'Γραμματέας' };
+const roleLabel = { admin: 'Owner', owner: 'Owner', lawyer: _t("Δικηγόρος"), secretary: _t("Γραμματέας") };
 
 function Team({ user, onLogout, onOpenCaseSearch }) {
   const [rows, setRows] = useState([]);
@@ -47,7 +48,7 @@ function Team({ user, onLogout, onOpenCaseSearch }) {
   const seatWarning = seatInfo && seatInfo.max_users && seatInfo.active_count >= seatInfo.max_users;
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Ομάδα (χρήστες)">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Ομάδα (χρήστες)")}>
       {err && <div className="error">{err}</div>}
 
       {seatInfo && (
@@ -60,30 +61,30 @@ function Team({ user, onLogout, onOpenCaseSearch }) {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
           <div>
-            <strong>Χρήστες:</strong> {seatInfo.active_count} / {seatInfo.max_users} ενεργοί
-            {seatWarning && ' — έχεις φτάσει το όριο. Αναβάθμισε το πλάνο για περισσότερους.'}
+            <strong>{_t("Χρήστες:")}</strong> {seatInfo.active_count} / {seatInfo.max_users} {_t("ενεργοί")}
+            {seatWarning && _t(" — έχεις φτάσει το όριο. Αναβάθμισε το πλάνο για περισσότερους.")}
           </div>
-          <div style={{ fontSize: 12, color: '#4a5568' }}>Πλάνο: {seatInfo.plan_type}</div>
+          <div style={{ fontSize: 12, color: '#4a5568' }}>{_t("Πλάνο:")} {seatInfo.plan_type}</div>
         </div>
       )}
 
       {isOwner && (
         <div style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
-          <button className="btn" onClick={() => setShowNew(true)} disabled={seatWarning}>+ Νέος χρήστης</button>
-          {seatWarning && <a href="/settings/subscription" className="btn btn-secondary">Αναβάθμιση πλάνου</a>}
+          <button className="btn" onClick={() => setShowNew(true)} disabled={seatWarning}>{_t("+ Νέος χρήστης")}</button>
+          {seatWarning && <a href="/settings/subscription" className="btn btn-secondary">{_t("Αναβάθμιση πλάνου")}</a>}
         </div>
       )}
 
-      {loading ? <div className="empty-state">Φόρτωση...</div> : (
+      {loading ? <div className="empty-state">{_t("Φόρτωση...")}</div> : (
         <table className="table">
           <thead><tr>
             <th>Email</th>
-            <th>Όνομα</th>
-            <th>Ρόλος</th>
-            <th>Οικονομικά</th>
-            <th>Ενεργός</th>
-            <th>Δημιουργία</th>
-            {isOwner && <th>Ενέργειες</th>}
+            <th>{_t("Όνομα")}</th>
+            <th>{_t("Ρόλος")}</th>
+            <th>{_t("Οικονομικά")}</th>
+            <th>{_t("Ενεργός")}</th>
+            <th>{_tc("col", "Δημιουργία")}</th>
+            {isOwner && <th>{_t("Ενέργειες")}</th>}
           </tr></thead>
           <tbody>
             {rows.map(u => (
@@ -94,7 +95,7 @@ function Team({ user, onLogout, onOpenCaseSearch }) {
                 <td>
                   {isOwner && u.role !== 'admin' && u.role !== 'owner' ? (
                     <label style={{ cursor: 'pointer' }}>
-                      <input type="checkbox" checked={!!u.can_view_finance} onChange={() => toggleFinance(u)} /> {u.can_view_finance ? 'Ναι' : 'Όχι'}
+                      <input type="checkbox" checked={!!u.can_view_finance} onChange={() => toggleFinance(u)} /> {u.can_view_finance ? _t("Ναι") : _t("Όχι")}
                     </label>
                   ) : (u.can_view_finance || u.role === 'admin' || u.role === 'owner' ? '✓' : '—')}
                 </td>
@@ -102,7 +103,7 @@ function Team({ user, onLogout, onOpenCaseSearch }) {
                 <td style={{ fontSize: 12 }}>{fmtDate(u.created_at)}</td>
                 {isOwner && (
                   <td>
-                    <button className="btn btn-sm btn-secondary" onClick={() => setEditing(u)}>Επεξ.</button>
+                    <button className="btn btn-sm btn-secondary" onClick={() => setEditing(u)}>{_t("Επεξ.")}</button>
                     <button className="btn btn-sm btn-secondary" onClick={() => setResetPwFor(u)} style={{ marginLeft: 4 }}>🔑</button>
                     {u.id !== user.id && (
                       <button className="btn btn-sm btn-secondary" onClick={() => toggleActive(u)} style={{ marginLeft: 4 }}>
@@ -136,27 +137,27 @@ function NewUserModal({ onClose, onCreated }) {
     finally { setSaving(false); }
   };
   return (
-    <Modal title="Νέος χρήστης" onClose={onClose} actions={<>
-      <button className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-      <button className="btn" onClick={save} disabled={saving}>{saving ? 'Δημιουργία...' : 'Δημιουργία'}</button>
+    <Modal title={_t("Νέος χρήστης")} onClose={onClose} actions={<>
+      <button className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+      <button className="btn" onClick={save} disabled={saving}>{saving ? _t("Δημιουργία...") : _t("Δημιουργία")}</button>
     </>}>
       {err && <div className="error">{err}</div>}
       <div className="form-grid-2">
         <div className="form-group"><label>Email *</label><input type="email" value={form.email} onChange={c('email')} /></div>
         <div className="form-group"><label>Password (≥8) *</label><input type="password" value={form.password} onChange={c('password')} /></div>
-        <div className="form-group"><label>Όνομα</label><input value={form.first_name} onChange={c('first_name')} /></div>
-        <div className="form-group"><label>Επώνυμο</label><input value={form.last_name} onChange={c('last_name')} /></div>
-        <div className="form-group"><label>Ρόλος</label>
+        <div className="form-group"><label>{_t("Όνομα")}</label><input value={form.first_name} onChange={c('first_name')} /></div>
+        <div className="form-group"><label>{_t("Επώνυμο")}</label><input value={form.last_name} onChange={c('last_name')} /></div>
+        <div className="form-group"><label>{_t("Ρόλος")}</label>
           <select value={form.role} onChange={c('role')}>
-            <option value="lawyer">Δικηγόρος</option>
-            <option value="secretary">Γραμματέας</option>
+            <option value="lawyer">{_t("Δικηγόρος")}</option>
+            <option value="secretary">{_t("Γραμματέας")}</option>
             <option value="admin">Owner</option>
           </select>
         </div>
         <div className="form-group" style={{ alignSelf: 'end' }}>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <input type="checkbox" checked={form.can_view_finance} onChange={c('can_view_finance')} />
-            Πρόσβαση στα Οικονομικά
+            {_t("Πρόσβαση στα Οικονομικά")}
           </label>
         </div>
       </div>
@@ -178,25 +179,25 @@ function EditUserModal({ user, onClose, onSaved }) {
     catch (e) { setErr(e.message); }
   };
   return (
-    <Modal title={`Επεξεργασία: ${user.email}`} onClose={onClose} actions={<>
-      <button className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-      <button className="btn" onClick={save}>Αποθήκευση</button>
+    <Modal title={_t("Επεξεργασία: {0}", [user.email])} onClose={onClose} actions={<>
+      <button className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+      <button className="btn" onClick={save}>{_t("Αποθήκευση")}</button>
     </>}>
       {err && <div className="error">{err}</div>}
       <div className="form-grid-2">
-        <div className="form-group"><label>Όνομα</label><input value={form.first_name} onChange={c('first_name')} /></div>
-        <div className="form-group"><label>Επώνυμο</label><input value={form.last_name} onChange={c('last_name')} /></div>
-        <div className="form-group"><label>Ρόλος</label>
+        <div className="form-group"><label>{_t("Όνομα")}</label><input value={form.first_name} onChange={c('first_name')} /></div>
+        <div className="form-group"><label>{_t("Επώνυμο")}</label><input value={form.last_name} onChange={c('last_name')} /></div>
+        <div className="form-group"><label>{_t("Ρόλος")}</label>
           <select value={form.role} onChange={c('role')}>
-            <option value="lawyer">Δικηγόρος</option>
-            <option value="secretary">Γραμματέας</option>
+            <option value="lawyer">{_t("Δικηγόρος")}</option>
+            <option value="secretary">{_t("Γραμματέας")}</option>
             <option value="admin">Owner</option>
           </select>
         </div>
         <div className="form-group" style={{ alignSelf: 'end' }}>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <input type="checkbox" checked={form.can_view_finance} onChange={c('can_view_finance')} />
-            Πρόσβαση στα Οικονομικά
+            {_t("Πρόσβαση στα Οικονομικά")}
           </label>
         </div>
       </div>
@@ -208,22 +209,22 @@ function ResetPwModal({ user, onClose, onDone }) {
   const [pw, setPw] = useState('');
   const [err, setErr] = useState('');
   const save = async () => {
-    if (pw.length < 8) { setErr('Ελάχιστο 8 χαρακτήρες'); return; }
+    if (pw.length < 8) { setErr(_t("Ελάχιστο 8 χαρακτήρες")); return; }
     // Το κλείσιμο του παραθύρου χωρίς σφάλμα είναι η επιβεβαίωση — δεν
     // χρειάζεται δεύτερο παράθυρο από πάνω.
     try { await usersAdmin.resetPassword(user.id, pw); onDone(); }
     catch (e) { setErr(e.message); }
   };
   return (
-    <Modal title={`Reset κωδικού: ${user.email}`} onClose={onClose} actions={<>
-      <button className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-      <button className="btn" onClick={save}>Αλλαγή</button>
+    <Modal title={_t("Reset κωδικού: {0}", [user.email])} onClose={onClose} actions={<>
+      <button className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+      <button className="btn" onClick={save}>{_t("Αλλαγή")}</button>
     </>}>
       {err && <div className="error">{err}</div>}
       <div className="form-group">
-        <label>Νέος κωδικός (≥8 χαρακτ.)</label>
+        <label>{_t("Νέος κωδικός (≥8 χαρακτ.)")}</label>
         <input type="text" value={pw} onChange={e => setPw(e.target.value)} autoFocus />
-        <small style={{ color: '#718096' }}>Δώσε τον κωδικό στον χρήστη — δεν στέλνεται email.</small>
+        <small style={{ color: '#718096' }}>{_t("Δώσε τον κωδικό στον χρήστη — δεν στέλνεται email.")}</small>
       </div>
     </Modal>
   );

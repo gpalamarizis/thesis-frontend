@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { entryKeyDown } from '../utils/formKeys';
+import { _t } from '../i18n';
 
 /**
  * Modal — ασφαλές παράθυρο καταχώρησης.
@@ -82,7 +83,7 @@ function Modal({ title, onClose, children, size = 'md', actions, dismissible = f
         <div className="modal-header">
           <h2>{title}</h2>
           {showClose && (
-            <button type="button" className="close-btn" onClick={onClose} title="Κλείσιμο">×</button>
+            <button type="button" className="close-btn" onClick={onClose} title={_t("Κλείσιμο")}>×</button>
           )}
         </div>
         <div className="modal-body">

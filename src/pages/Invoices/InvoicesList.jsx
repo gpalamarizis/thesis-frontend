@@ -4,6 +4,7 @@ import Layout from '../../components/Layout';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { invoices } from '../../api';
 import { fmtDate, fmtCurrency } from '../../utils/format';
+import { _t } from '../../i18n';
 
 function InvoicesList({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
@@ -38,12 +39,12 @@ function InvoicesList({ user, onLogout, onOpenCaseSearch }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Τιμολόγια">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Τιμολόγια")}>
       {error && <div className="error">{error}</div>}
 
       <div className="stats" style={{ marginBottom: 20 }}>
         <div className="stat-card">
-          <h3>Σύνολο</h3>
+          <h3>{_t("Σύνολο")}</h3>
           <div className="value">{stats.total}</div>
         </div>
         <div className="stat-card stat-card-accent-orange">
@@ -51,42 +52,42 @@ function InvoicesList({ user, onLogout, onOpenCaseSearch }) {
           <div className="value">{stats.draft}</div>
         </div>
         <div className="stat-card stat-card-accent-green">
-          <h3>Εκδοθέντα</h3>
+          <h3>{_t("Εκδοθέντα")}</h3>
           <div className="value">{stats.issued}</div>
         </div>
         <div className="stat-card">
-          <h3>Σύνολο αξίας (εκδοθέντα)</h3>
+          <h3>{_t("Σύνολο αξίας (εκδοθέντα)")}</h3>
           <div className="value" style={{ fontSize: 20 }}>{fmtCurrency(stats.grossTotal)}</div>
         </div>
       </div>
 
       <div className="section">
         <div className="section-header">
-          <h2>Λίστα τιμολογίων</h2>
+          <h2>{_t("Λίστα τιμολογίων")}</h2>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: 4 }}>
-              <button className={`btn btn-sm ${statusFilter === 'all' ? '' : 'btn-secondary'}`} onClick={() => setStatusFilter('all')}>Όλα</button>
+              <button className={`btn btn-sm ${statusFilter === 'all' ? '' : 'btn-secondary'}`} onClick={() => setStatusFilter('all')}>{_t("Όλα")}</button>
               <button className={`btn btn-sm ${statusFilter === 'draft' ? '' : 'btn-secondary'}`} onClick={() => setStatusFilter('draft')}>Draft</button>
-              <button className={`btn btn-sm ${statusFilter === 'issued' ? '' : 'btn-secondary'}`} onClick={() => setStatusFilter('issued')}>Εκδοθέντα</button>
-              <button className={`btn btn-sm ${statusFilter === 'cancelled' ? '' : 'btn-secondary'}`} onClick={() => setStatusFilter('cancelled')}>Ακυρωμένα</button>
+              <button className={`btn btn-sm ${statusFilter === 'issued' ? '' : 'btn-secondary'}`} onClick={() => setStatusFilter('issued')}>{_t("Εκδοθέντα")}</button>
+              <button className={`btn btn-sm ${statusFilter === 'cancelled' ? '' : 'btn-secondary'}`} onClick={() => setStatusFilter('cancelled')}>{_t("Ακυρωμένα")}</button>
             </div>
-            <button className="btn" onClick={() => navigate('/invoices/new')}>+ Νέο τιμολόγιο</button>
+            <button className="btn" onClick={() => navigate('/invoices/new')}>{_t("+ Νέο τιμολόγιο")}</button>
           </div>
         </div>
 
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : filtered.length === 0 ? (
-          <div className="empty-state">Δεν υπάρχουν τιμολόγια σε αυτή την κατάσταση.</div>
+          <div className="empty-state">{_t("Δεν υπάρχουν τιμολόγια σε αυτή την κατάσταση.")}</div>
         ) : (
           <table className="table">
             <thead><tr>
-              <th style={{width:120}}>Αριθμός</th>
-              <th style={{width:100}}>Ημ/νία</th>
-              <th>Πελάτης</th>
-              <th>Υπόθεση</th>
-              <th style={{width:120,textAlign:'right'}}>Ποσό (μικτό)</th>
-              <th style={{width:100}}>Κατάσταση</th>
+              <th style={{width:120}}>{_t("Αριθμός")}</th>
+              <th style={{width:100}}>{_t("Ημ/νία")}</th>
+              <th>{_t("Πελάτης")}</th>
+              <th>{_t("Υπόθεση")}</th>
+              <th style={{width:120,textAlign:'right'}}>{_t("Ποσό (μικτό)")}</th>
+              <th style={{width:100}}>{_t("Κατάσταση")}</th>
               <th style={{width:1}}></th>
             </tr></thead>
             <tbody>
@@ -103,7 +104,7 @@ function InvoicesList({ user, onLogout, onOpenCaseSearch }) {
                       r.status === 'cancelled' ? 'badge-closed' :
                       'badge-open'
                     }`}>
-                      {r.status === 'draft' ? 'Draft' : r.status === 'issued' ? 'Εκδοθέν' : 'Ακυρωμένο'}
+                      {r.status === 'draft' ? 'Draft' : r.status === 'issued' ? _t("Εκδοθέν") : _t("Ακυρωμένο")}
                     </span>
                   </td>
                   <td style={{ whiteSpace: 'nowrap' }}>
@@ -120,9 +121,9 @@ function InvoicesList({ user, onLogout, onOpenCaseSearch }) {
 
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή τιμολογίου"
-          message="Το τιμολόγιο draft θα διαγραφεί οριστικά."
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή τιμολογίου")}
+          message={_t("Το τιμολόγιο draft θα διαγραφεί οριστικά.")}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />

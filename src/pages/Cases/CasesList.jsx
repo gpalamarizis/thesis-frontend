@@ -5,6 +5,7 @@ import DataTable from '../../components/DataTable';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { cases } from '../../api';
 import { fmtDate, trunc, caseStatusBadge } from '../../utils/format';
+import { _t } from '../../i18n';
 
 function CasesList({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
@@ -29,45 +30,45 @@ function CasesList({ user, onLogout, onOpenCaseSearch }) {
   };
 
   const columns = [
-    { key: 'xeirokinito_id', label: 'Αρ. Πρωτοκόλλου', width: 130, render: r => <strong>{r.xeirokinito_id}</strong> },
-    { key: 'pelatis',        label: 'Πελάτης',         render: r => r.fysiko_full_name || r.nomiko_eponymia || '—' },
-    { key: 'antidikos',      label: 'Αντίδικος / Συμβαλλόμενος', width: 180, render: r => r.antidikos_eponymo || '—' },
-    { key: 'perilipsi',      label: 'Περιγραφή',       render: r => trunc(r.perilipsi, 55) },
-    { key: 'ekkremis',       label: 'Κατάσταση',       width: 110, render: r => {
+    { key: 'xeirokinito_id', label: _t("Αρ. Πρωτοκόλλου"), width: 130, render: r => <strong>{r.xeirokinito_id}</strong> },
+    { key: 'pelatis',        label: _t("Πελάτης"),         render: r => r.fysiko_full_name || r.nomiko_eponymia || '—' },
+    { key: 'antidikos',      label: _t("Αντίδικος / Συμβαλλόμενος"), width: 180, render: r => r.antidikos_eponymo || '—' },
+    { key: 'perilipsi',      label: _t("Περιγραφή"),       render: r => trunc(r.perilipsi, 55) },
+    { key: 'ekkremis',       label: _t("Κατάσταση"),       width: 110, render: r => {
         const b = caseStatusBadge(r.ekkremis);
         return <span className={`badge ${b.cls}`}>{b.label}</span>;
       }
     },
-    { key: 'date_eisagogis', label: 'Εισαγωγή',        width: 100, render: r => fmtDate(r.date_eisagogis) },
+    { key: 'date_eisagogis', label: _t("Εισαγωγή"),        width: 100, render: r => fmtDate(r.date_eisagogis) },
   ];
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Υποθέσεις">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Υποθέσεις")}>
       {error && <div className="error">{error}</div>}
       <div className="section">
         <div className="section-header">
-          <h2>Λίστα Υποθέσεων</h2>
-          <button className="btn" onClick={() => navigate('/cases/new')}>+ Νέα Υπόθεση</button>
+          <h2>{_t("Λίστα Υποθέσεων")}</h2>
+          <button className="btn" onClick={() => navigate('/cases/new')}>{_t("+ Νέα Υπόθεση")}</button>
         </div>
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : (
           <DataTable
             columns={columns}
             rows={items}
             rowKey={r => r.aa || r.id}
             onRowClick={r => navigate(`/cases/${r.aa || r.id}`)}
-            emptyMessage="Δεν υπάρχουν υποθέσεις."
-            actions={r => <button className="btn btn-danger btn-sm" onClick={() => setConfirmDel(r)}>Διαγραφή</button>}
+            emptyMessage={_t("Δεν υπάρχουν υποθέσεις.")}
+            actions={r => <button className="btn btn-danger btn-sm" onClick={() => setConfirmDel(r)}>{_t("Διαγραφή")}</button>}
           />
         )}
       </div>
 
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή Υπόθεσης"
-          message={`Είστε σίγουρος ότι θέλετε να διαγράψετε την υπόθεση "${confirmDel.xeirokinito_id}"; Θα διαγραφούν και όλες οι ενέργειες και τα έγγραφα που σχετίζονται με αυτήν.`}
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή Υπόθεσης")}
+          message={_t("Είστε σίγουρος ότι θέλετε να διαγράψετε την υπόθεση \"{0}\"; Θα διαγραφούν και όλες οι ενέργειες και τα έγγραφα που σχετίζονται με αυτήν.", [confirmDel.xeirokinito_id])}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel.aa || confirmDel.id)}
           onClose={() => setConfirmDel(null)}
         />

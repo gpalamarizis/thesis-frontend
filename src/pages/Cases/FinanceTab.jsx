@@ -11,6 +11,7 @@ import DocumentPicker from '../../components/DocumentPicker';
 import ClientAccountPanel from '../../components/ClientAccountPanel';
 import AccountsList from '../../components/AccountsList';
 import DescriptionSuggest from '../../components/DescriptionSuggest';
+import { _t } from '../../i18n';
 /**
  * FinanceTab — Backend schema:
  *   ores:             ypothesi_id, dikigoros_id, date, ores, perigrafi, amount
@@ -70,42 +71,42 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
   const fullName = (p) =>
     (p.eponymia && p.eponymia.trim())
     || `${p.eponymo || ''} ${p.onoma || ''}`.trim()
-    || '(χωρίς όνομα)';
+    || _t("(χωρίς όνομα)");
 
   const synergatisOptions = [
     ...externals.map(l => ({
       value: `synergatis_dikigoros_id:${l.aa}`,
-      label: `${fullName(l)} — δικηγόρος γραφείου`,
+      label: _t("{0} — δικηγόρος γραφείου", [fullName(l)]),
     })),
     ...related.map(r => ({
       value: `synergatis_id:${r.aa}`,
-      label: `${fullName(r)}${r.idiotita_name ? ' — ' + r.idiotita_name : ' — σχετικό πρόσωπο'}`,
+      label: `${fullName(r)}${r.idiotita_name ? ' — ' + r.idiotita_name : _t(' — σχετικό πρόσωπο')}`,
     })),
   ];
   const pagiaOptions = pagiaDefs.map(p => ({ value: p.aa, label: p.name }));
 
   // Απαλλαγή ΦΠΑ για ενδοκοινοτική συναλλαγή (Μαύρος 26/10): στον λογαριασμό
   // και στο τιμολόγιο ΦΠΑ 0 και η σημείωση του Άρθρου 14 παρ. 2α Ν. 2859/2000
-  const xorisFpaField = { key: 'xoris_fpa', label: 'Χωρίς ΦΠΑ — ενδοκοινοτική συναλλαγή', type: 'checkbox',
-    listLabel: 'ΦΠΑ' };
+  const xorisFpaField = { key: 'xoris_fpa', label: _t("Χωρίς ΦΠΑ — ενδοκοινοτική συναλλαγή"), type: 'checkbox',
+    listLabel: _t("ΦΠΑ") };
   const oresFields = [
-    { key: 'date',         label: 'Ημερομηνία',    type: 'date',   required: true },
-    { key: 'dikigoros_id', label: 'Δικηγόρος',     type: 'select', options: lawyerOptions },
-    { key: 'ores',         label: 'Ώρες',          type: 'number', step: '0.25', triggersCalc: true },
+    { key: 'date',         label: _t("Ημερομηνία"),    type: 'date',   required: true },
+    { key: 'dikigoros_id', label: _t("Δικηγόρος"),     type: 'select', options: lawyerOptions },
+    { key: 'ores',         label: _t("Ώρες"),          type: 'number', step: '0.25', triggersCalc: true },
     // Η χρέωση του ΠΕΛΑΤΗ, προσυμπληρωμένη. Ορίζεται μία φορά στην
     // καρτέλα του και ισχύει σε κάθε υπόθεσή του· αλλάζει ελεύθερα εδώ.
-    { key: 'timi_oras',    label: 'Χρέωση/ώρα (€)', type: 'number', step: '0.01',
+    { key: 'timi_oras',    label: _t("Χρέωση/ώρα (€)"), type: 'number', step: '0.01',
       virtual: true, triggersCalc: true, defaultValue: clientRate || undefined,
-      hint: clientRate ? `Χρέωση πελάτη: ${clientRate} €/ώρα` : undefined },
-    { key: 'amount',       label: 'Ποσό (€)',      type: 'number', step: '0.01', computed: true },
-    { key: 'perigrafi',    label: 'Περιγραφή',     type: 'textarea' },
+      hint: clientRate ? _t("Χρέωση πελάτη: {0} €/ώρα", [clientRate]) : undefined },
+    { key: 'amount',       label: _t("Ποσό (€)"),      type: 'number', step: '0.01', computed: true },
+    { key: 'perigrafi',    label: _t("Περιγραφή"),     type: 'textarea' },
     xorisFpaField,
   ];
 
-  const plironeiField = { key: 'plironei', label: 'Πληρώνει', type: 'person',
+  const plironeiField = { key: 'plironei', label: _t("Πληρώνει"), type: 'person',
     personCols: { dikigoros: 'plironei_dikigoros_id', sxetiko: 'plironei_sxetiko_id' },
     nameField: 'plironei_name', roleField: 'plironei_role' };
-  const parastatikoField = { key: 'parastatiko_document_id', label: 'Παραστατικό', type: 'document' };
+  const parastatikoField = { key: 'parastatiko_document_id', label: _t("Παραστατικό"), type: 'document' };
 
   // ΠΡΟΚΑΤΑΒΟΛΕΣ — χρήματα που έχει ήδη λάβει το γραφείο.
   // Ο αποστολέας είναι ελεύθερο κείμενο: συχνά πληρώνει τρίτος που δεν
@@ -114,59 +115,59 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
   // Οι κατηγορίες συντηρούνται στην Επεξεργασία λιστών, γιατί αλλάζουν
   // ανά σύλλογο και ανά έτος.
   const grammatiaFields = [
-    { key: 'date',                   label: 'Ημερομηνία', type: 'date', required: true },
-    { key: 'grammatio_katigoria_id', label: 'Κατηγορία',  type: 'select',
+    { key: 'date',                   label: _t("Ημερομηνία"), type: 'date', required: true },
+    { key: 'grammatio_katigoria_id', label: _t("Κατηγορία"),  type: 'select',
       options: grammatiaDefs.map(g => ({ value: g.aa, label: g.name })),
-      emptyHint: 'Πρόσθεσε κατηγορίες στην Επεξεργασία λιστών → Κατηγορίες γραμματίων' },
-    { key: 'arithmos',               label: 'Αριθμός γραμματίου', type: 'text' },
-    { key: 'dikigoros_id',           label: 'Δικηγόρος',  type: 'select', options: lawyerOptions },
-    { key: 'amount',                 label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
-    { key: 'perigrafi',              label: 'Σημειώσεις', type: 'textarea' },
+      emptyHint: _t("Πρόσθεσε κατηγορίες στην Επεξεργασία λιστών → Κατηγορίες γραμματίων") },
+    { key: 'arithmos',               label: _t("Αριθμός γραμματίου"), type: 'text' },
+    { key: 'dikigoros_id',           label: _t("Δικηγόρος"),  type: 'select', options: lawyerOptions },
+    { key: 'amount',                 label: _t("Ποσό (€)"),   type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',              label: _t("Σημειώσεις"), type: 'textarea' },
     xorisFpaField,
-    { ...parastatikoField, label: 'Γραμμάτιο (αρχείο)' },
+    { ...parastatikoField, label: _t("Γραμμάτιο (αρχείο)") },
   ];
 
   const prokatavolesFields = [
-    { key: 'date',       label: 'Ημερομηνία', type: 'date',   required: true },
+    { key: 'date',       label: _t("Ημερομηνία"), type: 'date',   required: true },
     // Οι τράπεζες του γραφείου προτείνονται (Επεξεργασία λιστών → Τράπεζες),
     // αλλά γράφεται και άλλη ελεύθερα: η στήλη μένει κείμενο.
-    { key: 'trapeza',    label: 'Τράπεζα',    type: 'combo',
+    { key: 'trapeza',    label: _t("Τράπεζα"),    type: 'combo',
       options: bankDefs.map(b => b.name).filter(Boolean) },
-    { key: 'apostoleas', label: 'Αποστολέας', type: 'text' },
-    { key: 'amount',     label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
-    { key: 'perigrafi',  label: 'Σημειώσεις', type: 'textarea' },
-    { ...parastatikoField, label: 'Παραστατικό τράπεζας' },
+    { key: 'apostoleas', label: _t("Αποστολέας"), type: 'text' },
+    { key: 'amount',     label: _t("Ποσό (€)"),   type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',  label: _t("Σημειώσεις"), type: 'textarea' },
+    { ...parastatikoField, label: _t("Παραστατικό τράπεζας") },
   ];
 
 
   const pagiaFields = [
-    { key: 'date',                      label: 'Ημερομηνία',   type: 'date',   required: true },
-    { key: 'pagio_exodo_definition_id', label: 'Είδος εξόδου',  type: 'select', options: pagiaOptions },
-    { key: 'amount',                    label: 'Ποσό (€)',      type: 'number', required: true, step: '0.01' },
-    { key: 'perigrafi',                 label: 'Περιγραφή',     type: 'textarea' },
+    { key: 'date',                      label: _t("Ημερομηνία"),   type: 'date',   required: true },
+    { key: 'pagio_exodo_definition_id', label: _t("Είδος εξόδου"),  type: 'select', options: pagiaOptions },
+    { key: 'amount',                    label: _t("Ποσό (€)"),      type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',                 label: _t("Περιγραφή"),     type: 'textarea' },
     plironeiField,
     parastatikoField,
   ];
 
   const amoivesFields = [
-    { key: 'date',         label: 'Ημερομηνία', type: 'date',   required: true },
-    { key: 'dikigoros_id', label: 'Δικηγόρος',  type: 'select', options: lawyerOptions },
-    { key: 'amount',       label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
-    { key: 'perigrafi',    label: 'Περιγραφή',  type: 'textarea' },
+    { key: 'date',         label: _t("Ημερομηνία"), type: 'date',   required: true },
+    { key: 'dikigoros_id', label: _t("Δικηγόρος"),  type: 'select', options: lawyerOptions },
+    { key: 'amount',       label: _t("Ποσό (€)"),   type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',    label: _t("Περιγραφή"),  type: 'textarea' },
     xorisFpaField,
   ];
 
   const synergatiFields = [
-    { key: 'date',          label: 'Ημερομηνία', type: 'date',   required: true },
+    { key: 'date',          label: _t("Ημερομηνία"), type: 'date',   required: true },
     // Επιλογέας προσώπου: λίστα δικηγόρων + αναζήτηση σε σχετικά πρόσωπα.
     // Απλό dropdown δεν στέκει — τα σχετικά πρόσωπα είναι πάνω από 1.700.
-    { key: 'synergatis', label: 'Συνεργάτης', type: 'person',
+    { key: 'synergatis', label: _t("Συνεργάτης"), type: 'person',
       personCols: { dikigoros: 'synergatis_dikigoros_id', sxetiko: 'synergatis_id' },
       nameField: 'synergatis_name', roleField: 'synergatis_role' },
     plironeiField,
     parastatikoField,
-    { key: 'amount',        label: 'Ποσό (€)',   type: 'number', required: true, step: '0.01' },
-    { key: 'perigrafi',     label: 'Περιγραφή',  type: 'textarea' },
+    { key: 'amount',        label: _t("Ποσό (€)"),   type: 'number', required: true, step: '0.01' },
+    { key: 'perigrafi',     label: _t("Περιγραφή"),  type: 'textarea' },
   ];
 
   // Εξαγωγή όλων των εξόδων της υπόθεσης — πάγια και συνεργάτη σε ένα
@@ -184,7 +185,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
         reports.clientAccountDocxUrl(clientType, clientId, accLang, caseId),
         null, 'logariasmos-proxeiro.docx');
     } catch (err) {
-      setExportError(err.message || 'Η παραγωγή απέτυχε.');
+      setExportError(err.message || _t("Η παραγωγή απέτυχε."));
     } finally {
       setExportingAcc(false);
     }
@@ -196,7 +197,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     try {
       await downloadFile(finance.exportExodaXlsx(caseId), 'Exoda.xlsx');
     } catch (err) {
-      setExportError(err.message || 'Η εξαγωγή απέτυχε.');
+      setExportError(err.message || _t("Η εξαγωγή απέτυχε."));
     } finally {
       setExporting(false);
     }
@@ -206,25 +207,25 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
-        <div style={{ color: '#718096' }}>Οικονομικά στοιχεία της υπόθεσης</div>
+        <div style={{ color: '#718096' }}>{_t("Οικονομικά στοιχεία της υπόθεσης")}</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button type="button" className="btn btn-sm"
                   onClick={exportExoda} disabled={exporting}>
-            {exporting ? 'Εξαγωγή…' : '⬇ Έξοδα σε Excel'}
+            {exporting ? _t("Εξαγωγή…") : _t("⬇ Έξοδα σε Excel")}
           </button>
           {/* Ο αναλυτικός λογαριασμός είναι ανά ΠΕΛΑΤΗ: μαζεύει από όλες
               τις υποθέσεις του, όχι μόνο από αυτή. */}
           {clientId && (
             <>
               <select value={accLang} onChange={e => setAccLang(e.target.value)}
-                      style={{ width: 'auto' }} title="Γλώσσα εντύπου">
-                <option value="el">Ελληνικά</option>
+                      style={{ width: 'auto' }} title={_t("Γλώσσα εντύπου")}>
+                <option value="el">{_t("Ελληνικά")}</option>
                 <option value="en">English</option>
                 <option value="fr">Français</option>
               </select>
               <button type="button" className="btn btn-sm"
                       onClick={exportAccount} disabled={exportingAcc}>
-                {exportingAcc ? 'Παραγωγή…' : '⬇ Αναλυτικός λογαριασμός'}
+                {exportingAcc ? _t("Παραγωγή…") : _t("⬇ Αναλυτικός λογαριασμός")}
               </button>
             </>
           )}
@@ -237,7 +238,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
       {/* Εκδοθέντες λογαριασμοί που περιλαμβάνουν αυτή την υπόθεση */}
       <div style={{ marginBottom: 18, display: accCount ? 'block' : 'none' }}>
         <button type="button" className="btn btn-sm btn-secondary" onClick={() => setShowAcc(v => !v)}>
-          Εκδοθέντες λογαριασμοί ({accCount}) {showAcc ? '▾' : '▸'}
+          {_t("Εκδοθέντες λογαριασμοί (")}{accCount}) {showAcc ? '▾' : '▸'}
         </button>
         <div style={{ marginTop: 10, display: showAcc ? 'block' : 'none' }}>
           <AccountsList filter={{ ypothesi_id: caseId }} reloadKey={accReload} onLoaded={setAccCount} hideIfForbidden />
@@ -248,35 +249,34 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
         <div className="error-message" style={{ marginBottom: 12 }}>{exportError}</div>
       )}
       <Tabs tabs={[
-        { label: 'Αμοιβή με ωριαία απασχόληση', badge: counts.ores,                content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="ores"            fields={oresFields}      onCountChange={n => bumpCount('ores', n)} /> },
+        { label: _t("Αμοιβή με ωριαία απασχόληση"), badge: counts.ores,                content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="ores"            fields={oresFields}      onCountChange={n => bumpCount('ores', n)} /> },
         // Πάγια και έξοδα συνεργάτη ενώθηκαν σε μία καρτέλα με δύο
         // ενότητες. Τα δεδομένα μένουν σε χωριστούς πίνακες: το ένα δείχνει
         // σε είδος εξόδου από λίστα, το άλλο σε πρόσωπο.
-        { label: 'Έξοδα',
+        { label: _t("Έξοδα"),
           badge: (counts['pagia-exoda'] || 0) + (counts['exoda-synergati'] || 0),
           content: (
             <div>
-              <h3 style={{ fontSize: 15, margin: '0 0 4px' }}>Έξοδα χωρίς ΦΠΑ</h3>
+              <h3 style={{ fontSize: 15, margin: '0 0 4px' }}>{_t("Έξοδα χωρίς ΦΠΑ")}</h3>
               <p style={{ fontSize: 13, color: '#718096', margin: '0 0 12px' }}>
-                Έξοδα που δεν υπάγονται σε ΦΠΑ — παράβολα, τέλη, αποζημιώσεις.
+                {_t("Έξοδα που δεν υπάγονται σε ΦΠΑ — παράβολα, τέλη, αποζημιώσεις.")}
               </p>
               <FinanceResource reloadKey={finReload} caseId={caseId} resource="pagia-exoda" fields={pagiaFields}
                 onCountChange={n => bumpCount('pagia-exoda', n)} />
 
               <div style={{ borderTop: '1px solid #e2e8f0', margin: '24px 0 0', paddingTop: 20 }}>
-                <h3 style={{ fontSize: 15, margin: '0 0 4px' }}>Έξοδα με ΦΠΑ</h3>
+                <h3 style={{ fontSize: 15, margin: '0 0 4px' }}>{_t("Έξοδα με ΦΠΑ")}</h3>
                 <p style={{ fontSize: 13, color: '#718096', margin: '0 0 12px' }}>
-                  Έξοδα που υπάγονται σε ΦΠΑ, με παραστατικό από συνεργάτη —
-                  δικηγόρο γραφείου ή σχετικό πρόσωπο.
+                  {_t("Έξοδα που υπάγονται σε ΦΠΑ, με παραστατικό από συνεργάτη — δικηγόρο γραφείου ή σχετικό πρόσωπο.")}
                 </p>
                 <FinanceResource reloadKey={finReload} caseId={caseId} resource="exoda-synergati" fields={synergatiFields}
                   onCountChange={n => bumpCount('exoda-synergati', n)} />
               </div>
             </div>
           ) },
-        { label: 'Γραμμάτια',       badge: counts.grammatia,           content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="grammatia"      fields={grammatiaFields}    onCountChange={n => bumpCount('grammatia', n)} /> },
-        { label: 'Προκαταβολές',    badge: counts.prokatavoles,        content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="prokatavoles"   fields={prokatavolesFields} onCountChange={n => bumpCount('prokatavoles', n)} /> },
-        { label: 'Πάγιες αμοιβές',  badge: counts.amoives,             content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
+        { label: _t("Γραμμάτια"),       badge: counts.grammatia,           content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="grammatia"      fields={grammatiaFields}    onCountChange={n => bumpCount('grammatia', n)} /> },
+        { label: _t("Προκαταβολές"),    badge: counts.prokatavoles,        content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="prokatavoles"   fields={prokatavolesFields} onCountChange={n => bumpCount('prokatavoles', n)} /> },
+        { label: _t("Πάγιες αμοιβές"),  badge: counts.amoives,             content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
       ]} />
     </div>
   );
@@ -319,7 +319,7 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
   const renderCell = (r, f) => {
     const v = r[f.key];
     if (f.type === 'date')   return fmtDate(v);
-    if (f.type === 'checkbox') return v ? <span title="Απαλλαγή ΦΠΑ (ενδοκοινοτική)">0% *</span> : '';
+    if (f.type === 'checkbox') return v ? <span title={_t("Απαλλαγή ΦΠΑ (ενδοκοινοτική)")}>0% *</span> : '';
     if (f.key === 'amount' || f.key === 'timi_oras') return fmtCurrency(v);
     if (f.personCols) {
       // Το όνομα έρχεται από τη βάση, όχι από τις επιλογές του browser
@@ -361,7 +361,7 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
       <thead>
         <tr>
           {listColumns.map(f => <th key={f.key}>{f.listLabel || f.label}</th>)}
-          {settled && <th style={{ whiteSpace: 'nowrap' }}>Λογαριασμός</th>}
+          {settled && <th style={{ whiteSpace: 'nowrap' }}>{_t("Λογαριασμός")}</th>}
           <th style={{ width: 1 }}></th>
         </tr>
       </thead>
@@ -373,7 +373,7 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
             ))}
             {settled && <td style={{ whiteSpace: 'nowrap' }}>{r.settled_doc || '✓'}</td>}
             <td style={{ whiteSpace: 'nowrap' }}>
-              <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
+              <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>{_t("Επεξ.")}</button>
               {' '}
               <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
             </td>
@@ -388,28 +388,28 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
       {error && <div className="error">{error}</div>}
       <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
         <div style={{ color: '#4a5568' }}>
-          {openRows.length} ανοιχτές — Σύνολο: <strong>{fmtCurrency(settledRows.length ? sumOf(openRows) : total)}</strong>
+          {openRows.length} {_t("ανοιχτές — Σύνολο:")} <strong>{fmtCurrency(settledRows.length ? sumOf(openRows) : total)}</strong>
           {settledRows.length > 0 && (
-            <span style={{ color: '#a0aec0' }}> · εξοφλημένα {fmtCurrency(sumOf(settledRows))}</span>
+            <span style={{ color: '#a0aec0' }}> {_t("· εξοφλημένα")} {fmtCurrency(sumOf(settledRows))}</span>
           )}
         </div>
-        <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέα εγγραφή</button>
+        <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowModal(true); }}>{_t("+ Νέα εγγραφή")}</button>
       </div>
 
       {loading ? (
-        <div className="empty-state">Φόρτωση...</div>
+        <div className="empty-state">{_t("Φόρτωση...")}</div>
       ) : rows.length === 0 ? (
-        <div className="empty-state">Δεν υπάρχουν εγγραφές.</div>
+        <div className="empty-state">{_t("Δεν υπάρχουν εγγραφές.")}</div>
       ) : (
         <>
           {openRows.length === 0
-            ? <div className="empty-state">Δεν υπάρχουν ανοιχτές εγγραφές.</div>
+            ? <div className="empty-state">{_t("Δεν υπάρχουν ανοιχτές εγγραφές.")}</div>
             : renderTable(openRows, false)}
           {settledRows.length > 0 && (
             <div style={{ marginTop: 16 }}>
               <button type="button" className="btn btn-sm btn-secondary"
                       onClick={() => setShowSettled(v => !v)}>
-                Εξοφλημένα ({settledRows.length}) {showSettled ? '▾' : '▸'}
+                {_t("Εξοφλημένα (")}{settledRows.length}) {showSettled ? '▾' : '▸'}
               </button>
               {showSettled && <div style={{ marginTop: 10 }}>{renderTable(settledRows, true)}</div>}
             </div>
@@ -429,9 +429,9 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
       )}
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή Εγγραφής"
-          message="Είστε σίγουρος;"
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή Εγγραφής")}
+          message={_t("Είστε σίγουρος;")}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -513,14 +513,14 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
       setForm(prev => ({ ...prev, ...updates }));
       // Κατηγορία γραμματίου που δεν βρέθηκε στη λίστα: φαίνεται ως κείμενο
       if (ocrKind === 'grammatio' && !sug.grammatio_katigoria_id && sug.katigoria_text) {
-        hints.grammatio_katigoria_id = `«${sug.katigoria_text}» — δεν υπάρχει στη λίστα κατηγοριών`;
+        hints.grammatio_katigoria_id = _t("«{0}» — δεν υπάρχει στη λίστα κατηγοριών", [sug.katigoria_text]);
       }
       setOcrHints(hints);
       setOcrMsg(filled.length
-        ? `Συμπληρώθηκαν από το παραστατικό: ${filled.join(', ')}. Ελέγξτε τα πριν την αποθήκευση.`
-        : 'Δεν βρέθηκαν νέα στοιχεία για κενά πεδία.');
+        ? _t("Συμπληρώθηκαν από το παραστατικό: {0}. Ελέγξτε τα πριν την αποθήκευση.", [filled.join(', ')])
+        : _t("Δεν βρέθηκαν νέα στοιχεία για κενά πεδία."));
     } catch (e) {
-      setError(e.message || 'Η αναγνώριση απέτυχε.');
+      setError(e.message || _t("Η αναγνώριση απέτυχε."));
     } finally { setOcrBusy(false); }
   };
 
@@ -549,7 +549,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
   const save = async () => {
     setError('');
     for (const f of fields) {
-      if (f.required && !form[f.key]) { setError(`Το πεδίο "${f.label}" είναι υποχρεωτικό.`); return; }
+      if (f.required && !form[f.key]) { setError(_t("Το πεδίο \"{0}\" είναι υποχρεωτικό.", [f.label])); return; }
     }
     setSaving(true);
     try {
@@ -593,11 +593,11 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
 
   return (
     <Modal
-      title={initial ? 'Επεξεργασία εγγραφής' : 'Νέα εγγραφή'}
+      title={initial ? _t("Επεξεργασία εγγραφής") : _t("Νέα εγγραφή")}
       onClose={onClose}
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
@@ -609,7 +609,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
               {f.label}{f.required && ' *'}
               {f.computed && f.key === 'amount' && (
                 <span style={{ marginLeft: 8, fontSize: 12, color: '#718096', fontWeight: 'normal' }}>
-                  {amountAutoCalc ? '(αυτόματο)' : '(χειροκίνητο)'}
+                  {amountAutoCalc ? _t("(αυτόματο)") : _t("(χειροκίνητο)")}
                 </span>
               )}
               {f.hint && (
@@ -622,7 +622,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 'normal', cursor: 'pointer', margin: 0 }}>
                 <input type="checkbox" checked={!!form[f.key]} onChange={e => setField(f.key, e.target.checked)}
                        style={{ width: 16, height: 16, margin: 0 }} />
-                <span style={{ fontSize: 13, color: '#4a5568' }}>Απαλλαγή ΦΠΑ βάσει του Άρθρου 14 παρ. 2α του Ν. 2859/2000</span>
+                <span style={{ fontSize: 13, color: '#4a5568' }}>{_t("Απαλλαγή ΦΠΑ βάσει του Άρθρου 14 παρ. 2α του Ν. 2859/2000")}</span>
               </label>
             ) : f.type === 'textarea' ? (
               /* Στο πεδίο περιγραφής μπαίνουν προτάσεις: προεπιλογές του
@@ -641,7 +641,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
             ) : f.type === 'select' ? (
               <>
                 <select value={form[f.key] || ''} onChange={e => setField(f.key, e.target.value)}>
-                  <option value="">-- επιλογή --</option>
+                  <option value="">{_t("-- επιλογή --")}</option>
                   {(f.options || []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
                 {showEmptyHint && <small style={{ color: '#a0aec0', display: 'block', marginTop: 4 }}>{f.emptyHint}</small>}
@@ -665,8 +665,8 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
                     <button type="button" className="btn btn-sm btn-secondary"
                             disabled={!form[f.key] || ocrBusy} onClick={runOcr}
-                            title={form[f.key] ? '' : 'Επιλέξτε ή ανεβάστε πρώτα το παραστατικό'}>
-                      {ocrBusy ? 'Ανάγνωση…' : '🔎 Συμπλήρωση από το παραστατικό'}
+                            title={form[f.key] ? '' : _t("Επιλέξτε ή ανεβάστε πρώτα το παραστατικό")}>
+                      {ocrBusy ? _t("Ανάγνωση…") : _t("🔎 Συμπλήρωση από το παραστατικό")}
                     </button>
                     {ocrMsg && <small style={{ color: '#2f855a' }}>{ocrMsg}</small>}
                   </div>
@@ -679,7 +679,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
                   list={`combo-${f.key}`}
                   value={form[f.key] || ''}
                   onChange={e => setField(f.key, e.target.value)}
-                  placeholder={(f.options || []).length ? 'Επίλεξε ή γράψε…' : ''}
+                  placeholder={(f.options || []).length ? _t("Επίλεξε ή γράψε…") : ''}
                   autoComplete="off"
                 />
                 <datalist id={`combo-${f.key}`}>
@@ -703,13 +703,13 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
             )}
             {ocrHints[f.key] && (
               <small style={{ display: 'block', marginTop: 4, color: '#b7791f' }}>
-                Το παραστατικό γράφει: {f.type === 'select'
+                {_t("Το παραστατικό γράφει:")} {f.type === 'select'
                   ? (((f.options || []).find(op => String(op.value) === String(ocrHints[f.key])) || {}).label || ocrHints[f.key])
                   : ocrHints[f.key]}
                 {f.type !== 'select' || (f.options || []).some(op => String(op.value) === String(ocrHints[f.key])) ? (
                   <button type="button" className="btn btn-sm btn-secondary" style={{ marginLeft: 8, padding: '1px 8px' }}
                           onClick={() => { setField(f.key, ocrHints[f.key]); setOcrHints(h => { const n = { ...h }; delete n[f.key]; return n; }); }}>
-                    Χρήση
+                    {_t("Χρήση")}
                   </button>
                 ) : null}
               </small>

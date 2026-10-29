@@ -10,6 +10,7 @@ import { entryKeyDown } from '../utils/formKeys';
 import ConfirmDialog from '../components/ConfirmDialog';
 import DataTable from '../components/DataTable';
 import { TERM, isCY, checkAfm, AFM_MAXLEN, AFM_PLACEHOLDER } from '../utils/region';
+import { _t } from '../i18n';
 
 const EMPTY = {
   morfi: 'φυσικό',
@@ -49,22 +50,22 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
   const COLUMNS = [
     {
       key: 'eponymo',
-      label: 'Επώνυμο / Επωνυμία',
+      label: _t("Επώνυμο / Επωνυμία"),
       value: r => (r.eponymia && r.eponymia.trim()) ? r.eponymia : (r.eponymo || ''),
       render: r => {
         const np = !!(r.eponymia && r.eponymia.trim());
         return (
           <>
             <strong>{np ? r.eponymia : r.eponymo}</strong>
-            {np && <span style={{ marginLeft: 6, fontSize: 12, color: '#718096' }}>ΝΠ</span>}
+            {np && <span style={{ marginLeft: 6, fontSize: 12, color: '#718096' }}>{_t("ΝΠ")}</span>}
           </>
         );
       },
     },
-    { key: 'onoma',    label: 'Όνομα',     render: r => r.onoma || '—' },
+    { key: 'onoma',    label: _t("Όνομα"),     render: r => r.onoma || '—' },
     { key: 'afm',      label: TERM.afm,       width: 120, render: r => r.afm || '—' },
-    { key: 'poli',     label: 'Πόλη',      width: 140, render: r => r.poli || '—' },
-    { key: 'telefono', label: 'Τηλέφωνο',  width: 140,
+    { key: 'poli',     label: _t("Πόλη"),      width: 140, render: r => r.poli || '—' },
+    { key: 'telefono', label: _t("Τηλέφωνο"),  width: 140,
       value: r => r.telefono || r.kinito || '', render: r => r.telefono || r.kinito || '—' },
     { key: 'email',    label: 'Email',     render: r => r.email || '—' },
   ];
@@ -95,7 +96,7 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
     e.preventDefault();
     setError('');
     if (!form.eponymo.trim()) {
-      setError('Το πεδίο Επώνυμο είναι υποχρεωτικό.');
+      setError(_t("Το πεδίο Επώνυμο είναι υποχρεωτικό."));
       return;
     }
     if (form.afm && checkAfm(form.afm)) {
@@ -137,26 +138,26 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Αντίδικοι / Συμβαλλόμενοι">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Αντίδικοι / Συμβαλλόμενοι")}>
       <div className="section">
         <div className="section-header">
-          <h2>Αντίδικοι / Συμβαλλόμενοι</h2>
-          <button className="btn" onClick={openNew}>+ Νέος</button>
+          <h2>{_t("Αντίδικοι / Συμβαλλόμενοι")}</h2>
+          <button className="btn" onClick={openNew}>{_t("+ Νέος")}</button>
         </div>
 
         <TruncationWarning meta={meta} />
         {error && <div className="error">{error}</div>}
 
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : (
           <DataTable
             columns={COLUMNS}
             rows={items}
             rowKey={r => r.aa}
             onRowClick={openEdit}
-            emptyMessage="Δεν υπάρχουν εγγραφές."
-            actions={r => <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>Διαγραφή</button>}
+            emptyMessage={_t("Δεν υπάρχουν εγγραφές.")}
+            actions={r => <button className="btn btn-sm btn-danger" onClick={() => askDelete(r)}>{_t("Διαγραφή")}</button>}
           />
         )}
       </div>
@@ -165,50 +166,50 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
         <div className="modal-overlay" role="presentation">
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 720 }}>
             <div className="modal-header">
-              <h2>{editing ? 'Επεξεργασία Αντιδίκου' : 'Νέος Αντίδικος'}</h2>
+              <h2>{editing ? _t("Επεξεργασία Αντιδίκου") : _t("Νέος Αντίδικος")}</h2>
               <button className="close-btn" onClick={() => setShowModal(false)}>×</button>
             </div>
             {error && <div className="error">{error}</div>}
             <form onSubmit={handleSubmit} onKeyDown={entryKeyDown}>
 
               <div className="form-group">
-                <label>Μορφή</label>
+                <label>{_t("Μορφή")}</label>
                 <div style={{ display: 'flex', gap: 16, paddingTop: 4 }}>
                   <label style={{ fontWeight: 400, display: 'flex', gap: 6, alignItems: 'center' }}>
                     <input type="radio" name="morfi" value="φυσικό"
                            checked={form.morfi === 'φυσικό'} onChange={c} />
-                    Φυσικό πρόσωπο
+                    {_t("Φυσικό πρόσωπο")}
                   </label>
                   <label style={{ fontWeight: 400, display: 'flex', gap: 6, alignItems: 'center' }}>
                     <input type="radio" name="morfi" value="νομικό"
                            checked={form.morfi === 'νομικό'} onChange={c} />
-                    Νομικό πρόσωπο
+                    {_t("Νομικό πρόσωπο")}
                   </label>
                 </div>
               </div>
 
-              <div style={sectionTitle}>Ταυτότητα</div>
+              <div style={sectionTitle}>{_t("Ταυτότητα")}</div>
 
               <div className="form-group">
-                <label>Επώνυμο / Επωνυμία *</label>
+                <label>{_t("Επώνυμο / Επωνυμία *")}</label>
                 <input type="text" name="eponymo" value={form.eponymo} onChange={c} required />
               </div>
 
               {isNomiko ? (
                 <>
                   <div className="form-group">
-                    <label>Πλήρης επωνυμία</label>
+                    <label>{_t("Πλήρης επωνυμία")}</label>
                     <input type="text" name="eponymia" value={form.eponymia} onChange={c}
-                           placeholder="π.χ. ΑΛΦΑ ΕΜΠΟΡΙΚΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ" />
+                           placeholder={_t("π.χ. ΑΛΦΑ ΕΜΠΟΡΙΚΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ")} />
                   </div>
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Διακριτικός τίτλος</label>
+                      <label>{_t("Διακριτικός τίτλος")}</label>
                       <input type="text" name="diakritikos_titlos"
                              value={form.diakritikos_titlos} onChange={c} />
                     </div>
                     <div className="form-group">
-                      <label>{isCY ? TERM.gemi : 'Αρ. ΓΕΜΗ'}</label>
+                      <label>{isCY ? TERM.gemi : _t("Αρ. ΓΕΜΗ")}</label>
                       <input type="text" name="gemi" value={form.gemi} onChange={c} />
                     </div>
                   </div>
@@ -216,17 +217,17 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
               ) : (
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Όνομα</label>
+                    <label>{_t("Όνομα")}</label>
                     <input type="text" name="onoma" value={form.onoma} onChange={c} />
                   </div>
                   <div className="form-group">
-                    <label>Πατρώνυμο</label>
+                    <label>{_t("Πατρώνυμο")}</label>
                     <input type="text" name="onoma_patros" value={form.onoma_patros} onChange={c} />
                   </div>
                 </div>
               )}
 
-              <div style={sectionTitle}>Φορολογικά</div>
+              <div style={sectionTitle}>{_t("Φορολογικά")}</div>
 
               <div className="form-row">
                 <div className="form-group">
@@ -240,49 +241,49 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
                 </div>
                 {!isNomiko && (
                   <div className="form-group">
-                    <label>ΑΔΤ</label>
+                    <label>{_t("ΑΔΤ")}</label>
                     <input type="text" name="adt" value={form.adt} onChange={c} />
                   </div>
                 )}
               </div>
 
-              <div style={sectionTitle}>Διεύθυνση</div>
+              <div style={sectionTitle}>{_t("Διεύθυνση")}</div>
 
               <div className="form-row">
                 <div className="form-group" style={{ flex: 2 }}>
-                  <label>Οδός</label>
+                  <label>{_t("Οδός")}</label>
                   <input type="text" name="odos" value={form.odos} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Αριθμός</label>
+                  <label>{_t("Αριθμός")}</label>
                   <input type="text" name="arithmos" value={form.arithmos} onChange={c} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Τ.Κ.</label>
+                  <label>{_t("Τ.Κ.")}</label>
                   <input type="text" name="tk" value={form.tk} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Πόλη</label>
+                  <label>{_t("Πόλη")}</label>
                   <input type="text" name="poli" value={form.poli} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Χώρα</label>
+                  <label>{_t("Χώρα")}</label>
                   <input type="text" name="xora" value={form.xora} onChange={c}
                          placeholder={TERM.country} />
                 </div>
               </div>
 
-              <div style={sectionTitle}>Επικοινωνία</div>
+              <div style={sectionTitle}>{_t("Επικοινωνία")}</div>
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Τηλέφωνο</label>
+                  <label>{_t("Τηλέφωνο")}</label>
                   <input type="text" name="telefono" value={form.telefono} onChange={c} />
                 </div>
                 <div className="form-group">
-                  <label>Κινητό</label>
+                  <label>{_t("Κινητό")}</label>
                   <input type="text" name="kinito" value={form.kinito} onChange={c} />
                 </div>
                 <div className="form-group">
@@ -292,14 +293,14 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
               </div>
 
               <div className="form-group">
-                <label>Σημειώσεις</label>
+                <label>{_t("Σημειώσεις")}</label>
                 <textarea name="notes" value={form.notes} onChange={c} rows={2} />
               </div>
 
               <div className="modal-actions">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Ακύρωση</button>
+                <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>{_t("Ακύρωση")}</button>
                 <button type="submit" className="btn" disabled={saving}>
-                  {saving ? 'Αποθήκευση...' : (editing ? 'Αποθήκευση' : 'Δημιουργία')}
+                  {saving ? _t("Αποθήκευση...") : (editing ? _t("Αποθήκευση") : _t("Δημιουργία"))}
                 </button>
               </div>
             </form>
@@ -311,21 +312,21 @@ function Opponents({ user, onLogout, onOpenCaseSearch }) {
         const onoma = `${r.eponymo || r.eponymia || ''} ${r.onoma || ''}`.trim();
         const linked = !!(confirmDel.usage && confirmDel.usage.total > 0);
         const perigrafi = linked
-          ? confirmDel.usage.links.map(l => `${l.count} ${l.label}`).join(' και ')
+          ? confirmDel.usage.links.map(l => `${l.count} ${l.label}`).join(_t(' και '))
           : '';
         return (
           <ConfirmDialog
-            title={linked ? 'Δεν διαγράφεται' : 'Διαγραφή'}
+            title={linked ? _t("Δεν διαγράφεται") : _t("Διαγραφή")}
             message={
               confirmDel.loading
-                ? 'Έλεγχος συνδέσεων...'
+                ? _t("Έλεγχος συνδέσεων...")
                 : linked
-                  ? `«${onoma}» συνδέεται με ${perigrafi}. Αφαίρεσε πρώτα τις συνδέσεις και ξαναπροσπάθησε.`
-                  : `Διαγραφή «${onoma}»; Η ενέργεια δεν αναιρείται.`
+                  ? _t("«{0}» συνδέεται με {1}. Αφαίρεσε πρώτα τις συνδέσεις και ξαναπροσπάθησε.", [onoma, perigrafi])
+                  : _t("Διαγραφή «{0}»; Η ενέργεια δεν αναιρείται.", [onoma])
             }
             hideConfirm={confirmDel.loading || linked}
-            cancelLabel={linked ? 'Κλείσιμο' : 'Ακύρωση'}
-            confirmLabel="Διαγραφή"
+            cancelLabel={linked ? _t("Κλείσιμο") : _t("Ακύρωση")}
+            confirmLabel={_t("Διαγραφή")}
             onConfirm={() => del(r)}
             onClose={() => setConfirmDel(null)}
           />

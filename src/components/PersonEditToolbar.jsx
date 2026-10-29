@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { _t } from '../i18n';
 
 /**
  * PersonEditToolbar — shared toolbar for Fysika/Nomika/Related edit pages.
@@ -41,18 +42,18 @@ function PersonEditToolbar({ kind, currentId, listHelper, labelFn }) {
         type="button"
         className="btn btn-sm btn-secondary"
         onClick={() => navigate(`/${kind}/new`)}
-        title="Δημιουργία νέας εγγραφής"
+        title={_t("Δημιουργία νέας εγγραφής")}
       >
-        + Νέα εγγραφή
+        {_t("+ Νέα εγγραφή")}
       </button>
 
       <div className="person-toolbar-quickload">
-        <label>Φόρτωση υπάρχοντος:</label>
+        <label>{_t("Φόρτωση υπάρχοντος:")}</label>
         <select value={selectedId} onChange={onSelect} disabled={loading}>
           <option value="">
-            {loading ? '⏳ φόρτωση...' :
+            {loading ? _t("⏳ φόρτωση...") :
              current ? `— ${labelFn(current)} —` :
-             `— επιλογή (${items.length}) —`}
+             _t("— επιλογή ({0}) —", [items.length])}
           </option>
           {items
             .filter(i => String(i.aa || i.id) !== String(currentId))

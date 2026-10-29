@@ -11,12 +11,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { clientCredentials } from '../api';
 import { TERM } from '../utils/region';
+import { _t } from '../i18n';
 
 const PROVIDERS = [
   { key: 'taxis', label: 'TAXISnet' },
-  { key: 'dei',   label: 'ΔΕΗ' },
+  { key: 'dei',   label: _t("ΔΕΗ") },
   { key: 'gemi',  label: TERM.gemi },
-  { key: 'other', label: 'Άλλος' },
+  { key: 'other', label: _t("Άλλος") },
 ];
 
 const providerLabel = (k) => (PROVIDERS.find(p => p.key === k) || {}).label || k;
@@ -45,7 +46,7 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
   if (!ownerId) {
     return (
       <div style={{ fontSize: 13, color: '#718096', padding: 12, background: '#f7fafc', borderRadius: 6 }}>
-        Αποθήκευσε πρώτα την καρτέλα του πελάτη και μετά πρόσθεσε λογαριασμούς.
+        {_t("Αποθήκευσε πρώτα την καρτέλα του πελάτη και μετά πρόσθεσε λογαριασμούς.")}
       </div>
     );
   }
@@ -104,11 +105,11 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
     <div>
       {error && <div className="error">{error}</div>}
 
-      {loading && <div className="empty-state">Φόρτωση...</div>}
+      {loading && <div className="empty-state">{_t("Φόρτωση...")}</div>}
 
       {!loading && rows.length === 0 && (
         <div className="empty-state" style={{ padding: '16px 0' }}>
-          Δεν υπάρχουν καταχωρημένοι λογαριασμοί.
+          {_t("Δεν υπάρχουν καταχωρημένοι λογαριασμοί.")}
         </div>
       )}
 
@@ -116,10 +117,10 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
         <table className="table">
           <thead>
             <tr>
-              <th style={{ width: 110 }}>Πάροχος</th>
-              <th>Περιγραφή</th>
+              <th style={{ width: 110 }}>{_t("Πάροχος")}</th>
+              <th>{_t("Περιγραφή")}</th>
               <th>Username</th>
-              <th style={{ width: 210 }}>Κωδικός</th>
+              <th style={{ width: 210 }}>{_t("Κωδικός")}</th>
               <th style={{ width: 1 }}></th>
             </tr>
           </thead>
@@ -135,13 +136,13 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
                   ) : (
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <code style={{ fontSize: 13 }}>
-                        {revealed[r.aa] !== undefined ? (revealed[r.aa] || '(κενός)') : '••••••••'}
+                        {revealed[r.aa] !== undefined ? (revealed[r.aa] || _t("(κενός)")) : '••••••••'}
                       </code>
                       <button
                         type="button"
                         className="btn btn-sm btn-secondary"
                         onClick={() => toggleReveal(r)}
-                        title={revealed[r.aa] !== undefined ? 'Απόκρυψη' : 'Εμφάνιση'}
+                        title={revealed[r.aa] !== undefined ? _t("Απόκρυψη") : _t("Εμφάνιση")}
                       >
                         {revealed[r.aa] !== undefined ? '🙈' : '👁'}
                       </button>
@@ -153,13 +154,13 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
                     type="button"
                     className="btn btn-sm btn-secondary"
                     onClick={() => setEditing({ ...EMPTY, ...r, password: '' })}
-                  >Επεξ.</button>
+                  >{_t("Επεξ.")}</button>
                   {' '}
                   <button
                     type="button"
                     className="btn btn-sm btn-danger"
                     onClick={() => setConfirmDel(r)}
-                  >Διαγραφή</button>
+                  >{_t("Διαγραφή")}</button>
                 </td>
               </tr>
             ))}
@@ -168,7 +169,7 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
       )}
 
       <button type="button" className="btn btn-sm" onClick={() => setEditing({ ...EMPTY })}>
-        + Νέος λογαριασμός
+        {_t("+ Νέος λογαριασμός")}
       </button>
 
       {editing && (
@@ -177,11 +178,11 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
           borderRadius: 6, background: '#f7fafc',
         }}>
           <h4 style={{ marginTop: 0, marginBottom: 10, fontSize: 13 }}>
-            {editing.aa ? 'Επεξεργασία λογαριασμού' : 'Νέος λογαριασμός'}
+            {editing.aa ? _t("Επεξεργασία λογαριασμού") : _t("Νέος λογαριασμός")}
           </h4>
           <div className="form-grid-2">
             <div className="form-group">
-              <label>Πάροχος</label>
+              <label>{_t("Πάροχος")}</label>
               <select
                 value={editing.provider}
                 onChange={e => setEditing(f => ({ ...f, provider: e.target.value }))}
@@ -190,7 +191,7 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
               </select>
             </div>
             <div className="form-group">
-              <label>Περιγραφή <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}>(π.χ. «ατομικό», «ακίνητο Χανίων»)</span></label>
+              <label>{_t("Περιγραφή")} <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}>{_t("(π.χ. «ατομικό», «ακίνητο Χανίων»)")}</span></label>
               <input
                 type="text"
                 value={editing.label || ''}
@@ -210,9 +211,9 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
             </div>
             <div className="form-group">
               <label>
-                Κωδικός
+                {_t("Κωδικός")}
                 {editing.aa && editing.has_password && (
-                  <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}> (άφησέ το κενό για να μείνει ο υπάρχων)</span>
+                  <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}> {_t("(άφησέ το κενό για να μείνει ο υπάρχων)")}</span>
                 )}
               </label>
               <input
@@ -224,7 +225,7 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
             </div>
           </div>
           <div className="form-group">
-            <label>Σημειώσεις</label>
+            <label>{_t("Σημειώσεις")}</label>
             <input
               type="text"
               value={editing.notes || ''}
@@ -232,8 +233,8 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
             />
           </div>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <button type="button" className="btn btn-secondary" onClick={() => setEditing(null)}>Ακύρωση</button>
-            <button type="button" className="btn" onClick={save}>Αποθήκευση</button>
+            <button type="button" className="btn btn-secondary" onClick={() => setEditing(null)}>{_t("Ακύρωση")}</button>
+            <button type="button" className="btn" onClick={save}>{_t("Αποθήκευση")}</button>
           </div>
         </div>
       )}
@@ -243,11 +244,11 @@ function ClientAccountsPanel({ ownerType, ownerId }) {
           marginTop: 12, padding: 12, border: '1px solid #feb2b2',
           borderRadius: 6, background: '#fff5f5', color: '#742a2a', fontSize: 13,
         }}>
-          Διαγραφή του λογαριασμού <strong>{providerLabel(confirmDel.provider)}</strong>
+          {_t("Διαγραφή του λογαριασμού")} <strong>{providerLabel(confirmDel.provider)}</strong>
           {confirmDel.username ? ` (${confirmDel.username})` : ''};
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 10 }}>
-            <button type="button" className="btn btn-sm btn-secondary" onClick={() => setConfirmDel(null)}>Ακύρωση</button>
-            <button type="button" className="btn btn-sm btn-danger" onClick={() => doDelete(confirmDel)}>Διαγραφή</button>
+            <button type="button" className="btn btn-sm btn-secondary" onClick={() => setConfirmDel(null)}>{_t("Ακύρωση")}</button>
+            <button type="button" className="btn btn-sm btn-danger" onClick={() => doDelete(confirmDel)}>{_t("Διαγραφή")}</button>
           </div>
         </div>
       )}

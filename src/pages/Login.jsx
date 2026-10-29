@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, clearAuthBounce } from '../api';
+import { LANG, setLang } from '../i18n';
+import LangSwitch from '../components/LangSwitch';
 import { SITE, isCY } from '../utils/region';
+import { _t } from '../i18n';
 
 function Login({ onLogin }) {
   const navigate = useNavigate();
@@ -48,6 +51,17 @@ function Login({ onLogin }) {
         sessionStorage.removeItem('thesis:returnTo');
         if (r && r.startsWith('/') && !r.startsWith('//')) back = r;
       } catch { /* ignore */ }
+      // Γλώσσα: ο λογαριασμός κερδίζει. Αν ο χρήστης δεν έχει διαλέξει ακόμα,
+      // κρατάμε ό,τι διάλεξε στη σελίδα εισόδου.
+      const acc = data.user && data.user.ui_lang;
+      if (acc && acc !== LANG) {
+        setLang(acc, { reload: false });
+        window.location.assign(back);
+        return;
+      }
+      if (!acc && LANG !== 'el') {
+        api.put('/api/auth/me/lang', { lang: LANG }).catch(() => {});
+      }
       navigate(back, { replace: true });
     } catch (err) {
       setError(err.message);
@@ -66,6 +80,7 @@ function Login({ onLogin }) {
       padding: 20,
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     }}>
+      <div style={{ position: 'fixed', top: 20, right: 20 }}><LangSwitch dark saveToAccount={false} /></div>
       <div style={{
         width: '100%',
         maxWidth: 420,
@@ -93,7 +108,7 @@ function Login({ onLogin }) {
             letterSpacing: '-1.5px',
             color: '#F7FAFC',
           }}>Thesis</span>
-          {isCY && <span style={{ fontSize: 16, fontWeight: 600, color: '#F59E0B', marginLeft: 8, letterSpacing: 1 }}>ΚΥΠΡΟΣ</span>}
+          {isCY && <span style={{ fontSize: 16, fontWeight: 600, color: '#F59E0B', marginLeft: 8, letterSpacing: 1 }}>{_t("ΚΥΠΡΟΣ")}</span>}
         </div>
 
         {/* Card */}
@@ -110,13 +125,13 @@ function Login({ onLogin }) {
             color: '#1A202C',
             margin: '0 0 6px',
             textAlign: 'center',
-          }}>Καλωσορίσατε</h1>
+          }}>{_t("Καλωσορίσατε")}</h1>
           <p style={{
             fontSize: 14,
             color: '#718096',
             margin: '0 0 28px',
             textAlign: 'center',
-          }}>Συνδεθείτε στον λογαριασμό σας</p>
+          }}>{_t("Συνδεθείτε στον λογαριασμό σας")}</p>
 
           {authLoop && !error && (
             <div style={{
@@ -128,9 +143,7 @@ function Login({ onLogin }) {
               marginBottom: 16,
               border: '1px solid #FEB2B2',
             }}>
-              Αποσυνδεθήκατε επανειλημμένα. Μετά τη σύνδεση θα μεταφερθείτε στον
-              πίνακα ελέγχου αντί για τη σελίδα που το προκαλούσε. Αν συνεχιστεί,
-              ενημερώστε τον διαχειριστή.
+              {_t("Αποσυνδεθήκατε επανειλημμένα. Μετά τη σύνδεση θα μεταφερθείτε στον πίνακα ελέγχου αντί για τη σελίδα που το προκαλούσε. Αν συνεχιστεί, ενημερώστε τον διαχειριστή.")}
             </div>
           )}
 
@@ -144,8 +157,7 @@ function Login({ onLogin }) {
               marginBottom: 16,
               border: '1px solid #ECC94B',
             }}>
-              Η συνεδρία σας έληξε. Συνδεθείτε ξανά — αν είχατε ανοιχτή καταχώρηση,
-              τα στοιχεία της φυλάχθηκαν και θα σας προταθούν για επαναφορά.
+              {_t("Η συνεδρία σας έληξε. Συνδεθείτε ξανά — αν είχατε ανοιχτή καταχώρηση, τα στοιχεία της φυλάχθηκαν και θα σας προταθούν για επαναφορά.")}
             </div>
           )}
 
@@ -198,7 +210,7 @@ function Login({ onLogin }) {
                 fontWeight: 500,
                 color: '#2d3748',
                 marginBottom: 6,
-              }}>Κωδικός</label>
+              }}>{_t("Κωδικός")}</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -222,8 +234,8 @@ function Login({ onLogin }) {
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
                   tabIndex={-1}
-                  aria-label={showPassword ? 'Απόκρυψη κωδικού' : 'Εμφάνιση κωδικού'}
-                  title={showPassword ? 'Απόκρυψη κωδικού' : 'Εμφάνιση κωδικού'}
+                  aria-label={showPassword ? _t("Απόκρυψη κωδικού") : _t("Εμφάνιση κωδικού")}
+                  title={showPassword ? _t("Απόκρυψη κωδικού") : _t("Εμφάνιση κωδικού")}
                   style={{
                     position: 'absolute',
                     right: 8,
@@ -275,7 +287,7 @@ function Login({ onLogin }) {
               onMouseEnter={e => !loading && (e.target.style.background = '#F59E0B') && (e.target.style.color = '#1A202C')}
               onMouseLeave={e => !loading && (e.target.style.background = '#1A202C') && (e.target.style.color = '#fff')}
             >
-              {loading ? 'Σύνδεση...' : 'Είσοδος'}
+              {loading ? _t("Σύνδεση...") : _t("Είσοδος")}
             </button>
 
             <div style={{ marginTop: 16, textAlign: 'center' }}>
@@ -284,7 +296,7 @@ function Login({ onLogin }) {
                 color: '#718096',
                 textDecoration: 'none',
               }}>
-                Ξέχασα τον κωδικό μου
+                {_t("Ξέχασα τον κωδικό μου")}
               </Link>
             </div>
           </form>
@@ -297,11 +309,11 @@ function Login({ onLogin }) {
             color: '#718096',
             textAlign: 'center',
           }}>
-            Δεν έχετε λογαριασμό; <Link to="/register" style={{
+            {_t("Δεν έχετε λογαριασμό;")} <Link to="/register" style={{
               color: '#1A202C',
               fontWeight: 500,
               textDecoration: 'none',
-            }}>Εγγραφή εδώ</Link>
+            }}>{_t("Εγγραφή εδώ")}</Link>
           </div>
         </div>
 
@@ -311,7 +323,7 @@ function Login({ onLogin }) {
           fontSize: 12,
           color: '#A0AEC0',
         }}>
-          Νομικό λογισμικό δικηγορικών γραφείων · <a href={SITE.url} target="_blank" rel="noopener" style={{ color: '#A0AEC0' }}>{SITE.label}</a>
+          {_t("Νομικό λογισμικό δικηγορικών γραφείων ·")} <a href={SITE.url} target="_blank" rel="noopener" style={{ color: '#A0AEC0' }}>{SITE.label}</a>
         </p>
       </div>
     </div>

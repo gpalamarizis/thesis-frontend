@@ -1,6 +1,7 @@
 // src/utils/calendar.js
 // Export events to Google Calendar, Outlook Web, or .ics file (universal).
 
+import { _t } from '../i18n';
 function pad(n) { return String(n).padStart(2, '0'); }
 
 /**
@@ -149,18 +150,18 @@ export function eventFromCourtAction(action) {
   end.setHours(12, 0, 0, 0);
 
   const parts = [];
-  if (action.dikastirio_name) parts.push(`Δικαστήριο: ${action.dikastirio_name}`);
-  if (action.tmima_name)      parts.push(`Τμήμα: ${action.tmima_name}`);
-  if (action.city_name)       parts.push(`Πόλη: ${action.city_name}`);
-  if (action.diadikasia_name) parts.push(`Διαδικασία: ${action.diadikasia_name}`);
-  if (action.pinakio)         parts.push(`Πινάκιο: ${action.pinakio}`);
-  if (action.xeirokinito_id)  parts.push(`Πρωτόκολλο: ${action.xeirokinito_id}`);
-  if (action.pelatis)         parts.push(`Πελάτης: ${action.pelatis}`);
+  if (action.dikastirio_name) parts.push(_t("Δικαστήριο: {0}", [action.dikastirio_name]));
+  if (action.tmima_name)      parts.push(_t("Τμήμα: {0}", [action.tmima_name]));
+  if (action.city_name)       parts.push(_t("Πόλη: {0}", [action.city_name]));
+  if (action.diadikasia_name) parts.push(_t("Διαδικασία: {0}", [action.diadikasia_name]));
+  if (action.pinakio)         parts.push(_t("Πινάκιο: {0}", [action.pinakio]));
+  if (action.xeirokinito_id)  parts.push(_t("Πρωτόκολλο: {0}", [action.xeirokinito_id]));
+  if (action.pelatis)         parts.push(_t("Πελάτης: {0}", [action.pelatis]));
 
   return {
     title: action.name
       || [
-           'Δικάσιμος',
+           _t('Δικάσιμος'),
            action.dikastirio_name,
            action.xeirokinito_id && `(${action.xeirokinito_id})`,
          ].filter(Boolean).join(' '),
@@ -184,11 +185,11 @@ export function eventFromTaskAction(task) {
 
   const parts = [];
   if (task.perigrafi_energias) parts.push(task.perigrafi_energias);
-  if (task.xeirokinito_id)     parts.push(`Πρωτόκολλο: ${task.xeirokinito_id}`);
-  if (task.pelatis)            parts.push(`Πελάτης: ${task.pelatis}`);
+  if (task.xeirokinito_id)     parts.push(_t("Πρωτόκολλο: {0}", [task.xeirokinito_id]));
+  if (task.pelatis)            parts.push(_t("Πελάτης: {0}", [task.pelatis]));
 
   return {
-    title: `⏰ ${task.perigrafi_energias || 'Προθεσμία'}${task.xeirokinito_id ? ' — ' + task.xeirokinito_id : ''}`,
+    title: `⏰ ${task.perigrafi_energias || _t('Προθεσμία')}${task.xeirokinito_id ? ' — ' + task.xeirokinito_id : ''}`,
     start,
     end,
     description: parts.join('\n'),
@@ -208,11 +209,11 @@ export function eventFromCourtSubAction(sub, parentAction) {
   start.setHours(9, 0, 0, 0);
   const end = new Date(start.getTime() + 60 * 60 * 1000);
 
-  const title = sub.energeia_name || sub.perigrafi || 'Ενέργεια δικασίμου';
+  const title = sub.energeia_name || sub.perigrafi || _t("Ενέργεια δικασίμου");
   const parts = [];
   if (sub.perigrafi && sub.perigrafi !== sub.energeia_name) parts.push(sub.perigrafi);
-  if (parentAction?.dikastirio_name) parts.push(`Δικαστήριο: ${parentAction.dikastirio_name}`);
-  if (parentAction?.xeirokinito_id)  parts.push(`Πρωτόκολλο: ${parentAction.xeirokinito_id}`);
+  if (parentAction?.dikastirio_name) parts.push(_t("Δικαστήριο: {0}", [parentAction.dikastirio_name]));
+  if (parentAction?.xeirokinito_id)  parts.push(_t("Πρωτόκολλο: {0}", [parentAction.xeirokinito_id]));
 
   return {
     title: `📋 ${title}`,

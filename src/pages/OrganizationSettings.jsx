@@ -2,6 +2,7 @@
 import Layout from '../components/Layout';
 import { orgSettings } from '../api';
 import { TERM, isCY, DEFAULT_VAT, VAT_RATES, HAS_MYDATA, HAS_GR_WITHHOLDINGS } from '../utils/region';
+import { _t } from '../i18n';
 
 /**
  * OrganizationSettings — Στοιχεία γραφείου (issuer data για τιμολόγια).
@@ -10,9 +11,9 @@ import { TERM, isCY, DEFAULT_VAT, VAT_RATES, HAS_MYDATA, HAS_GR_WITHHOLDINGS } f
 // Ουδέτερα παραδείγματα — ποτέ πραγματικά στοιχεία πελάτη
 const BANK_EXAMPLE = isCY
   ? { lines: 'BANK OF CYPRUS | 0000000000 | CY00 0000 0000 ... | BCYPCY2N\nHELLENIC BANK | ... | CY... | HEBACY2N',
-      account: 'π.χ. 0000000000', swift: 'π.χ. BCYPCY2N', iban: 'CY...' }
-  : { lines: 'ALPHA BANK | 000-00-0000-000000 | GR00 0000 0000 ... | CRBAGRAA\nΠΕΙΡΑΙΩΣ | ... | GR... | PIRBGRAA\nEUROBANK | ... | GR... | ERBKGRAA',
-      account: 'π.χ. 000-00-0000-000000', swift: 'π.χ. CRBAGRAA', iban: 'GR...' };
+      account: _t("π.χ. 0000000000"), swift: _t("π.χ. BCYPCY2N"), iban: 'CY...' }
+  : { lines: _t("ALPHA BANK | 000-00-0000-000000 | GR00 0000 0000 ... | CRBAGRAA\nΠΕΙΡΑΙΩΣ | ... | GR... | PIRBGRAA\nEUROBANK | ... | GR... | ERBKGRAA"),
+      account: _t("π.χ. 000-00-0000-000000"), swift: _t("π.χ. CRBAGRAA"), iban: 'GR...' };
 
 function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
   const [form, setForm] = useState(null);
@@ -44,7 +45,7 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
     try {
       const { mydata } = await import('../api');
       const r = await mydata.health();
-      setMydataCheck({ ok: !!r.ok, message: r.message || (r.ok ? 'Τα στοιχεία είναι σωστά.' : 'Άγνωστο σφάλμα.') });
+      setMydataCheck({ ok: !!r.ok, message: r.message || (r.ok ? _t("Τα στοιχεία είναι σωστά.") : _t("Άγνωστο σφάλμα.")) });
     } catch (e) {
       setMydataCheck({ ok: false, message: e.message });
     } finally {
@@ -71,24 +72,24 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
 
   if (loading || !form) {
     return (
-      <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Στοιχεία Γραφείου">
-        <div className="empty-state">Φόρτωση...</div>
+      <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Στοιχεία Γραφείου")}>
+        <div className="empty-state">{_t("Φόρτωση...")}</div>
       </Layout>
     );
   }
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Στοιχεία Γραφείου">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Στοιχεία Γραφείου")}>
       {error && <div className="error">{error}</div>}
-      {saved && <div className="success">✓ Οι αλλαγές αποθηκεύτηκαν.</div>}
+      {saved && <div className="success">{_t("✓ Οι αλλαγές αποθηκεύτηκαν.")}</div>}
       {!isAdmin && (
         <div style={{ background: '#feebc8', border: '1px solid #d69e2e', borderRadius: 6, padding: 12, marginBottom: 20, color: '#744210' }}>
-          ⚠ Μόνο διαχειριστές μπορούν να επεξεργαστούν αυτά τα στοιχεία.
+          {_t("⚠ Μόνο διαχειριστές μπορούν να επεξεργαστούν αυτά τα στοιχεία.")}
         </div>
       )}
 
       <div className="section">
-        <h2>Φορολογικά Στοιχεία</h2>
+        <h2>{_t("Φορολογικά Στοιχεία")}</h2>
         <div className="form-grid-2">
           <div className="form-group">
             <label>{TERM.afm} *</label>
@@ -101,11 +102,11 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         </div>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Επωνυμία *</label>
+            <label>{_t("Επωνυμία *")}</label>
             <input type="text" value={form.eponymia || ''} onChange={c('eponymia')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
-            <label>Διακριτικός Τίτλος</label>
+            <label>{_t("Διακριτικός Τίτλος")}</label>
             <input type="text" value={form.diakritikos_titlos || ''} onChange={c('diakritikos_titlos')} disabled={!isAdmin} />
           </div>
         </div>
@@ -114,79 +115,78 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
             πελάτες. Το φορολογικό παραστατικό και το myDATA παραμένουν
             στα ελληνικά. Κενό πεδίο σημαίνει ότι το έντυπο πέφτει πίσω
             στην ελληνική τιμή. */}
-        <h4 style={{ margin: '22px 0 4px', fontSize: 15 }}>Ξενόγλωσσα στοιχεία</h4>
+        <h4 style={{ margin: '22px 0 4px', fontSize: 15 }}>{_t("Ξενόγλωσσα στοιχεία")}</h4>
         <p style={{ color: '#718096', fontSize: 13, margin: '0 0 12px' }}>
-          Για τον αναλυτικό λογαριασμό σε αγγλικά ή γαλλικά. Ό,τι αφήσεις
-          κενό εμφανίζεται στα ελληνικά.
+          {_t("Για τον αναλυτικό λογαριασμό σε αγγλικά ή γαλλικά. Ό,τι αφήσεις κενό εμφανίζεται στα ελληνικά.")}
         </p>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Επωνυμία (EN)</label>
+            <label>{_t("Επωνυμία (EN)")}</label>
             <input type="text" value={form.eponymia_en || ''} onChange={c('eponymia_en')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
-            <label>Επωνυμία (FR)</label>
+            <label>{_t("Επωνυμία (FR)")}</label>
             <input type="text" value={form.eponymia_fr || ''} onChange={c('eponymia_fr')} disabled={!isAdmin} />
           </div>
         </div>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Διακριτικός τίτλος (EN)</label>
+            <label>{_t("Διακριτικός τίτλος (EN)")}</label>
             <input type="text" value={form.diakritikos_titlos_en || ''} onChange={c('diakritikos_titlos_en')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
-            <label>Διακριτικός τίτλος (FR)</label>
+            <label>{_t("Διακριτικός τίτλος (FR)")}</label>
             <input type="text" value={form.diakritikos_titlos_fr || ''} onChange={c('diakritikos_titlos_fr')} disabled={!isAdmin} />
           </div>
         </div>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Οδός (EN)</label>
+            <label>{_t("Οδός (EN)")}</label>
             <input type="text" value={form.odos_en || ''} onChange={c('odos_en')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
-            <label>Οδός (FR)</label>
+            <label>{_t("Οδός (FR)")}</label>
             <input type="text" value={form.odos_fr || ''} onChange={c('odos_fr')} disabled={!isAdmin} />
           </div>
         </div>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Πόλη (EN)</label>
+            <label>{_t("Πόλη (EN)")}</label>
             <input type="text" value={form.poli_en || ''} onChange={c('poli_en')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
-            <label>Πόλη (FR)</label>
+            <label>{_t("Πόλη (FR)")}</label>
             <input type="text" value={form.poli_fr || ''} onChange={c('poli_fr')} disabled={!isAdmin} />
           </div>
         </div>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Χώρα (EN)</label>
+            <label>{_t("Χώρα (EN)")}</label>
             <input type="text" value={form.xora_en || ''} onChange={c('xora_en')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
-            <label>Χώρα (FR)</label>
+            <label>{_t("Χώρα (FR)")}</label>
             <input type="text" value={form.xora_fr || ''} onChange={c('xora_fr')} disabled={!isAdmin} />
           </div>
         </div>
 
         {/* ΕΤΑΙΡΟΙ — στατική λίστα για την κεφαλίδα του λογαριασμού */}
-        <h4 style={{ margin: '22px 0 4px', fontSize: 15 }}>Εταίροι</h4>
+        <h4 style={{ margin: '22px 0 4px', fontSize: 15 }}>{_t("Εταίροι")}</h4>
         <div className="form-group">
-          <label>Εταίροι στην κεφαλίδα του λογαριασμού</label>
+          <label>{_t("Εταίροι στην κεφαλίδα του λογαριασμού")}</label>
           <textarea rows={5} value={form.partners_list || ''} onChange={c('partners_list')}
-                    disabled={!isAdmin} placeholder={'ΟΝΟΜΑ Π. ΕΠΩΝΥΜΟ\nΟΝΟΜΑ Π. ΕΠΩΝΥΜΟ\n…'} />
-          <small style={{ color: '#718096' }}>Ένα όνομα ανά γραμμή.</small>
+                    disabled={!isAdmin} placeholder={_t("ΟΝΟΜΑ Π. ΕΠΩΝΥΜΟ\nΟΝΟΜΑ Π. ΕΠΩΝΥΜΟ\n…")} />
+          <small style={{ color: '#718096' }}>{_t("Ένα όνομα ανά γραμμή.")}</small>
         </div>
 
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Εταίροι (EN)</label>
+            <label>{_t("Εταίροι (EN)")}</label>
             <textarea rows={5} value={form.partners_list_en || ''} onChange={c('partners_list_en')}
                       disabled={!isAdmin} placeholder={'NAME SURNAME\nNAME SURNAME\n…'} />
           </div>
           <div className="form-group">
-            <label>Εταίροι (FR)</label>
+            <label>{_t("Εταίροι (FR)")}</label>
             <textarea rows={5} value={form.partners_list_fr || ''} onChange={c('partners_list_fr')}
                       disabled={!isAdmin} placeholder={'NAME SURNAME\nNAME SURNAME\n…'} />
           </div>
@@ -195,22 +195,21 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         {/* ΠΟΛΛΟΙ ΤΡΑΠΕΖΙΚΟΙ ΛΟΓΑΡΙΑΣΜΟΙ
             Ένας ανά γραμμή. Αν μείνει κενό, χρησιμοποιούνται τα μονά πεδία
             παρακάτω, ώστε να μη χαθεί ό,τι έχει ήδη συμπληρωθεί. */}
-        <h4 style={{ margin: '22px 0 4px', fontSize: 15 }}>Τραπεζικοί λογαριασμοί</h4>
+        <h4 style={{ margin: '22px 0 4px', fontSize: 15 }}>{_t("Τραπεζικοί λογαριασμοί")}</h4>
         <div className="form-group">
-          <label>Λογαριασμοί για τα έντυπα — ένας ανά γραμμή</label>
+          <label>{_t("Λογαριασμοί για τα έντυπα — ένας ανά γραμμή")}</label>
           <textarea rows={4} value={form.bank_accounts || ''} onChange={c('bank_accounts')}
                     disabled={!isAdmin}
                     placeholder={BANK_EXAMPLE.lines} />
           <small style={{ color: '#718096' }}>
-            Μορφή: Τράπεζα | Αριθμός | IBAN | SWIFT. Ό,τι λείπει παραλείπεται.
-            Αν το αφήσεις κενό, χρησιμοποιούνται τα παρακάτω πεδία.
+            {_t("Μορφή: Τράπεζα | Αριθμός | IBAN | SWIFT. Ό,τι λείπει παραλείπεται. Αν το αφήσεις κενό, χρησιμοποιούνται τα παρακάτω πεδία.")}
           </small>
         </div>
 
         {/* ΕΜΒΑΣΜΑ — SWIFT και αριθμός λογαριασμού για ξένους πελάτες */}
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Αριθμός λογαριασμού</label>
+            <label>{_t("Αριθμός λογαριασμού")}</label>
             <input type="text" value={form.bank_account_no || ''} onChange={c('bank_account_no')} disabled={!isAdmin} placeholder={BANK_EXAMPLE.account} />
           </div>
           <div className="form-group">
@@ -222,52 +221,52 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         <div className="form-grid-2">
           <div className="form-group">
             <label>{TERM.kad}</label>
-            <input type="text" value={form.kad || ''} onChange={c('kad')} disabled={!isAdmin} placeholder={isCY ? 'π.χ. 69.10' : 'π.χ. 69101100'} />
+            <input type="text" value={form.kad || ''} onChange={c('kad')} disabled={!isAdmin} placeholder={isCY ? _t("π.χ. 69.10") : _t("π.χ. 69101100")} />
           </div>
           <div className="form-group">
-            <label>Περιγραφή δραστηριότητας</label>
-            <input type="text" value={form.kad_perigrafi || ''} onChange={c('kad_perigrafi')} disabled={!isAdmin} placeholder="π.χ. Υπηρεσίες δικηγόρου" />
+            <label>{_t("Περιγραφή δραστηριότητας")}</label>
+            <input type="text" value={form.kad_perigrafi || ''} onChange={c('kad_perigrafi')} disabled={!isAdmin} placeholder={_t("π.χ. Υπηρεσίες δικηγόρου")} />
           </div>
         </div>
         <div className="form-group">
-          <label>{isCY ? TERM.gemi : 'Αριθμός ΓΕΜΗ'}</label>
+          <label>{isCY ? TERM.gemi : _t("Αριθμός ΓΕΜΗ")}</label>
           <input type="text" value={form.gemi || ''} onChange={c('gemi')} disabled={!isAdmin} />
         </div>
       </div>
 
       <div className="section">
-        <h2>Διεύθυνση Έδρας</h2>
+        <h2>{_t("Διεύθυνση Έδρας")}</h2>
         <div className="form-grid-3">
           <div className="form-group">
-            <label>Οδός</label>
+            <label>{_t("Οδός")}</label>
             <input type="text" value={form.odos || ''} onChange={c('odos')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
-            <label>Αριθμός</label>
+            <label>{_t("Αριθμός")}</label>
             <input type="text" value={form.arithmos || ''} onChange={c('arithmos')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
-            <label>Τ.Κ.</label>
+            <label>{_t("Τ.Κ.")}</label>
             <input type="text" value={form.tk || ''} onChange={c('tk')} disabled={!isAdmin} />
           </div>
         </div>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Πόλη</label>
+            <label>{_t("Πόλη")}</label>
             <input type="text" value={form.poli || ''} onChange={c('poli')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
-            <label>Χώρα</label>
+            <label>{_t("Χώρα")}</label>
             <input type="text" value={form.xora || TERM.country} onChange={c('xora')} disabled={!isAdmin} />
           </div>
         </div>
       </div>
 
       <div className="section">
-        <h2>Επικοινωνία</h2>
+        <h2>{_t("Επικοινωνία")}</h2>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Τηλέφωνο</label>
+            <label>{_t("Τηλέφωνο")}</label>
             <input type="text" value={form.tilefono || ''} onChange={c('tilefono')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
@@ -276,16 +275,16 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
           </div>
         </div>
         <div className="form-group">
-          <label>Ιστοσελίδα</label>
+          <label>{_t("Ιστοσελίδα")}</label>
           <input type="text" value={form.web_site || ''} onChange={c('web_site')} disabled={!isAdmin} placeholder="https://..." />
         </div>
       </div>
 
       <div className="section">
-        <h2>Τραπεζικός Λογαριασμός (για εμφάνιση στα τιμολόγια)</h2>
+        <h2>{_t("Τραπεζικός Λογαριασμός (για εμφάνιση στα τιμολόγια)")}</h2>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Τράπεζα</label>
+            <label>{_t("Τράπεζα")}</label>
             <input type="text" value={form.trapeza || ''} onChange={c('trapeza')} disabled={!isAdmin} />
           </div>
           <div className="form-group">
@@ -296,10 +295,10 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
       </div>
 
       <div className="section">
-        <h2>Προεπιλογές Τιμολόγησης</h2>
+        <h2>{_t("Προεπιλογές Τιμολόγησης")}</h2>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Προεπιλεγμένος ΦΠΑ (%)</label>
+            <label>{_t("Προεπιλεγμένος ΦΠΑ (%)")}</label>
             <select value={String(Number(form.default_vat_rate ?? DEFAULT_VAT))} onChange={c('default_vat_rate')} disabled={!isAdmin}>
               {VAT_RATES.map(v => <option key={v} value={v}>{v}%</option>)}
             </select>
@@ -310,15 +309,15 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         {HAS_GR_WITHHOLDINGS && <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isAdmin ? 'pointer' : 'default' }}>
             <input type="checkbox" checked={!!form.default_withhold} onChange={c('default_withhold')} disabled={!isAdmin} />
-            <span>Προεπιλογή παρακράτησης φόρου 20% (για δικηγόρους)</span>
+            <span>{_t("Προεπιλογή παρακράτησης φόρου 20% (για δικηγόρους)")}</span>
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isAdmin ? 'pointer' : 'default' }}>
             <input type="checkbox" checked={!!form.default_stamp} onChange={c('default_stamp')} disabled={!isAdmin} />
-            <span>Προεπιλογή χαρτοσήμου 2.4% + ΟΓΑ 20% χαρτ. (για ΑΠΥ)</span>
+            <span>{_t("Προεπιλογή χαρτοσήμου 2.4% + ΟΓΑ 20% χαρτ. (για ΑΠΥ)")}</span>
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: isAdmin ? 'pointer' : 'default' }}>
             <input type="checkbox" checked={!!form.default_tn} onChange={c('default_tn')} disabled={!isAdmin} />
-            <span>Προεπιλογή Ταμείου Νομικών 12%</span>
+            <span>{_t("Προεπιλογή Ταμείου Νομικών 12%")}</span>
           </label>
         </div>}
       </div>
@@ -326,16 +325,16 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
       {/* myDATA (ΑΑΔΕ) — μόνο στην ελληνική εγκατάσταση */}
       {HAS_MYDATA && (
       <div className="section">
-        <h2>myDATA — Διαβίβαση στην ΑΑΔΕ</h2>
+        <h2>{_t("myDATA — Διαβίβαση στην ΑΑΔΕ")}</h2>
         <div style={{ background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: 12, marginBottom: 16, fontSize: 13, color: '#4a5568' }}>
-          Τα credentials βρίσκονται στο portal myDATA της ΑΑΔΕ. Στο dev περιβάλλον χρησιμοποίησε test κωδικούς — δεν έχουν φορολογική δεσμευτικότητα.
+          {_t("Τα credentials βρίσκονται στο portal myDATA της ΑΑΔΕ. Στο dev περιβάλλον χρησιμοποίησε test κωδικούς — δεν έχουν φορολογική δεσμευτικότητα.")}
         </div>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Περιβάλλον</label>
+            <label>{_t("Περιβάλλον")}</label>
             <select value={form.mydata_environment || 'dev'} onChange={c('mydata_environment')} disabled={!isAdmin}>
               <option value="dev">Sandbox (dev)</option>
-              <option value="prod">Παραγωγή (prod)</option>
+              <option value="prod">{_t("Παραγωγή (prod)")}</option>
             </select>
           </div>
           <div />
@@ -352,28 +351,28 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
         </div>
         <div className="form-grid-3">
           <div className="form-group">
-            <label>Προεπιλεγμένος τύπος παραστατικού</label>
+            <label>{_t("Προεπιλεγμένος τύπος παραστατικού")}</label>
             <select value={form.mydata_default_invoice_type || '2.1'} onChange={c('mydata_default_invoice_type')} disabled={!isAdmin}>
-              <option value="2.1">2.1 — Παροχή Υπηρεσιών</option>
-              <option value="1.1">1.1 — Πώληση</option>
+              <option value="2.1">{_t("2.1 — Παροχή Υπηρεσιών")}</option>
+              <option value="1.1">{_t("1.1 — Πώληση")}</option>
             </select>
           </div>
           <div className="form-group">
-            <label>Κατηγορία εσόδου (classificationType)</label>
+            <label>{_t("Κατηγορία εσόδου (classificationType)")}</label>
             <input type="text" value={form.mydata_classification_type || 'E3_561_001'} onChange={c('mydata_classification_type')} disabled={!isAdmin} placeholder="E3_561_001" />
           </div>
           <div className="form-group">
-            <label>Υποκατηγορία (classificationCategory)</label>
+            <label>{_t("Υποκατηγορία (classificationCategory)")}</label>
             <input type="text" value={form.mydata_classification_category || 'category1_3'} onChange={c('mydata_classification_category')} disabled={!isAdmin} placeholder="category1_3" />
           </div>
         </div>
         <div style={{ marginTop: 12, padding: 12, background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: 6 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <button type="button" className="btn btn-sm" onClick={checkMydata} disabled={!isAdmin || mydataChecking}>
-              {mydataChecking ? 'Έλεγχος...' : '🔍 Έλεγχος myDATA credentials'}
+              {mydataChecking ? _t("Έλεγχος...") : _t("🔍 Έλεγχος myDATA credentials")}
             </button>
             <span style={{ fontSize: 12, color: '#4a5568' }}>
-              Κάνει ένα test call στο ΑΑΔΕ για να επιβεβαιώσει ότι User ID + Subscription Key είναι σωστά.
+              {_t("Κάνει ένα test call στο ΑΑΔΕ για να επιβεβαιώσει ότι User ID + Subscription Key είναι σωστά.")}
             </span>
           </div>
 
@@ -393,7 +392,7 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
                 color:        mydataCheck.ok ? '#22543d' : '#742a2a',
               }}
             >
-              <strong>{mydataCheck.ok ? 'Επιτυχία' : 'Αποτυχία'}</strong>{'\n'}{mydataCheck.message}
+              <strong>{mydataCheck.ok ? _t("Επιτυχία") : _t("Αποτυχία")}</strong>{'\n'}{mydataCheck.message}
             </div>
           )}
         </div>
@@ -402,7 +401,7 @@ function OrganizationSettings({ user, onLogout, onOpenCaseSearch }) {
       {isAdmin && (
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 20 }}>
           <button type="button" className="btn" disabled={saving} onClick={save}>
-            {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
+            {saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}
           </button>
         </div>
       )}

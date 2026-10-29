@@ -14,6 +14,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { finance } from '../api';
 import { fmtDate, fmtCurrency } from '../utils/format';
+import { _t } from '../i18n';
 
 const RESOURCE = {
   finance_ores: 'ores',
@@ -29,7 +30,7 @@ const norm = (s) => String(s || '').trim().replace(/\s+/g, ' ');
 const keyOf = (r) => `${r.src}:${r.aa}`;
 
 function grammatioBase(g) {
-  return `Γραμμάτιο${g.katigoria ? ` ${g.katigoria}` : ''}${g.arithmos ? ` Νο ${g.arithmos}` : ''}`;
+  return _t("Γραμμάτιο{0}{1}", [g.katigoria ? ` ${g.katigoria}` : '', g.arithmos ? ` Νο ${g.arithmos}` : '']);
 }
 
 function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, onChanged }) {
@@ -42,10 +43,10 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
   const sections = useMemo(() => {
     const inSel = (rows) => (rows || []).filter(r => selectedCases.has(r.ypothesi_id));
     return [
-      { title: 'Ώρες', rows: inSel(data.hours) },
-      { title: 'Πάγιες αμοιβές και γραμμάτια', rows: [...inSel(data.fees), ...inSel(data.grammatia)] },
-      { title: 'Έξοδα', rows: inSel(data.expenses) },
-      { title: 'Προκαταβολές', rows: inSel(data.advances) },
+      { title: _t("Ώρες"), rows: inSel(data.hours) },
+      { title: _t("Πάγιες αμοιβές και γραμμάτια"), rows: [...inSel(data.fees), ...inSel(data.grammatia)] },
+      { title: _t("Έξοδα"), rows: inSel(data.expenses) },
+      { title: _t("Προκαταβολές"), rows: inSel(data.advances) },
     ].filter(s => s.rows.length);
   }, [data, selectedCases]);
 
@@ -72,7 +73,7 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
     try {
       await finance.update(res, r.aa, { [field]: value });
       onChanged && onChanged();
-    } catch (e) { setError(e.message || 'Η αποθήκευση απέτυχε.'); }
+    } catch (e) { setError(e.message || _t("Η αποθήκευση απέτυχε.")); }
     finally { setBusy(''); }
   };
   const saveTr = async (src, txt) => {
@@ -81,7 +82,7 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
     try {
       await finance.translations.save(lang, src, txt);
       setTr(t => ({ ...t, [src]: norm(txt) }));
-    } catch (e) { setError(e.message || 'Η αποθήκευση της μετάφρασης απέτυχε.'); }
+    } catch (e) { setError(e.message || _t("Η αποθήκευση της μετάφρασης απέτυχε.")); }
   };
   const autoTranslate = async () => {
     const missing = allTexts.filter(t => !tr[t]);
@@ -90,7 +91,7 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
     try {
       const d = await finance.translations.auto(lang, missing);
       setTr(t => ({ ...t, ...(d?.map || {}) }));
-    } catch (e) { setError(e.message || 'Η αυτόματη μετάφραση απέτυχε.'); }
+    } catch (e) { setError(e.message || _t("Η αυτόματη μετάφραση απέτυχε.")); }
     finally { setBusy(''); }
   };
 
@@ -103,7 +104,7 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
   const setVal = (r, f, v) => setEdit(e => ({ ...e, [keyOf(r)]: { ...(e[keyOf(r)] || {}), [f]: v } }));
 
   const missingCount = allTexts.filter(t => !tr[t]).length;
-  const langName = { el: 'ελληνικά', en: 'αγγλικά', fr: 'γαλλικά' }[lang];
+  const langName = { el: _t("ελληνικά"), en: _t("αγγλικά"), fr: _t("γαλλικά") }[lang];
   const showTr = allTexts.length > 0;
 
   if (!sections.length) return null;
@@ -111,23 +112,22 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
   return (
     <div style={{ marginTop: 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
-        <strong style={{ fontSize: 14 }}>Γραμμές του λογαριασμού</strong>
+        <strong style={{ fontSize: 14 }}>{_t("Γραμμές του λογαριασμού")}</strong>
         {showTr && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 13, color: missingCount ? '#c05621' : '#2f855a' }}>
-              {missingCount ? `${missingCount} χωρίς μετάφραση στα ${langName}` : `Όλες μεταφρασμένες στα ${langName}`}
+              {missingCount ? _t("{0} χωρίς μετάφραση στα {1}", [missingCount, langName]) : _t("Όλες μεταφρασμένες στα {0}", [langName])}
             </span>
             {autoOn && missingCount > 0 && (
               <button type="button" className="btn btn-sm btn-secondary" disabled={busy === 'auto'} onClick={autoTranslate}>
-                {busy === 'auto' ? 'Μετάφραση…' : '🌐 Αυτόματη μετάφραση'}
+                {busy === 'auto' ? _t("Μετάφραση…") : _t("🌐 Αυτόματη μετάφραση")}
               </button>
             )}
           </div>
         )}
       </div>
       <p style={{ color: '#718096', fontSize: 12.5, margin: '0 0 8px' }}>
-        Οι αλλαγές σε περιγραφή, ποσό και ΦΠΑ αποθηκεύονται στις εγγραφές της υπόθεσης.
-        Γραμμή χωρίς ☑ δεν μπαίνει στον λογαριασμό και μένει ανοιχτή.
+        {_t("Οι αλλαγές σε περιγραφή, ποσό και ΦΠΑ αποθηκεύονται στις εγγραφές της υπόθεσης. Γραμμή χωρίς ☑ δεν μπαίνει στον λογαριασμό και μένει ανοιχτή.")}
       </p>
       {error && <div className="error-message" style={{ marginBottom: 8 }}>{error}</div>}
       <div className="data-table">
@@ -135,11 +135,11 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
           <thead>
             <tr>
               <th style={{ width: 32 }}></th>
-              <th style={{ width: 92 }}>Ημ/νία</th>
-              <th>Περιγραφή</th>
-              {showTr && <th>Μετάφραση ({lang.toUpperCase()})</th>}
-              <th style={{ width: 120, textAlign: 'right' }}>Ποσό</th>
-              <th style={{ width: 80, textAlign: 'center' }}>Χωρίς ΦΠΑ</th>
+              <th style={{ width: 92 }}>{_t("Ημ/νία")}</th>
+              <th>{_t("Περιγραφή")}</th>
+              {showTr && <th>{_t("Μετάφραση (")}{lang.toUpperCase()})</th>}
+              <th style={{ width: 120, textAlign: 'right' }}>{_t("Ποσό")}</th>
+              <th style={{ width: 80, textAlign: 'center' }}>{_t("Χωρίς ΦΠΑ")}</th>
             </tr>
           </thead>
           {sections.map(sec => (
@@ -157,7 +157,7 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
                     <td>
                       {isGram && <div style={{ fontWeight: 600 }}>{grammatioBase(r)}</div>}
                       <input type="text" value={val(r, 'perigrafi', r.perigrafi || '')} disabled={off || busy === k}
-                             placeholder={isGram ? 'Πρόσθετη περιγραφή (προαιρετική)' : (r.eidos || '')}
+                             placeholder={isGram ? _t("Πρόσθετη περιγραφή (προαιρετική)") : (r.eidos || '')}
                              onChange={e => setVal(r, 'perigrafi', e.target.value)}
                              onBlur={e => { if ((e.target.value || '') !== (r.perigrafi || '')) saveField(r, 'perigrafi', e.target.value || null); }}
                              style={{ width: '100%' }} />
@@ -166,7 +166,7 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
                       <td>
                         {needsTr(src) ? (
                           <input type="text" key={`${lang}:${src}:${tr[src] || ''}`} defaultValue={tr[src] || ''}
-                                 disabled={off} placeholder="— χωρίς μετάφραση —"
+                                 disabled={off} placeholder={_t("— χωρίς μετάφραση —")}
                                  onBlur={e => saveTr(src, e.target.value)}
                                  style={{ width: '100%', borderColor: tr[src] ? undefined : '#f6ad55' }} />
                         ) : <span style={{ color: '#cbd5e0' }}>—</span>}
@@ -181,7 +181,7 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
                     <td style={{ textAlign: 'center' }}>
                       {FEE.has(r.src) ? (
                         <input type="checkbox" checked={!!r.xoris_fpa} disabled={off || busy === k}
-                               title="Απαλλαγή ΦΠΑ — ενδοκοινοτική συναλλαγή (Άρθρο 14 παρ. 2α Ν. 2859/2000)"
+                               title={_t("Απαλλαγή ΦΠΑ — ενδοκοινοτική συναλλαγή (Άρθρο 14 παρ. 2α Ν. 2859/2000)")}
                                onChange={e => saveField(r, 'xoris_fpa', e.target.checked)} />
                       ) : ''}
                     </td>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import DateInput from '../components/DateInput';
 import { finance, downloadFile } from '../api';
+import { _t } from '../i18n';
 
 // ΣΥΓΚΕΝΤΡΩΤΙΚΗ ΚΑΤΑΣΤΑΣΗ ΟΙΚΟΝΟΜΙΚΩΝ
 //
@@ -16,17 +17,17 @@ import { finance, downloadFile } from '../api';
 // Το Excel βγαίνει με ξεχωριστό φύλλο ανά κατηγορία και Σύνοψη, ή μόνο μία
 // κατηγορία σε δικό της αρχείο.
 const CATS = [
-  { key: 'ores',         label: 'Αμοιβές - ώρες' },
-  { key: 'amoives',      label: 'Αμοιβές' },
-  { key: 'exoda_xoris',  label: 'Έξοδα χωρίς ΦΠΑ' },
-  { key: 'exoda_me',     label: 'Έξοδα με ΦΠΑ' },
-  { key: 'grammatia',    label: 'Γραμμάτια' },
-  { key: 'prokatavoles', label: 'Προκαταβολές' },
+  { key: 'ores',         label: _t("Αμοιβές - ώρες") },
+  { key: 'amoives',      label: _t("Αμοιβές") },
+  { key: 'exoda_xoris',  label: _t("Έξοδα χωρίς ΦΠΑ") },
+  { key: 'exoda_me',     label: _t("Έξοδα με ΦΠΑ") },
+  { key: 'grammatia',    label: _t("Γραμμάτια") },
+  { key: 'prokatavoles', label: _t("Προκαταβολές") },
 ];
 const TABS = [
-  { key: 'unsettled', label: 'Ανοιχτά' },
-  { key: 'settled',   label: 'Αρχείο (εξοφλημένα)' },
-  { key: 'all',       label: 'Όλα' },
+  { key: 'unsettled', label: _t("Ανοιχτά") },
+  { key: 'settled',   label: _t("Αρχείο (εξοφλημένα)") },
+  { key: 'all',       label: _t("Όλα") },
 ];
 
 const money = (n) => (Number(n) || 0).toLocaleString('el-GR',
@@ -80,7 +81,7 @@ function ReportFinanceAll({ user, onLogout, onOpenCaseSearch }) {
     setLoading(true); setError('');
     finance.all({ ...params, show: show || null })
       .then(d => setData(d))
-      .catch(e => setError(e.message || 'Η φόρτωση απέτυχε.'))
+      .catch(e => setError(e.message || _t("Η φόρτωση απέτυχε.")))
       .finally(() => setLoading(false));
     // eslint-disable-next-line
   }, [status, from, to, katigoria, qApplied, show]);
@@ -91,7 +92,7 @@ function ReportFinanceAll({ user, onLogout, onOpenCaseSearch }) {
       await downloadFile(finance.exportAllXlsx({ ...params, katigoria: kat || null }),
         null, 'Oikonomika.xlsx');
     } catch (e) {
-      setError(e.message || 'Η εξαγωγή απέτυχε.');
+      setError(e.message || _t("Η εξαγωγή απέτυχε."));
     } finally { setBusy(''); }
   };
 
@@ -101,7 +102,7 @@ function ReportFinanceAll({ user, onLogout, onOpenCaseSearch }) {
 
   return (
     <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch}
-            title="Συγκεντρωτικά οικονομικά">
+            title={_t("Συγκεντρωτικά οικονομικά")}>
       <div className="section">
         <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
           {TABS.map(t => (
@@ -112,37 +113,37 @@ function ReportFinanceAll({ user, onLogout, onOpenCaseSearch }) {
         </div>
 
         <p style={{ color: '#718096', marginTop: 0, marginBottom: 14 }}>
-          {status === 'unsettled' && 'Ό,τι δεν έχει μπει ακόμα σε εκδοθέντα αναλυτικό λογαριασμό.'}
-          {status === 'settled' && 'Όσα έχουν μπει σε εκδοθέντα αναλυτικό λογαριασμό. Επιλέξτε περίοδο και, αν χρειάζεται, πελάτη.'}
-          {status === 'all' && 'Όλες οι εγγραφές, ανοιχτές και εξοφλημένες.'}
+          {status === 'unsettled' && _t("Ό,τι δεν έχει μπει ακόμα σε εκδοθέντα αναλυτικό λογαριασμό.")}
+          {status === 'settled' && _t("Όσα έχουν μπει σε εκδοθέντα αναλυτικό λογαριασμό. Επιλέξτε περίοδο και, αν χρειάζεται, πελάτη.")}
+          {status === 'all' && _t("Όλες οι εγγραφές, ανοιχτές και εξοφλημένες.")}
         </p>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
           <div style={{ minWidth: 150 }}>
             <DateInput value={from} onChange={e => setFrom(e.target.value)} />
           </div>
-          <span style={{ color: '#718096' }}>έως</span>
+          <span style={{ color: '#718096' }}>{_t("έως")}</span>
           <div style={{ minWidth: 150 }}>
             <DateInput value={to} onChange={e => setTo(e.target.value)} />
           </div>
-          <button type="button" className="btn btn-sm" onClick={() => quarter(0)}>Τρέχον τρίμηνο</button>
-          <button type="button" className="btn btn-sm" onClick={() => quarter(-1)}>Προηγούμενο τρίμηνο</button>
-          <button type="button" className="btn btn-sm" onClick={() => year(0)}>Φέτος</button>
-          <button type="button" className="btn btn-sm" onClick={() => year(-1)}>Πέρυσι</button>
+          <button type="button" className="btn btn-sm" onClick={() => quarter(0)}>{_t("Τρέχον τρίμηνο")}</button>
+          <button type="button" className="btn btn-sm" onClick={() => quarter(-1)}>{_t("Προηγούμενο τρίμηνο")}</button>
+          <button type="button" className="btn btn-sm" onClick={() => year(0)}>{_t("Φέτος")}</button>
+          <button type="button" className="btn btn-sm" onClick={() => year(-1)}>{_t("Πέρυσι")}</button>
           {(from || to) && status !== 'settled' && (
             <button type="button" className="btn btn-sm"
-                    onClick={() => { setFrom(''); setTo(''); }}>Καθάρισμα</button>
+                    onClick={() => { setFrom(''); setTo(''); }}>{_t("Καθάρισμα")}</button>
           )}
         </div>
 
         <form onSubmit={e => { e.preventDefault(); setQApplied(q.trim()); }}
               style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
-          <input type="search" className="search-input" placeholder="🔍 Πελάτης ή πρωτόκολλο"
+          <input type="search" className="search-input" placeholder={_t("🔍 Πελάτης ή πρωτόκολλο")}
                  value={q} onChange={e => setQ(e.target.value)} style={{ minWidth: 260 }} />
-          <button type="submit" className="btn btn-sm btn-secondary">Αναζήτηση</button>
+          <button type="submit" className="btn btn-sm btn-secondary">{_t("Αναζήτηση")}</button>
           <select value={katigoria} onChange={e => setKatigoria(e.target.value)}
                   className="filter-select">
-            <option value="">Όλες οι κατηγορίες</option>
+            <option value="">{_t("Όλες οι κατηγορίες")}</option>
             {CATS.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
           </select>
         </form>
@@ -161,7 +162,7 @@ function ReportFinanceAll({ user, onLogout, onOpenCaseSearch }) {
               </div>
               <button type="button" className="btn btn-sm btn-secondary" disabled={!!busy}
                       onClick={() => exportXlsx(c.key)}>
-                {busy === c.key ? 'Εξαγωγή…' : '⬇ Excel'}
+                {busy === c.key ? _t("Εξαγωγή…") : '⬇ Excel'}
               </button>
             </div>
           ))}
@@ -170,35 +171,35 @@ function ReportFinanceAll({ user, onLogout, onOpenCaseSearch }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                       gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
           <div style={{ color: '#4a5568' }}>
-            {loading ? 'Φόρτωση…' : `${(data?.total ?? 0).toLocaleString('el-GR')} ${(data?.total ?? 0) === 1 ? 'εγγραφή' : 'εγγραφές'}`}
-            {!loading && data?.truncated && ` — εμφανίζονται οι ${rows.length} πιο πρόσφατες· τα σύνολα και το Excel τις περιέχουν όλες`}
+            {loading ? _t("Φόρτωση…") : `${(data?.total ?? 0).toLocaleString('el-GR')} ${(data?.total ?? 0) === 1 ? _t('εγγραφή') : _t('εγγραφές')}`}
+            {!loading && data?.truncated && _t(" — εμφανίζονται οι {0} πιο πρόσφατες· τα σύνολα και το Excel τις περιέχουν όλες", [rows.length])}
             <select className="filter-select" value={show} onChange={e => setShow(Number(e.target.value))}
                     style={{ marginLeft: 12 }}>
-              <option value={30}>Τελευταίες 30</option>
-              <option value={100}>Τελευταίες 100</option>
-              <option value={2000}>Όλες</option>
+              <option value={30}>{_t("Τελευταίες 30")}</option>
+              <option value={100}>{_t("Τελευταίες 100")}</option>
+              <option value={2000}>{_t("Όλες")}</option>
             </select>
           </div>
           <button type="button" className="btn btn-primary" disabled={!!busy || loading}
                   onClick={() => exportXlsx(katigoria || null)}>
-            {busy === 'all' ? 'Εξαγωγή…' : (katigoria ? `⬇ Excel: ${catLabel[katigoria]}` : '⬇ Excel (ένα φύλλο ανά κατηγορία)')}
+            {busy === 'all' ? _t("Εξαγωγή…") : (katigoria ? `⬇ Excel: ${catLabel[katigoria]}` : _t("⬇ Excel (ένα φύλλο ανά κατηγορία)"))}
           </button>
         </div>
 
         {!loading && (rows.length === 0 ? (
-          <div className="empty-state">Δεν υπάρχουν εγγραφές με αυτά τα κριτήρια.</div>
+          <div className="empty-state">{_t("Δεν υπάρχουν εγγραφές με αυτά τα κριτήρια.")}</div>
         ) : (
           <div className="data-table">
             <table className="table">
               <thead>
                 <tr>
-                  <th style={{ width: 100 }}>Ημ/νία</th>
-                  <th style={{ width: 140 }}>Κατηγορία</th>
-                  <th>Πελάτης</th>
-                  <th style={{ width: 130 }}>Πρωτόκολλο</th>
-                  <th>Περιγραφή</th>
-                  <th style={{ ...NUM, width: 120 }}>Ποσό (€)</th>
-                  {status !== 'unsettled' && <th style={{ width: 110 }}>Λογαριασμός</th>}
+                  <th style={{ width: 100 }}>{_t("Ημ/νία")}</th>
+                  <th style={{ width: 140 }}>{_t("Κατηγορία")}</th>
+                  <th>{_t("Πελάτης")}</th>
+                  <th style={{ width: 130 }}>{_t("Πρωτόκολλο")}</th>
+                  <th>{_t("Περιγραφή")}</th>
+                  <th style={{ ...NUM, width: 120 }}>{_t("Ποσό (€)")}</th>
+                  {status !== 'unsettled' && <th style={{ width: 110 }}>{_t("Λογαριασμός")}</th>}
                 </tr>
               </thead>
               <tbody>

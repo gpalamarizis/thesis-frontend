@@ -11,7 +11,8 @@ import { toDateInput } from '../../utils/format';
 import { COUNTRY_OPTIONS } from '../../utils/countries';
 
 import DateInput from '../../components/DateInput';
-import { TERM } from '../../utils/region';
+import { TERM, isCY } from '../../utils/region';
+import { _t } from '../../i18n';
 // Backend fields (from routes/fysika.js FIELDS list):
 const emptyForm = {
   eponymo: '', onoma: '', onoma_patros: '',
@@ -31,25 +32,25 @@ function AddressBlock({ suffix, form, onChange }) {
     <div>
       <div className="form-grid-3">
         <div className="form-group" style={{ gridColumn: 'span 2' }}>
-          <label>Οδός</label>
+          <label>{_t("Οδός")}</label>
           <input type="text" value={form[`odos_${suffix}`] || ''} onChange={onChange(`odos_${suffix}`)} />
         </div>
         <div className="form-group">
-          <label>Αριθμός</label>
+          <label>{_t("Αριθμός")}</label>
           <input type="text" value={form[`arithmos_${suffix}`] || ''} onChange={onChange(`arithmos_${suffix}`)} />
         </div>
       </div>
       <div className="form-grid-3">
         <div className="form-group">
-          <label>Τ.Κ.</label>
+          <label>{_t("Τ.Κ.")}</label>
           <input type="text" value={form[`tk_${suffix}`] || ''} onChange={onChange(`tk_${suffix}`)} />
         </div>
         <div className="form-group">
-          <label>Πόλη</label>
+          <label>{_t("Πόλη")}</label>
           <input type="text" value={form[`poli_${suffix}`] || ''} onChange={onChange(`poli_${suffix}`)} />
         </div>
         <div className="form-group">
-          <label>Χώρα</label>
+          <label>{_t("Χώρα")}</label>
           <input type="text" value={form[`xora_${suffix}`] || ''} onChange={onChange(`xora_${suffix}`)} />
         </div>
       </div>
@@ -62,7 +63,7 @@ function PhoneList({ prefix, count, form, onChange }) {
     <div className="form-grid-3">
       {Array.from({ length: count }, (_, i) => i + 1).map(n => (
         <div className="form-group" key={n}>
-          <label>Τηλέφωνο {n}</label>
+          <label>{_t("Τηλέφωνο")} {n}</label>
           <input type="tel" value={form[`${prefix}_${n}`] || ''} onChange={onChange(`${prefix}_${n}`)} />
         </div>
       ))}
@@ -102,7 +103,7 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!form.eponymo) { setError('Το επώνυμο είναι υποχρεωτικό.'); return; }
+    if (!form.eponymo) { setError(_t("Το επώνυμο είναι υποχρεωτικό.")); return; }
     setSaving(true);
     try {
       const payload = { ...form };
@@ -119,52 +120,52 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
   };
 
   if (loading) {
-    return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Φυσικό Πρόσωπο"><div className="empty-state">Φόρτωση...</div></Layout>;
+    return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Φυσικό Πρόσωπο")}><div className="empty-state">{_t("Φόρτωση...")}</div></Layout>;
   }
 
   const tabPersonal = (
     <div>
       <div className="form-grid-3">
         <div className="form-group">
-          <label>Επώνυμο *</label>
+          <label>{_t("Επώνυμο *")}</label>
           <input type="text" value={form.eponymo} onChange={onChange('eponymo')} required />
         </div>
         <div className="form-group">
-          <label>Όνομα</label>
+          <label>{_t("Όνομα")}</label>
           <input type="text" value={form.onoma} onChange={onChange('onoma')} />
         </div>
         <div className="form-group">
-          <label>Όνομα πατρός</label>
+          <label>{_t("Όνομα πατρός")}</label>
           <input type="text" value={form.onoma_patros} onChange={onChange('onoma_patros')} />
         </div>
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Επώνυμο συζύγου</label>
+          <label>{_t("Επώνυμο συζύγου")}</label>
           <input type="text" value={form.eponymo_syzygou} onChange={onChange('eponymo_syzygou')} />
         </div>
         <div className="form-group">
-          <label>Όνομα συζύγου</label>
+          <label>{_t("Όνομα συζύγου")}</label>
           <input type="text" value={form.onoma_syzygou} onChange={onChange('onoma_syzygou')} />
         </div>
       </div>
       <div className="form-grid-3">
         <div className="form-group">
-          <label>Ημερομηνία γέννησης</label>
+          <label>{_t("Ημερομηνία γέννησης")}</label>
           <DateInput value={form.date_gennisis} onChange={onChange('date_gennisis')} />
         </div>
         <div className="form-group">
-          <label>Α.Δ.Τ.</label>
+          <label>{_t("Α.Δ.Τ.")}</label>
           <input type="text" value={form.adt} onChange={onChange('adt')} />
         </div>
         <div className="form-group">
-          <label>Εκδούσα Αρχή</label>
+          <label>{_t("Εκδούσα Αρχή")}</label>
           <input type="text" value={form.ekdousa_arxi} onChange={onChange('ekdousa_arxi')} />
         </div>
       </div>
       <div className="form-grid-3">
         <div className="form-group">
-          <label>Α.Φ.Μ.</label>
+          <label>{isCY ? TERM.afm : _t("Α.Φ.Μ.")}</label>
           <input type="text" value={form.afm} onChange={onChange('afm')} />
         </div>
         <div className="form-group">
@@ -174,10 +175,10 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
         {/* ΥΠΗΚΟΟΤΗΤΑ — κωδικός χώρας. Στα υπάρχοντα πρόσωπα είναι κενή και
             συμπληρώνεται σταδιακά· δεν προκύπτει από τη χώρα κατοικίας. */}
         <div className="form-group">
-          <label>Υπηκοότητα</label>
+          <label>{_t("Υπηκοότητα")}</label>
           <select value={form.ypikootita || ''} onChange={onChange('ypikootita')}
                   style={{ backgroundColor: '#fff', height: 41 }}>
-            <option value="">— Δεν έχει συμπληρωθεί —</option>
+            <option value="">{_t("— Δεν έχει συμπληρωθεί —")}</option>
             {COUNTRY_OPTIONS.map(c => <option key={c.code} value={c.code}>{c.el}</option>)}
           </select>
         </div>
@@ -188,14 +189,14 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
           <input type="email" value={form.email} onChange={onChange('email')} />
         </div>
         <div className="form-group">
-          <label>Ιστοσελίδα</label>
+          <label>{_t("Ιστοσελίδα")}</label>
           <input type="text" value={form.web_site} onChange={onChange('web_site')} />
         </div>
       </div>
       <div className="form-group">
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
           <input type="checkbox" checked={!!form.energos} onChange={e => setForm(f => ({ ...f, energos: e.target.checked }))} />
-          <span>Ενεργός</span>
+          <span>{_t("Ενεργός")}</span>
         </label>
       </div>
       {/* ΧΡΕΩΣΗ ΑΝΑ ΩΡΑ
@@ -203,11 +204,11 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
           σε κάθε υπόθεση του πελάτη. Αλλάζει ελεύθερα ανά εγγραφή. */}
       <div className="form-grid-3">
         <div className="form-group">
-          <label>Χρέωση ανά ώρα (€)</label>
+          <label>{_t("Χρέωση ανά ώρα (€)")}</label>
           <input type="number" step="0.01" value={form.xreosi_ora || ''}
-                 onChange={onChange('xreosi_ora')} placeholder="π.χ. 150" />
+                 onChange={onChange('xreosi_ora')} placeholder={_t("π.χ. 150")} />
           <small style={{ color: '#718096' }}>
-            Προσυμπληρώνεται στις εγγραφές ωρών όλων των υποθέσεών του.
+            {_t("Προσυμπληρώνεται στις εγγραφές ωρών όλων των υποθέσεών του.")}
           </small>
         </div>
       </div>
@@ -216,22 +217,22 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
 
   const tabAddresses = (
     <Tabs tabs={[
-      { label: 'Οικίας',   content: <AddressBlock suffix="oikias"   form={form} onChange={onChange} /> },
-      { label: 'Γραφείου', content: <AddressBlock suffix="grafeiou" form={form} onChange={onChange} /> },
+      { label: _t("Οικίας"),   content: <AddressBlock suffix="oikias"   form={form} onChange={onChange} /> },
+      { label: _t("Γραφείου"), content: <AddressBlock suffix="grafeiou" form={form} onChange={onChange} /> },
     ]}/>
   );
 
   const tabPhones = (
     <Tabs tabs={[
-      { label: 'Οικίας',   content: <PhoneList prefix="tilefono_oikias"   count={3} form={form} onChange={onChange} /> },
-      { label: 'Γραφείου', content: <PhoneList prefix="tilefono_grafeiou" count={3} form={form} onChange={onChange} /> },
-      { label: 'Κινητά',   content: <PhoneList prefix="tilefono_kinito"   count={3} form={form} onChange={onChange} /> },
+      { label: _t("Οικίας"),   content: <PhoneList prefix="tilefono_oikias"   count={3} form={form} onChange={onChange} /> },
+      { label: _t("Γραφείου"), content: <PhoneList prefix="tilefono_grafeiou" count={3} form={form} onChange={onChange} /> },
+      { label: _t("Κινητά"),   content: <PhoneList prefix="tilefono_kinito"   count={3} form={form} onChange={onChange} /> },
       { label: 'Fax',      content: <PhoneList prefix="fax"               count={3} form={form} onChange={onChange} /> },
     ]}/>
   );
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={isNew ? 'Νέο Φυσικό Πρόσωπο' : `${form.eponymo} ${form.onoma || ''}`}>
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={isNew ? _t("Νέο Φυσικό Πρόσωπο") : `${form.eponymo} ${form.onoma || ''}`}>
       {error && <div className="error">{error}</div>}
       <PersonEditToolbar
         kind="fysika"
@@ -242,16 +243,16 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
       <form onSubmit={handleSubmit}>
         <div className="section">
           <Tabs tabs={[
-            { label: 'Στοιχεία',    content: tabPersonal },
-            { label: 'Διευθύνσεις', content: tabAddresses },
-            { label: 'Τηλέφωνα',    content: tabPhones },
-            { label: 'Φορολογικά & Ιδιοκτησία', content: <ClientCredentialsSection form={form} onChange={onChange} kind="fysiko" ownerId={isNew ? null : Number(id)} accountsPanel={<ClientAccountsPanel ownerType="fysiko" ownerId={isNew ? null : Number(id)} />} /> },
-            ...(isNew ? [] : [{ label: 'Λογαριασμοί', content: <AccountsList filter={{ clientType: 'fysiko', clientId: Number(id) }} showClient={false} /> }]),
+            { label: _t("Στοιχεία"),    content: tabPersonal },
+            { label: _t("Διευθύνσεις"), content: tabAddresses },
+            { label: _t("Τηλέφωνα"),    content: tabPhones },
+            { label: _t("Φορολογικά & Ιδιοκτησία"), content: <ClientCredentialsSection form={form} onChange={onChange} kind="fysiko" ownerId={isNew ? null : Number(id)} accountsPanel={<ClientAccountsPanel ownerType="fysiko" ownerId={isNew ? null : Number(id)} />} /> },
+            ...(isNew ? [] : [{ label: _t("Λογαριασμοί"), content: <AccountsList filter={{ clientType: 'fysiko', clientId: Number(id) }} showClient={false} /> }]),
           ]}/>
         </div>
         <div className="form-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/fysika')}>Ακύρωση</button>
-          <button type="submit" className="btn" disabled={saving}>{saving ? 'Αποθήκευση...' : (isNew ? 'Δημιουργία' : 'Αποθήκευση')}</button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/fysika')}>{_t("Ακύρωση")}</button>
+          <button type="submit" className="btn" disabled={saving}>{saving ? _t("Αποθήκευση...") : (isNew ? _t("Δημιουργία") : _t("Αποθήκευση"))}</button>
         </div>
       </form>
     </Layout>

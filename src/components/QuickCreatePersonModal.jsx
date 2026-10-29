@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Modal from '../components/Modal';
 import { people, fysika, nomika } from '../api';
 import { TERM } from '../utils/region';
+import { _t } from '../i18n';
 
 /**
  * QuickCreatePersonModal — inline "+ Νέος" creator from within case editing.
@@ -16,43 +17,43 @@ function QuickCreatePersonModal({ kind, onClose, onCreated }) {
 
   const CONFIG = {
     fysiko: {
-      title: 'Νέο Φυσικό Πρόσωπο',
+      title: _t("Νέο Φυσικό Πρόσωπο"),
       helper: fysika,
       fields: [
-        { key: 'eponymo',      label: 'Επώνυμο *', required: true },
-        { key: 'onoma',        label: 'Όνομα' },
-        { key: 'onoma_patros', label: 'Πατρός' },
+        { key: 'eponymo',      label: _t("Επώνυμο *"), required: true },
+        { key: 'onoma',        label: _t("Όνομα") },
+        { key: 'onoma_patros', label: _t("Πατρός") },
         { key: 'afm',          label: TERM.afm },
       ],
     },
     nomiko: {
-      title: 'Νέο Νομικό Πρόσωπο',
+      title: _t("Νέο Νομικό Πρόσωπο"),
       helper: nomika,
       fields: [
-        { key: 'eponymia',           label: 'Επωνυμία *', required: true },
-        { key: 'diakritikos_titlos', label: 'Διακριτικός τίτλος' },
+        { key: 'eponymia',           label: _t("Επωνυμία *"), required: true },
+        { key: 'diakritikos_titlos', label: _t("Διακριτικός τίτλος") },
         { key: 'afm',                label: TERM.afm },
       ],
     },
     lawyer: {
-      title: 'Νέος Δικηγόρος Γραφείου',
+      title: _t("Νέος Δικηγόρος Γραφείου"),
       helper: people.lawyers,
       fields: [
-        { key: 'eponymo',   label: 'Επώνυμο *', required: true },
-        { key: 'onoma',     label: 'Όνομα' },
-        { key: 'ar_mitroou', label: 'Αρ. μητρώου' },
-        { key: 'syllogos',   label: 'Σύλλογος' },
-        { key: 'mobile',     label: 'Κινητό' },
+        { key: 'eponymo',   label: _t("Επώνυμο *"), required: true },
+        { key: 'onoma',     label: _t("Όνομα") },
+        { key: 'ar_mitroou', label: _t("Αρ. μητρώου") },
+        { key: 'syllogos',   label: _t("Σύλλογος") },
+        { key: 'mobile',     label: _t("Κινητό") },
         { key: 'email',      label: 'Email' },
       ],
     },
     opponent: {
-      title: 'Νέος Αντίδικος',
+      title: _t("Νέος Αντίδικος"),
       helper: people.opponents,
       fields: [
-        { key: 'eponymo',  label: 'Επώνυμο *', required: true },
-        { key: 'onoma',    label: 'Όνομα' },
-        { key: 'telefono', label: 'Τηλέφωνο' },
+        { key: 'eponymo',  label: _t("Επώνυμο *"), required: true },
+        { key: 'onoma',    label: _t("Όνομα") },
+        { key: 'telefono', label: _t("Τηλέφωνο") },
         { key: 'email',    label: 'Email' },
       ],
     },
@@ -68,7 +69,7 @@ function QuickCreatePersonModal({ kind, onClose, onCreated }) {
   const save = async () => {
     setError('');
     for (const f of config.fields) {
-      if (f.required && !form[f.key]) { setError(`Το πεδίο "${f.label.replace(' *', '')}" είναι υποχρεωτικό.`); return; }
+      if (f.required && !form[f.key]) { setError(_t("Το πεδίο \"{0}\" είναι υποχρεωτικό.", [f.label.replace(' *', '')])); return; }
     }
     setSaving(true);
     try {
@@ -89,13 +90,13 @@ function QuickCreatePersonModal({ kind, onClose, onCreated }) {
       title={config.title}
       onClose={onClose}
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Δημιουργία...' : 'Δημιουργία'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Δημιουργία...") : _t("Δημιουργία")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       <div style={{ color: '#718096', fontSize: 13, marginBottom: 12 }}>
-        Δημιουργία με τα βασικά. Μπορείς να συμπληρώσεις όλα τα υπόλοιπα πεδία από τη σελίδα «{config.title.replace('Νέος ','').replace('Νέο ','')}» αργότερα.
+        {_t("Δημιουργία με τα βασικά. Μπορείς να συμπληρώσεις όλα τα υπόλοιπα πεδία από τη σελίδα «")}{config.title.replace(/^(Νέος|Νέο|New) /,'')}{_t("» αργότερα.")}
       </div>
       {config.fields.map(f => (
         <div className="form-group" key={f.key}>

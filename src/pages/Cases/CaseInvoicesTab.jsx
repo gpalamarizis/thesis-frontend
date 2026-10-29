@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Modal from '../../components/Modal';
 import { invoices, reports } from '../../api';
 import { fmtDate, fmtCurrency } from '../../utils/format';
+import { _t } from '../../i18n';
 
 /**
  * CaseInvoicesTab — τιμολόγια συνδεδεμένα με μια υπόθεση.
@@ -57,34 +58,34 @@ function CaseInvoicesTab({ caseId }) {
     <div>
       {error && <div className="error">{error}</div>}
       <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
-        <div style={{ color: '#4a5568' }}>Τιμολόγια συνδεδεμένα με αυτή την υπόθεση</div>
+        <div style={{ color: '#4a5568' }}>{_t("Τιμολόγια συνδεδεμένα με αυτή την υπόθεση")}</div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-sm btn-secondary" onClick={() => setConfirmCreate(true)} disabled={creating}>
-            {creating ? 'Δημιουργία...' : '✨ Τιμολόγιο από λογαριασμό / αμοιβές'}
+            {creating ? _t("Δημιουργία...") : _t("✨ Τιμολόγιο από λογαριασμό / αμοιβές")}
           </button>
           <button className="btn btn-sm" onClick={() => navigate(`/invoices/new?ypothesi_id=${caseId}`)}>
-            + Νέο κενό
+            {_t("+ Νέο κενό")}
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="empty-state">Φόρτωση...</div>
+        <div className="empty-state">{_t("Φόρτωση...")}</div>
       ) : rows.length === 0 ? (
         <div className="empty-state">
-          Δεν υπάρχουν τιμολόγια για αυτή την υπόθεση.
+          {_t("Δεν υπάρχουν τιμολόγια για αυτή την υπόθεση.")}
           <br />
-          <small style={{ color: '#a0aec0' }}>Το «Έκδοση από αμοιβές/ώρες» δημιουργεί draft με pre-filled γραμμές από τα Οικονομικά.</small>
+          <small style={{ color: '#a0aec0' }}>{_t("Το «Έκδοση από αμοιβές/ώρες» δημιουργεί draft με pre-filled γραμμές από τα Οικονομικά.")}</small>
         </div>
       ) : (
         <table className="table">
           <thead><tr>
-            <th style={{width:120}}>Αριθμός</th>
-            <th style={{width:100}}>Ημ/νία</th>
-            <th>Πελάτης</th>
-            <th style={{width:120,textAlign:'right'}}>Μικτό ποσό</th>
-            <th style={{width:130,textAlign:'right'}}>Πληρωτέο</th>
-            <th style={{width:100}}>Κατάσταση</th>
+            <th style={{width:120}}>{_t("Αριθμός")}</th>
+            <th style={{width:100}}>{_t("Ημ/νία")}</th>
+            <th>{_t("Πελάτης")}</th>
+            <th style={{width:120,textAlign:'right'}}>{_t("Μικτό ποσό")}</th>
+            <th style={{width:130,textAlign:'right'}}>{_t("Πληρωτέο")}</th>
+            <th style={{width:100}}>{_t("Κατάσταση")}</th>
           </tr></thead>
           <tbody>
             {rows.map(r => (
@@ -100,7 +101,7 @@ function CaseInvoicesTab({ caseId }) {
                     r.status === 'cancelled' ? 'badge-closed' :
                     'badge-open'
                   }`}>
-                    {r.status === 'draft' ? 'Draft' : r.status === 'issued' ? 'Εκδοθέν' : 'Ακυρωμένο'}
+                    {r.status === 'draft' ? 'Draft' : r.status === 'issued' ? _t("Εκδοθέν") : _t("Ακυρωμένο")}
                   </span>
                 </td>
               </tr>
@@ -111,29 +112,28 @@ function CaseInvoicesTab({ caseId }) {
 
       {confirmCreate && (
         <Modal
-          title="Δημιουργία τιμολογίου"
+          title={_t("Δημιουργία τιμολογίου")}
           onClose={() => setConfirmCreate(false)}
           actions={<>
-            <button type="button" className="btn btn-secondary" onClick={() => setConfirmCreate(false)}>Ακύρωση</button>
+            <button type="button" className="btn btn-secondary" onClick={() => setConfirmCreate(false)}>{_t("Ακύρωση")}</button>
             <button type="button" className="btn" disabled={creating} onClick={createFromCase}>
-              {creating ? 'Δημιουργία…' : 'Δημιουργία'}
+              {creating ? _t("Δημιουργία…") : _t("Δημιουργία")}
             </button>
           </>}
         >
           <div className="form-group">
-            <label>Από</label>
+            <label>{_t("Από")}</label>
             <select value={source} onChange={e => setSource(e.target.value)}>
               {accounts.map(a => (
                 <option key={a.aa} value={a.aa}>
-                  Λογαριασμός {pad2(a.no_client)}.{pad2(a.no_org)} — {a.date ? a.date.split('-').reverse().join('/') : ''}
+                  {_t("Λογαριασμός")} {pad2(a.no_client)}.{pad2(a.no_org)} — {a.date ? a.date.split('-').reverse().join('/') : ''}
                 </option>
               ))}
-              <option value="open">Ανοιχτές εγγραφές της υπόθεσης (χωρίς λογαριασμό)</option>
+              <option value="open">{_t("Ανοιχτές εγγραφές της υπόθεσης (χωρίς λογαριασμό)")}</option>
             </select>
           </div>
           <p style={{ color: '#4a5568', lineHeight: 1.6, fontSize: 13.5, margin: 0 }}>
-            Κάθε αμοιβή (ώρες, πάγια αμοιβή, γραμμάτιο) γίνεται γραμμή του τιμολογίου. Τα έξοδα χωρίς ΦΠΑ
-            μπαίνουν μόνο ως σημείωση και η προκαταβολή δεν αναγράφεται. Το πρόχειρο επεξεργάζεται πριν την έκδοση.
+            {_t("Κάθε αμοιβή (ώρες, πάγια αμοιβή, γραμμάτιο) γίνεται γραμμή του τιμολογίου. Τα έξοδα χωρίς ΦΠΑ μπαίνουν μόνο ως σημείωση και η προκαταβολή δεν αναγράφεται. Το πρόχειρο επεξεργάζεται πριν την έκδοση.")}
           </p>
         </Modal>
       )}

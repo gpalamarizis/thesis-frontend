@@ -6,6 +6,7 @@ import { reports, cases } from '../api';
 import { fmtDate, toISODate } from '../utils/format';
 
 import DueActionsPanel from '../components/DueActionsPanel';
+import { _t, LOCALE } from '../i18n';
 function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ total_cases: 0, pending_cases: 0, hearings_next_30d: 0, open_tasks: 0, max_protocol_no: 0 });
@@ -43,7 +44,7 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
         if (hRes.status === 'fulfilled') setHearings(unwrap(hRes.value).slice(0, 5));
         if (tRes.status === 'fulfilled') setTasks(unwrap(tRes.value).slice(0, 5));
       } catch (e) {
-        if (!cancelled) setError(e.message || 'Σφάλμα φόρτωσης');
+        if (!cancelled) setError(e.message || _t("Σφάλμα φόρτωσης"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -75,18 +76,18 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   }, [monthCursor]);
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Πίνακας Ελέγχου">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Πίνακας Ελέγχου")}>
       {error && <div className="error">{error}</div>}
 
       <div className="section" style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h2>Καλώς ήρθες, {user.first_name || user.firstName || ''}</h2>
+            <h2>{_t("Καλώς ήρθες,")} {user.first_name || user.firstName || ''}</h2>
             <p style={{ marginTop: 6, color: '#718096', fontSize: 14 }}>
-              Σύνοψη γραφείου — δεδομένα σε πραγματικό χρόνο.
+              {_t("Σύνοψη γραφείου — δεδομένα σε πραγματικό χρόνο.")}
             </p>
           </div>
-          <button className="btn" onClick={() => setShowProtoSearch(true)}>🔍 Αναζήτηση με αριθμό πρωτοκόλλου</button>
+          <button className="btn" onClick={() => setShowProtoSearch(true)}>{_t("🔍 Αναζήτηση με αριθμό πρωτοκόλλου")}</button>
         </div>
       </div>
 
@@ -96,13 +97,13 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
       <DueActionsPanel />
 
       <div className="stats">
-        <StatCard label="Υποθέσεις σύνολο"        value={stats.total_cases}       to="/cases"
+        <StatCard label={_t("Υποθέσεις σύνολο")}        value={stats.total_cases}       to="/cases"
                   note={stats.max_protocol_no > stats.total_cases
-                    ? `Τελ. αρ. πρωτοκόλλου …/${stats.max_protocol_no}`
+                    ? _t("Τελ. αρ. πρωτοκόλλου …/{0}", [stats.max_protocol_no])
                     : null} />
-        <StatCard label="Εκκρεμείς υποθέσεις"     value={stats.pending_cases}     to="/reports/pending" accent="open" />
-        <StatCard label="Δικάσιμοι (30 ημερών)"   value={stats.hearings_next_30d} to="/reports/hearings" accent="warn" />
-        <StatCard label="Εκκρεμείς ενέργειες"     value={stats.open_tasks}        to="/reports/tasks" />
+        <StatCard label={_t("Εκκρεμείς υποθέσεις")}     value={stats.pending_cases}     to="/reports/pending" accent="open" />
+        <StatCard label={_t("Δικάσιμοι (30 ημερών)")}   value={stats.hearings_next_30d} to="/reports/hearings" accent="warn" />
+        <StatCard label={_t("Εκκρεμείς ενέργειες")}     value={stats.open_tasks}        to="/reports/tasks" />
       </div>
 
       <div className="section" style={{ marginTop: 20 }}>
@@ -119,21 +120,21 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
       <div className="dashboard-row" style={{ marginTop: 20 }}>
         <div className="section">
           <div className="section-header">
-            <h2>Προσεχείς δικάσιμοι</h2>
-            <Link to="/reports/hearings" className="link-inline">Όλες →</Link>
+            <h2>{_t("Προσεχείς δικάσιμοι")}</h2>
+            <Link to="/reports/hearings" className="link-inline">{_t("Όλες →")}</Link>
           </div>
-          {loading && <div className="empty-state">Φόρτωση...</div>}
+          {loading && <div className="empty-state">{_t("Φόρτωση...")}</div>}
           {!loading && hearings.length === 0 && (
-            <div className="empty-state">Δεν υπάρχουν προσεχείς δικάσιμοι.</div>
+            <div className="empty-state">{_t("Δεν υπάρχουν προσεχείς δικάσιμοι.")}</div>
           )}
           {!loading && hearings.length > 0 && (
             <table className="table">
               <thead>
                 <tr>
-                  <th style={{ width: 110 }}>Ημ/νία</th>
-                  <th>Πρωτόκολλο</th>
-                  <th>Πελάτης</th>
-                  <th>Χειριστής</th>
+                  <th style={{ width: 110 }}>{_t("Ημ/νία")}</th>
+                  <th>{_t("Πρωτόκολλο")}</th>
+                  <th>{_t("Πελάτης")}</th>
+                  <th>{_t("Χειριστής")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,11 +146,11 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
                     <tr key={h.aa || h.id || i}
                         onClick={to ? () => navigate(to) : undefined}
                         style={to ? { cursor: 'pointer' } : undefined}
-                        title={to ? 'Άνοιγμα υπόθεσης' : undefined}>
+                        title={to ? _t("Άνοιγμα υπόθεσης") : undefined}>
                       <td>{fmtDate(h.date)}</td>
                       <td>{to
                         ? <Link to={to} className="link-inline" onClick={e => e.stopPropagation()}>
-                            {h.xeirokinito_id || '(χωρίς πρωτόκολλο)'}
+                            {h.xeirokinito_id || _t("(χωρίς πρωτόκολλο)")}
                           </Link>
                         : (h.xeirokinito_id || '—')}</td>
                       <td>{h.pelatis || '—'}</td>
@@ -164,21 +165,21 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
 
         <div className="section">
           <div className="section-header">
-            <h2>Εκκρεμείς ενέργειες</h2>
-            <Link to="/reports/tasks" className="link-inline">Όλες →</Link>
+            <h2>{_t("Εκκρεμείς ενέργειες")}</h2>
+            <Link to="/reports/tasks" className="link-inline">{_t("Όλες →")}</Link>
           </div>
-          {loading && <div className="empty-state">Φόρτωση...</div>}
+          {loading && <div className="empty-state">{_t("Φόρτωση...")}</div>}
           {!loading && tasks.length === 0 && (
-            <div className="empty-state">Δεν υπάρχουν εκκρεμείς ενέργειες.</div>
+            <div className="empty-state">{_t("Δεν υπάρχουν εκκρεμείς ενέργειες.")}</div>
           )}
           {!loading && tasks.length > 0 && (
             <table className="table">
               <thead>
                 <tr>
-                  <th style={{ width: 110 }}>Προθεσμία</th>
-                  <th>Ενέργεια</th>
-                  <th>Πρωτόκολλο</th>
-                  <th>Χειριστής</th>
+                  <th style={{ width: 110 }}>{_t("Προθεσμία")}</th>
+                  <th>{_t("Ενέργεια")}</th>
+                  <th>{_t("Πρωτόκολλο")}</th>
+                  <th>{_t("Χειριστής")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -190,19 +191,19 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
                     <tr key={`${t.kind || 'task'}:${t.aa || t.id || i}`}
                         onClick={to ? () => navigate(to) : undefined}
                         style={to ? { cursor: 'pointer' } : undefined}
-                        title={to ? 'Άνοιγμα υπόθεσης' : undefined}>
+                        title={to ? _t("Άνοιγμα υπόθεσης") : undefined}>
                       <td>{fmtDate(t.date_dead_line)}</td>
                       <td>
                         {t.perigrafi_energias || '—'}
                         {t.kind === 'court_sub' && (
                           <div style={{ fontSize: 12, color: '#718096' }}>
-                            Δικάσιμος {fmtDate(t.dikasimos_date)}{t.dikastirio_name ? ` · ${t.dikastirio_name}` : ''}
+                            {_t("Δικάσιμος")} {fmtDate(t.dikasimos_date)}{t.dikastirio_name ? ` · ${t.dikastirio_name}` : ''}
                           </div>
                         )}
                       </td>
                       <td>{to
                         ? <Link to={to} className="link-inline" onClick={e => e.stopPropagation()}>
-                            {t.xeirokinito_id || '(χωρίς πρωτόκολλο)'}
+                            {t.xeirokinito_id || _t("(χωρίς πρωτόκολλο)")}
                           </Link>
                         : (t.xeirokinito_id || '—')}</td>
                       <td><HandlerCell e={t} /></td>
@@ -243,7 +244,7 @@ function HandlerCell({ e }) {
   if (!e.xeiristis_apo_ypothesi) return name;
   return (
     <span style={{ color: '#a0aec0' }}
-          title="Η ενέργεια δεν έχει δικηγόρο — εμφανίζεται ο χειριστής της υπόθεσης">
+          title={_t("Η ενέργεια δεν έχει δικηγόρο — εμφανίζεται ο χειριστής της υπόθεσης")}>
       {name}
     </span>
   );
@@ -306,7 +307,7 @@ function MonthCalendar({ cursor, setCursor, hearings, tasks = [], selectedDate, 
   const [showTasks, setShowTasks] = useState(true);
   const y = cursor.getFullYear();
   const m = cursor.getMonth();
-  const monthName = cursor.toLocaleDateString('el-GR', { month: 'long', year: 'numeric' });
+  const monthName = cursor.toLocaleDateString(LOCALE, { month: 'long', year: 'numeric' });
 
   // First day of month: 0=Sunday, we want Monday-first
   const firstDay = new Date(y, m, 1).getDay(); // 0=Sun..6=Sat
@@ -338,8 +339,8 @@ function MonthCalendar({ cursor, setCursor, hearings, tasks = [], selectedDate, 
     if (!e.ypothesi_id) return;
     navigate(`/cases/${e.ypothesi_id}?tab=${e.tab}`);
   };
-  const kindLabel = (e) => (e.kind === 'court' ? 'Δικάσιμος'
-    : `${e.sub ? 'Ενέργεια δικασίμου' : 'Ενέργεια'}${e.done ? ' ✓' : ''}`);
+  const kindLabel = (e) => (e.kind === 'court' ? _t("Δικάσιμος")
+    : `${e.sub ? _t('Ενέργεια δικασίμου') : _t('Ενέργεια')}${e.done ? ' ✓' : ''}`);
 
   const cells = [];
   for (let i = 0; i < mondayOffset; i++) cells.push(<div key={`e${i}`} className="cal-cell cal-empty" />);
@@ -375,42 +376,42 @@ function MonthCalendar({ cursor, setCursor, hearings, tasks = [], selectedDate, 
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <button className="btn btn-secondary btn-sm" onClick={() => setCursor(new Date(y, m - 1, 1))}>‹ Προηγ.</button>
+        <button className="btn btn-secondary btn-sm" onClick={() => setCursor(new Date(y, m - 1, 1))}>{_t("‹ Προηγ.")}</button>
         <h2 style={{ textTransform: 'capitalize', margin: 0 }}>{monthName}</h2>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn btn-secondary btn-sm" onClick={() => setCursor(new Date())}>Σήμερα</button>
-          <button className="btn btn-secondary btn-sm" onClick={() => setCursor(new Date(y, m + 1, 1))}>Επόμ. ›</button>
+          <button className="btn btn-secondary btn-sm" onClick={() => setCursor(new Date())}>{_t("Σήμερα")}</button>
+          <button className="btn btn-secondary btn-sm" onClick={() => setCursor(new Date(y, m + 1, 1))}>{_t("Επόμ. ›")}</button>
         </div>
       </div>
       <div className="cal-legend">
         <label className="cal-legend-item">
           <input type="checkbox" checked={showCourt} onChange={e => setShowCourt(e.target.checked)} />
           <span className="cal-legend-swatch cal-legend-court" />
-          Δικάσιμοι
+          {_t("Δικάσιμοι")}
         </label>
         <label className="cal-legend-item">
           <input type="checkbox" checked={showTasks} onChange={e => setShowTasks(e.target.checked)} />
           <span className="cal-legend-swatch cal-legend-task" />
-          Ενέργειες
+          {_t("Ενέργειες")}
         </label>
       </div>
       <div className="cal-grid">
-        {['Δευ','Τρι','Τετ','Πεμ','Παρ','Σαβ','Κυρ'].map(d => <div key={d} className="cal-header">{d}</div>)}
+        {['Δευ','Τρι','Τετ','Πεμ','Παρ','Σαβ','Κυρ'].map(d => <div key={d} className="cal-header">{_t(d)}</div>)}
         {cells}
       </div>
       {selectedDate && selectedEvents.length > 0 && (
         <div style={{ marginTop: 14, padding: 12, background: '#f7fafc', borderRadius: 6 }}>
           <h3 style={{ marginBottom: 8, fontSize: 14 }}>
-            Ενέργειες στις {selectedDate.toLocaleDateString('el-GR')}
+            {_t("Ενέργειες στις")} {selectedDate.toLocaleDateString('el-GR')}
           </h3>
           <table className="table" style={{ marginBottom: 0 }}>
             <thead>
               <tr>
-                <th style={{ width: 160 }}>Είδος</th>
-                <th>Πρωτόκολλο</th>
-                <th>Δικαστήριο / Ενέργεια</th>
-                <th>Πελάτης</th>
-                <th>Χειριστής</th>
+                <th style={{ width: 160 }}>{_t("Είδος")}</th>
+                <th>{_t("Πρωτόκολλο")}</th>
+                <th>{_t("Δικαστήριο / Ενέργεια")}</th>
+                <th>{_t("Πελάτης")}</th>
+                <th>{_t("Χειριστής")}</th>
               </tr>
             </thead>
             <tbody>
@@ -444,7 +445,7 @@ function ProtocolSearchModal({ onClose }) {
 
   const search = async () => {
     setError('');
-    if (!query.trim()) { setError('Δώστε αριθμό πρωτοκόλλου.'); return; }
+    if (!query.trim()) { setError(_t("Δώστε αριθμό πρωτοκόλλου.")); return; }
     setSearching(true);
     try {
       // Server-side search: το backend ψάχνει σε xeirokinito_id + περίληψη + όνομα πελάτη
@@ -458,7 +459,7 @@ function ProtocolSearchModal({ onClose }) {
         navigate(`/cases/${matches[0].aa || matches[0].id}`);
         onClose();
       } else if (matches.length === 0) {
-        setError('Δεν βρέθηκε υπόθεση με αυτό το πρωτόκολλο.');
+        setError(_t("Δεν βρέθηκε υπόθεση με αυτό το πρωτόκολλο."));
       }
     } catch (e) {
       setError(e.message);
@@ -469,28 +470,28 @@ function ProtocolSearchModal({ onClose }) {
 
   return (
     <Modal
-      title="Αναζήτηση με αριθμό πρωτοκόλλου"
+      title={_t("Αναζήτηση με αριθμό πρωτοκόλλου")}
       onClose={onClose}
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={searching} onClick={search}>{searching ? 'Αναζήτηση...' : 'Ψάξε'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={searching} onClick={search}>{searching ? _t("Αναζήτηση...") : _t("Ψάξε")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       <div className="form-group">
-        <label>Αριθμός πρωτοκόλλου (π.χ. 1Φ/2/2)</label>
+        <label>{_t("Αριθμός πρωτοκόλλου (π.χ. 1Φ/2/2)")}</label>
         <input
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && search()}
           autoFocus
-          placeholder="Δώστε ολόκληρο ή μέρος του πρωτοκόλλου"
+          placeholder={_t("Δώστε ολόκληρο ή μέρος του πρωτοκόλλου")}
         />
       </div>
       {results.length > 0 && (
         <div>
-          <h3 style={{ fontSize: 13, color: '#718096', marginBottom: 8 }}>Αποτελέσματα:</h3>
+          <h3 style={{ fontSize: 13, color: '#718096', marginBottom: 8 }}>{_t("Αποτελέσματα:")}</h3>
           <table className="table">
             <tbody>
               {results.map(r => (
@@ -521,7 +522,7 @@ function StatCard({ label, value, to, accent, note }) {
         {Number(value ?? 0).toLocaleString('el-GR')}
         {note && (
           <span style={{ fontSize: 12, fontWeight: 400, color: '#718096', whiteSpace: 'nowrap' }}
-                title="Ο αριθμός πρωτοκόλλου δεν ξαναδίνεται. Όταν διαγράφονται υποθέσεις, το πλήθος μένει μικρότερο από τον τελευταίο αριθμό.">
+                title={_t("Ο αριθμός πρωτοκόλλου δεν ξαναδίνεται. Όταν διαγράφονται υποθέσεις, το πλήθος μένει μικρότερο από τον τελευταίο αριθμό.")}>
             {note}
           </span>
         )}

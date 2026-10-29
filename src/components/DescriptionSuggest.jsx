@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { finance } from '../api';
+import { _t } from '../i18n';
 
 // Πεδίο περιγραφής με προτάσεις.
 //
@@ -85,9 +86,9 @@ function DescriptionSuggest({ resource, value, onChange, rows = 2, placeholder, 
             >
               {m.keimeno.length > 80 ? `${m.keimeno.slice(0, 80)}…` : m.keimeno}
               {m.preset
-                ? <span style={{ color: '#4c51bf', fontSize: 11.5 }}> · προεπιλογή</span>
+                ? <span style={{ color: '#4c51bf', fontSize: 11.5 }}> {_t("· προεπιλογή")}</span>
                 : (m.plithos > 1 && (
-                    <span style={{ color: '#718096', fontSize: 11.5 }}> · {m.plithos} φορές</span>
+                    <span style={{ color: '#718096', fontSize: 11.5 }}> · {m.plithos} {_t("φορές")}</span>
                   ))}
             </div>
           ))}

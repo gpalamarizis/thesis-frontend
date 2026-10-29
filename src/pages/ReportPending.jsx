@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { api, people, lists, downloadFile } from '../api';
+import { _t } from '../i18n';
 
 function ReportPending({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
       await downloadFile('/api/reports/pending?' + params.toString(),
                          'Ekkremeis-Ypotheseis.docx');
     } catch (e) {
-      setError(e.message || 'Η εξαγωγή απέτυχε');
+      setError(e.message || _t("Η εξαγωγή απέτυχε"));
     } finally {
       setExporting(false);
     }
@@ -75,14 +76,14 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('el-GR') : '—';
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Εκκρεμείς Υποθέσεις">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Εκκρεμείς Υποθέσεις")}>
       <div className="section">
         <div className="section-header">
-          <h2>Αναφορά ({total})</h2>
+          <h2>{_t("Αναφορά (")}{total})</h2>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
             <input
               type="text"
-              placeholder="🔍 Πρωτόκολλο, πελάτης, αντίδικος..."
+              placeholder={_t("🔍 Πρωτόκολλο, πελάτης, αντίδικος...")}
               value={q}
               onChange={e => setQ(e.target.value)}
               style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, minWidth: 260 }}
@@ -92,7 +93,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
               onChange={e => setDikigorosId(e.target.value)}
               style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4 }}
             >
-              <option value="">— Όλοι οι δικηγόροι —</option>
+              <option value="">{_t("— Όλοι οι δικηγόροι —")}</option>
               {lawyers.map(l => (
                 <option key={l.aa} value={l.aa}>
                   {l.eponymo} {l.onoma || ''}
@@ -104,7 +105,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
               onChange={e => setOnomasiaId(e.target.value)}
               style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 220 }}
             >
-              <option value="">— Όλα τα είδη υπόθεσης —</option>
+              <option value="">{_t("— Όλα τα είδη υπόθεσης —")}</option>
               {caseTypes.map(t => (
                 <option key={t.aa} value={t.aa}>{t.name}</option>
               ))}
@@ -114,7 +115,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
               onChange={e => setAntidikosId(e.target.value)}
               style={{ padding: '6px 10px', border: '1px solid #cbd5e0', borderRadius: 4, maxWidth: 220 }}
             >
-              <option value="">— Όλοι οι αντίδικοι —</option>
+              <option value="">{_t("— Όλοι οι αντίδικοι —")}</option>
               {opponents.map(o => (
                 <option key={o.aa} value={o.aa}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>
               ))}
@@ -124,7 +125,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
               disabled={exporting || loading}
               style={{ padding: '6px 12px', fontSize: 12, cursor: 'pointer', border: '1px solid #1A202C', borderRadius: 4, backgroundColor: '#1A202C', color: '#fff', fontWeight: 600 }}
             >
-              {exporting ? 'Εξαγωγή...' : 'Εξαγωγή σε Word'}
+              {exporting ? _t("Εξαγωγή...") : _t("Εξαγωγή σε Word")}
             </button>
           </div>
         </div>
@@ -132,21 +133,21 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
         {error && <div className="error">{error}</div>}
 
         {loading ? (
-          <div className="empty-state">Φόρτωση...</div>
+          <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : items.length === 0 ? (
-          <div className="empty-state">Δεν βρέθηκαν εκκρεμείς υποθέσεις.</div>
+          <div className="empty-state">{_t("Δεν βρέθηκαν εκκρεμείς υποθέσεις.")}</div>
         ) : (
           <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 4 }}>
             <table className="table" style={{ fontSize: 13 }}>
               <thead>
                 <tr>
-                  <th style={{ width: 130 }}>Πρωτόκολλο</th>
-                  <th style={{ width: 110 }}>Ημ. Εισαγωγής</th>
-                  <th style={{ width: 160 }}>Ονομασία</th>
-                  <th>Πελάτης</th>
-                  <th>Αντίδικος</th>
-                  <th>Περίληψη</th>
-                  <th style={{ width: 180 }}>Χειριστές</th>
+                  <th style={{ width: 130 }}>{_t("Πρωτόκολλο")}</th>
+                  <th style={{ width: 110 }}>{_t("Ημ. Εισαγωγής")}</th>
+                  <th style={{ width: 160 }}>{_t("Ονομασία")}</th>
+                  <th>{_t("Πελάτης")}</th>
+                  <th>{_t("Αντίδικος")}</th>
+                  <th>{_t("Περίληψη")}</th>
+                  <th style={{ width: 180 }}>{_t("Χειριστές")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -154,7 +155,7 @@ function ReportPending({ user, onLogout, onOpenCaseSearch }) {
                   <tr key={r.aa}
                       onClick={() => navigate(`/cases/${r.aa}`)}
                       style={{ cursor: 'pointer' }}
-                      title="Άνοιγμα υπόθεσης">
+                      title={_t("Άνοιγμα υπόθεσης")}>
                     <td>
                       <Link to={`/cases/${r.aa}`} onClick={e => e.stopPropagation()}
                             style={{ fontWeight: 'bold', color: '#3182ce' }}>

@@ -3,34 +3,35 @@ import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { lists } from '../api';
+import { _t } from '../i18n';
 
 // Backend lists (from routes/lists.js LISTS map):
 const LIST_TYPES = [
-  { key: 'diadikasies',                    label: 'Διαδικασίες',            fields: [{key:'name', label:'Ονομασία'}] },
-  { key: 'thesi',                          label: 'Θέσεις στην υπόθεση',    fields: [{key:'name', label:'Ονομασία'}] },
-  { key: 'ypotheseis_onomasies',           label: 'Είδος υπόθεσης',         fields: [{key:'name', label:'Ονομασία'}] },
-  { key: 'theseis_arxeiothetisis',         label: 'Θέσεις αρχειοθέτησης',   fields: [{key:'name', label:'Ονομασία'}, {key:'perigrafi', label:'Περιγραφή'}] },
-  { key: 'eidos_sxesis',                   label: 'Είδος σχέσης',           fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'diadikasies',                    label: _t("Διαδικασίες"),            fields: [{key:'name', label:_t("Ονομασία")}] },
+  { key: 'thesi',                          label: _t("Θέσεις στην υπόθεση"),    fields: [{key:'name', label:_t("Ονομασία")}] },
+  { key: 'ypotheseis_onomasies',           label: _t("Είδος υπόθεσης"),         fields: [{key:'name', label:_t("Ονομασία")}] },
+  { key: 'theseis_arxeiothetisis',         label: _t("Θέσεις αρχειοθέτησης"),   fields: [{key:'name', label:_t("Ονομασία")}, {key:'perigrafi', label:_t("Περιγραφή")}] },
+  { key: 'eidos_sxesis',                   label: _t("Είδος σχέσης"),           fields: [{key:'name', label:_t("Ονομασία")}] },
   // Υπήρχε στο backend (routes/lists.js) αλλά δεν εμφανιζόταν ποτέ εδώ, παρότι
   // η ιδιότητα φιλτράρει και σημαίνει τα σχετικά πρόσωπα.
-  { key: 'idiotites',                      label: 'Ιδιότητες',              fields: [{key:'name', label:'Ονομασία'}] },
-  { key: 'pagia_exoda',                    label: 'Πάγια έξοδα (τύποι)',    fields: [{key:'name', label:'Ονομασία'}] },
+  { key: 'idiotites',                      label: _t("Ιδιότητες"),              fields: [{key:'name', label:_t("Ονομασία")}] },
+  { key: 'pagia_exoda',                    label: _t("Πάγια έξοδα (τύποι)"),    fields: [{key:'name', label:_t("Ονομασία")}] },
   // Κατηγορίες γραμματίων δικηγορικών συλλόγων. Αλλάζουν ανά σύλλογο και
   // ανά έτος, οπότε τις συντηρεί το γραφείο και δεν είναι στον κώδικα.
   // Προεπιλεγμένα κείμενα για τα πεδία περιγραφής των οικονομικών
-  { key: 'perigrafes_oikonomikon',         label: 'Περιγραφές οικονομικών', fields: [{key:'name', label:'Κείμενο'}, {key:'perigrafi', label:'Σημείωση'}] },
+  { key: 'perigrafes_oikonomikon',         label: _t("Περιγραφές οικονομικών"), fields: [{key:'name', label:_t("Κείμενο")}, {key:'perigrafi', label:_t("Σημείωση")}] },
   // Τράπεζες του γραφείου — προτείνονται στις προκαταβολές
-  { key: 'trapezes',                       label: 'Τράπεζες',               fields: [{key:'name', label:'Ονομασία'}] },
-  { key: 'grammatia_katigories',           label: 'Κατηγορίες γραμματίων',  fields: [{key:'name', label:'Ονομασία'}, {key:'perigrafi', label:'Περιγραφή'}] },
-  { key: 'amoives',                        label: 'Αμοιβές (τύποι)',        fields: [{key:'name', label:'Ονομασία'}, {key:'amount', label:'Ποσό (€)', type:'number', step:'0.01'}] },
-  { key: 'cities',                         label: 'Πόλεις',                 fields: [{key:'name', label:'Ονομασία'}] },
-  { key: 'countries',                      label: 'Χώρες',                  fields: [{key:'name', label:'Ονομασία'}] },
-  { key: 'address_type',                   label: 'Τύποι διευθύνσεων',      fields: [{key:'address_type', label:'Τύπος'}] },
-  { key: 'phone_types',                    label: 'Τύποι τηλεφώνων',        fields: [{key:'phone_type', label:'Τύπος'}] },
-  { key: 'dikastiria_exelixi_energeias',   label: 'Εξέλιξη ενέργειας δικαστηρίου', fields: [{key:'name', label:'Ονομασία'}] },
-  { key: 'dikastiria_tmimata',             label: 'Τμήματα δικαστηρίων',    fields: [{key:'name', label:'Ονομασία'}] },
-  { key: 'dikastiria_dikastes',            label: 'Δικαστές',               fields: [{key:'eponymo', label:'Επώνυμο'}, {key:'onoma', label:'Όνομα'}] },
-  { key: 'dikastiria_grammateis',          label: 'Γραμματείς',             fields: [{key:'eponymo', label:'Επώνυμο'}, {key:'onoma', label:'Όνομα'}] },
+  { key: 'trapezes',                       label: _t("Τράπεζες"),               fields: [{key:'name', label:_t("Ονομασία")}] },
+  { key: 'grammatia_katigories',           label: _t("Κατηγορίες γραμματίων"),  fields: [{key:'name', label:_t("Ονομασία")}, {key:'perigrafi', label:_t("Περιγραφή")}] },
+  { key: 'amoives',                        label: _t("Αμοιβές (τύποι)"),        fields: [{key:'name', label:_t("Ονομασία")}, {key:'amount', label:_t("Ποσό (€)"), type:'number', step:'0.01'}] },
+  { key: 'cities',                         label: _t("Πόλεις"),                 fields: [{key:'name', label:_t("Ονομασία")}] },
+  { key: 'countries',                      label: _t("Χώρες"),                  fields: [{key:'name', label:_t("Ονομασία")}] },
+  { key: 'address_type',                   label: _t("Τύποι διευθύνσεων"),      fields: [{key:'address_type', label:_t("Τύπος")}] },
+  { key: 'phone_types',                    label: _t("Τύποι τηλεφώνων"),        fields: [{key:'phone_type', label:_t("Τύπος")}] },
+  { key: 'dikastiria_exelixi_energeias',   label: _t("Εξέλιξη ενέργειας δικαστηρίου"), fields: [{key:'name', label:_t("Ονομασία")}] },
+  { key: 'dikastiria_tmimata',             label: _t("Τμήματα δικαστηρίων"),    fields: [{key:'name', label:_t("Ονομασία")}] },
+  { key: 'dikastiria_dikastes',            label: _t("Δικαστές"),               fields: [{key:'eponymo', label:_t("Επώνυμο")}, {key:'onoma', label:_t("Όνομα")}] },
+  { key: 'dikastiria_grammateis',          label: _t("Γραμματείς"),             fields: [{key:'eponymo', label:_t("Επώνυμο")}, {key:'onoma', label:_t("Όνομα")}] },
 ];
 
 function Lists({ user, onLogout, onOpenCaseSearch }) {
@@ -61,7 +62,7 @@ function Lists({ user, onLogout, onOpenCaseSearch }) {
   };
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Επεξεργασία Λιστών">
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Επεξεργασία Λιστών")}>
       {error && <div className="error">{error}</div>}
 
       <div className="lists-layout">
@@ -80,13 +81,13 @@ function Lists({ user, onLogout, onOpenCaseSearch }) {
         <div className="section" style={{ flex: 1 }}>
           <div className="section-header">
             <h2>{currentType.label} ({items.length})</h2>
-            <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέο</button>
+            <button className="btn" onClick={() => { setEditing(null); setShowModal(true); }}>{_t("+ Νέο")}</button>
           </div>
 
           {loading ? (
-            <div className="empty-state">Φόρτωση...</div>
+            <div className="empty-state">{_t("Φόρτωση...")}</div>
           ) : items.length === 0 ? (
-            <div className="empty-state">Δεν υπάρχουν εγγραφές.</div>
+            <div className="empty-state">{_t("Δεν υπάρχουν εγγραφές.")}</div>
           ) : (
             <table className="table">
               <thead>
@@ -100,7 +101,7 @@ function Lists({ user, onLogout, onOpenCaseSearch }) {
                   <tr key={r.aa || r.id}>
                     {currentType.fields.map(f => <td key={f.key}>{r[f.key] ?? '—'}</td>)}
                     <td>
-                      <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
+                      <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>{_t("Επεξ.")}</button>
                       {' '}
                       <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
                     </td>
@@ -124,9 +125,9 @@ function Lists({ user, onLogout, onOpenCaseSearch }) {
 
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή εγγραφής"
-          message="Είστε σίγουρος; Η ενέργεια δεν αναιρείται."
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή εγγραφής")}
+          message={_t("Είστε σίγουρος; Η ενέργεια δεν αναιρείται.")}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -146,7 +147,7 @@ function ListItemModal({ listType, listKey, initial, onClose, onSaved }) {
     setError('');
     const firstField = listType.fields[0];
     if (!form[firstField.key]) {
-      setError(`Το πεδίο "${firstField.label}" είναι υποχρεωτικό.`);
+      setError(_t("Το πεδίο \"{0}\" είναι υποχρεωτικό.", [firstField.label]));
       return;
     }
     setSaving(true);
@@ -170,11 +171,11 @@ function ListItemModal({ listType, listKey, initial, onClose, onSaved }) {
 
   return (
     <Modal
-      title={initial ? 'Επεξεργασία' : `Νέο: ${listType.label}`}
+      title={initial ? _t("Επεξεργασία") : _t("Νέο: {0}", [listType.label])}
       onClose={onClose}
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}

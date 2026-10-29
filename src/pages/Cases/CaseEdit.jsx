@@ -21,6 +21,7 @@ import CaseInvoicesTab from './CaseInvoicesTab';
 import DateInput from '../../components/DateInput';
 import EisforaSelect from '../../components/EisforaSelect';
 import { loadPartnerLines, isPartner } from '../../utils/partners';
+import { _t } from '../../i18n';
 function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
         setCaseData(cRes.value?.data || cRes.value);
         setError('');
       } else if (isInitial) {
-        setError(cRes.reason?.message || 'Σφάλμα φόρτωσης');
+        setError(cRes.reason?.message || _t("Σφάλμα φόρτωσης"));
       }
       const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
       if (chRes.status === 'fulfilled')  setCourtActions(unwrap(chRes.value));
@@ -84,7 +85,7 @@ function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
     setOkMsg('');
     try {
       await cases.update(id, patch);
-      setOkMsg('Οι αλλαγές αποθηκεύτηκαν.');
+      setOkMsg(_t("Οι αλλαγές αποθηκεύτηκαν."));
       setTimeout(() => setOkMsg(''), 3000);
       loadAll(false);
     } catch (e) {
@@ -94,35 +95,35 @@ function CaseEdit({ user, onLogout, onOpenCaseSearch }) {
     }
   };
 
-  if (initialLoading) return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Υπόθεση"><div className="empty-state">Φόρτωση...</div></Layout>;
-  if (!caseData) return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title="Υπόθεση"><div className="error">{error || 'Δεν βρέθηκε η υπόθεση.'}</div></Layout>;
+  if (initialLoading) return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Υπόθεση")}><div className="empty-state">{_t("Φόρτωση...")}</div></Layout>;
+  if (!caseData) return <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Υπόθεση")}><div className="error">{error || _t("Δεν βρέθηκε η υπόθεση.")}</div></Layout>;
 
   return (
-    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={`Υπόθεση ${caseData.xeirokinito_id || ''}`}>
+    <Layout user={user} onLogout={onLogout} onOpenCaseSearch={onOpenCaseSearch} title={_t("Υπόθεση {0}", [caseData.xeirokinito_id || ''])}>
       {error && <div className="error">{error}</div>}
       {okMsg && <div className="success">{okMsg}</div>}
 
       <div className="section">
         <Tabs initial={initialTab} tabs={[
-          { label: 'Υπόθεση',              content: <CaseTab caseData={caseData} onSave={saveCase} saving={saving} /> },
-          { label: 'Δικαστικές ενέργειες', badge: courtActions.length, content: <CourtActionsTab caseId={id} rows={courtActions} courts={courtsList} onChange={() => loadAll(false)} /> },
-          { label: 'Λοιπές ενέργειες',     badge: taskActions.length,  content: <TaskActionsTab caseId={id} rows={taskActions} onChange={() => loadAll(false)} /> },
-          { label: 'Σχετικά πρόσωπα',      content: <RelatedPersonsTab caseId={id} /> },
-          { label: 'Αρχεία',               badge: docs.length,         content: <DocsTab caseId={id} rows={docs} onChange={() => loadAll(false)} /> },
-          { label: 'Οικονομικά',           content: <FinanceTab caseId={id}
+          { label: _t("Υπόθεση"),              content: <CaseTab caseData={caseData} onSave={saveCase} saving={saving} /> },
+          { label: _t("Δικαστικές ενέργειες"), badge: courtActions.length, content: <CourtActionsTab caseId={id} rows={courtActions} courts={courtsList} onChange={() => loadAll(false)} /> },
+          { label: _t("Λοιπές ενέργειες"),     badge: taskActions.length,  content: <TaskActionsTab caseId={id} rows={taskActions} onChange={() => loadAll(false)} /> },
+          { label: _t("Σχετικά πρόσωπα"),      content: <RelatedPersonsTab caseId={id} /> },
+          { label: _t("Αρχεία"),               badge: docs.length,         content: <DocsTab caseId={id} rows={docs} onChange={() => loadAll(false)} /> },
+          { label: _t("Οικονομικά"),           content: <FinanceTab caseId={id}
               clientType={caseData?.nomiko_prosopo_id ? 'nomiko' : 'fysiko'}
               clientId={caseData?.nomiko_prosopo_id || caseData?.fysiko_prosopo_id}
               clientRate={caseData?.client_xreosi_ora || null} /> },
           // Τα τιμολόγια θέλουν «Πρόσβαση στα Οικονομικά» (όπως και στον server)
-          ...(hasFinance ? [{ label: 'Τιμολόγια', content: <CaseInvoicesTab caseId={id} /> }] : []),
+          ...(hasFinance ? [{ label: _t("Τιμολόγια"), content: <CaseInvoicesTab caseId={id} /> }] : []),
         ]}/>
       </div>
 
       <div className="form-actions">
-        <button type="button" className="btn btn-secondary" onClick={() => navigate('/cases')}>← Πίσω στη λίστα</button>
+        <button type="button" className="btn btn-secondary" onClick={() => navigate('/cases')}>{_t("← Πίσω στη λίστα")}</button>
         {/* Ιδιωτική λειτουργία: ο διαχειριστής ορίζει ποιοι χρήστες βλέπουν την υπόθεση */}
         {isAdmin && user?.visibility_mode === 'private' && (
-          <button type="button" className="btn btn-secondary" onClick={() => navigate(`/cases/${id}/access`)}>🔒 Πρόσβαση χρηστών</button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate(`/cases/${id}/access`)}>{_t("🔒 Πρόσβαση χρηστών")}</button>
         )}
       </div>
     </Layout>
@@ -253,8 +254,8 @@ function CaseTab({ caseData, onSave, saving }) {
 
   const clientLabel = caseData.fysiko_full_name
     || caseData.nomiko_eponymia
-    || (caseData.fysiko_prosopo_id ? `Φυσικό πρόσωπο #${caseData.fysiko_prosopo_id}`
-        : caseData.nomiko_prosopo_id ? `Νομικό πρόσωπο #${caseData.nomiko_prosopo_id}` : '—');
+    || (caseData.fysiko_prosopo_id ? _t("Φυσικό πρόσωπο #{0}", [caseData.fysiko_prosopo_id])
+        : caseData.nomiko_prosopo_id ? _t("Νομικό πρόσωπο #{0}", [caseData.nomiko_prosopo_id]) : '—');
 
   const saveAll = () => onSave({
     perilipsi:               perilipsi || null,
@@ -281,24 +282,24 @@ function CaseTab({ caseData, onSave, saving }) {
       <div className="case-tab-main">
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Αριθμός Πρωτοκόλλου</label>
+            <label>{_t("Αριθμός Πρωτοκόλλου")}</label>
             <input type="text" value={caseData.xeirokinito_id || ''} readOnly />
           </div>
           <div className="form-group">
-            <label>Κατάσταση</label>
+            <label>{_t("Κατάσταση")}</label>
             <select value={ekkremis ? '1' : '0'} onChange={e => setEkkremis(e.target.value === '1')}>
-              <option value="1">Εκκρεμής</option>
-              <option value="0">Κλεισμένη</option>
+              <option value="1">{_t("Εκκρεμής")}</option>
+              <option value="0">{_t("Κλεισμένη")}</option>
             </select>
           </div>
         </div>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Ημερομηνία εισαγωγής</label>
+            <label>{_t("Ημερομηνία εισαγωγής")}</label>
             <DateInput value={dateEisagogis} onChange={e => setDateEisagogis(e.target.value)} />
           </div>
           <div className="form-group">
-            <label>Ημερομηνία τέλους</label>
+            <label>{_t("Ημερομηνία τέλους")}</label>
             <DateInput value={dateTelous} onChange={e => setDateTelous(e.target.value)} />
           </div>
         </div>
@@ -311,29 +312,29 @@ function CaseTab({ caseData, onSave, saving }) {
         {/* Δύο μονά πεδία σε μία γραμμή, αντί για δύο μισοάδειες σειρές. */}
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Αρχειοθετημένη σε</label>
+            <label>{_t("Αρχειοθετημένη σε")}</label>
             <select value={thesiArxeiothetisisId} onChange={e => setThesiArxeiothetisisId(e.target.value)}>
-              <option value="">-- επιλογή --</option>
+              <option value="">{_t("-- επιλογή --")}</option>
               {archiveOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name || '—'}</option>)}
             </select>
           </div>
           <div className="form-group">
-            <label>Παλιός Κωδικός</label>
+            <label>{_t("Παλιός Κωδικός")}</label>
             <input type="text" value={oldKod} onChange={e => setOldKod(e.target.value)} />
           </div>
         </div>
         <div className="form-grid-2">
           <div className="form-group">
-            <label>Είδος υπόθεσης</label>
+            <label>{_t("Είδος υπόθεσης")}</label>
             <select value={onomasiaId} onChange={e => setOnomasiaId(e.target.value)}>
-              <option value="">— κανένα —</option>
+              <option value="">{_t("— κανένα —")}</option>
               {onomasiaOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
             </select>
           </div>
           <div className="form-group">
-            <label>Θέση στην υπόθεση</label>
+            <label>{_t("Θέση στην υπόθεση")}</label>
             <select value={thesi} onChange={e => setThesi(e.target.value)}>
-              <option value="">— καμία —</option>
+              <option value="">{_t("— καμία —")}</option>
               {thesiOptions.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{o.name}</option>)}
             </select>
           </div>
@@ -346,24 +347,24 @@ function CaseTab({ caseData, onSave, saving }) {
             εξακολουθούν να στέλνονται αυτούσιες στην αποθήκευση, ώστε τα
             παλιά δεδομένα να μη σβηστούν από μια απλή επεξεργασία. */}
         <div className="form-group">
-          <label>Περίληψη / Περιγραφή</label>
+          <label>{_t("Περίληψη / Περιγραφή")}</label>
           <textarea rows="6" value={perilipsi} onChange={e => setPerilipsi(e.target.value)} />
         </div>
 
-        {loadErr && <div className="error">Σφάλμα φόρτωσης προσώπων: {loadErr}</div>}
+        {loadErr && <div className="error">{_t("Σφάλμα φόρτωσης προσώπων:")} {loadErr}</div>}
 
         {/* --- Πελάτης ΦΠ + ΝΠ + Αντίδικος/Συμβαλλόμενος --- */}
         <div className="form-grid-2" style={{ marginTop: 20, borderTop: '1px solid #e2e8f0', paddingTop: 20 }}>
           <div className="form-group">
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-              <label>Πελάτης ΦΠ (Φυσικό Πρόσωπο)</label>
-              <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('fysiko'); }} style={{ fontSize: 12 }}>+ Νέος</a>
+              <label>{_t("Πελάτης ΦΠ (Φυσικό Πρόσωπο)")}</label>
+              <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('fysiko'); }} style={{ fontSize: 12 }}>{_t("+ Νέος")}</a>
             </div>
             <select
               value={fysikoProsopoId}
               onChange={e => { setFysikoProsopoId(e.target.value); if (e.target.value) setNomikoProsopoId(''); }}
             >
-              <option value="">— κανένας —</option>
+              <option value="">{_t("— κανένας —")}</option>
               {fysikaList.map(f => (
                 <option key={f.aa || f.id} value={f.aa || f.id}>
                   {`${f.eponymo || ''} ${f.onoma || ''}`.trim() || `#${f.aa || f.id}`}
@@ -373,14 +374,14 @@ function CaseTab({ caseData, onSave, saving }) {
           </div>
           <div className="form-group">
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-              <label>Πελάτης ΝΠ (Νομικό Πρόσωπο)</label>
-              <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('nomiko'); }} style={{ fontSize: 12 }}>+ Νέο</a>
+              <label>{_t("Πελάτης ΝΠ (Νομικό Πρόσωπο)")}</label>
+              <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('nomiko'); }} style={{ fontSize: 12 }}>{_t("+ Νέο")}</a>
             </div>
             <select
               value={nomikoProsopoId}
               onChange={e => { setNomikoProsopoId(e.target.value); if (e.target.value) setFysikoProsopoId(''); }}
             >
-              <option value="">— κανένα —</option>
+              <option value="">{_t("— κανένα —")}</option>
               {nomikaList.map(n => (
                 <option key={n.aa || n.id} value={n.aa || n.id}>
                   {n.eponymia || n.diakritikos_titlos || `#${n.aa || n.id}`}
@@ -392,11 +393,11 @@ function CaseTab({ caseData, onSave, saving }) {
         <div className="form-grid-2">
           <div className="form-group">
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-              <label>Αντίδικος / Συμβαλλόμενος</label>
-              <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opponent'); }} style={{ fontSize: 12 }}>+ Νέος</a>
+              <label>{_t("Αντίδικος / Συμβαλλόμενος")}</label>
+              <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opponent'); }} style={{ fontSize: 12 }}>{_t("+ Νέος")}</a>
             </div>
             <select value={diadikosId} onChange={e => setDiadikosId(e.target.value)}>
-              <option value="">-- κανένας --</option>
+              <option value="">{_t("-- κανένας --")}</option>
               {opponents.map(r => <option key={r.aa || r.id} value={r.aa || r.id}>{`${r.eponymo || ''} ${r.onoma || ''}`.trim()}</option>)}
             </select>
           </div>
@@ -405,10 +406,9 @@ function CaseTab({ caseData, onSave, saving }) {
 
         {/* --- Επιπλέον πελάτες (εργατικές, ομαδικές αγωγές) --- */}
         <div style={{ marginTop: 20, borderTop: '1px solid #e2e8f0', paddingTop: 20 }}>
-          <h3 style={{ fontSize: 16, marginBottom: 4 }}>Επιπλέον πελάτες</h3>
+          <h3 style={{ fontSize: 16, marginBottom: 4 }}>{_t("Επιπλέον πελάτες")}</h3>
           <p style={{ fontSize: 13, color: '#718096', marginBottom: 12 }}>
-            Για υποθέσεις με περισσότερους από έναν εντολείς. Δεν δημιουργούν
-            νέα υπόθεση ούτε νέο αριθμό πρωτοκόλλου — η υπόθεση παραμένει μία.
+            {_t("Για υποθέσεις με περισσότερους από έναν εντολείς. Δεν δημιουργούν νέα υπόθεση ούτε νέο αριθμό πρωτοκόλλου — η υπόθεση παραμένει μία.")}
           </p>
           <CaseClientsPanel
             caseId={caseData.aa}
@@ -423,12 +423,12 @@ function CaseTab({ caseData, onSave, saving }) {
         {/* --- Χειριστές δικηγόροι --- */}
         <div className="form-group" style={{ marginTop: 12 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-            <label>Χειριστές δικηγόροι γραφείου ({xeiristesIds.length} επιλεγμένοι)</label>
-            <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('lawyer'); }} style={{ fontSize: 12 }}>+ Νέος δικηγόρος γραφείου</a>
+            <label>{_t("Χειριστές δικηγόροι γραφείου (")}{xeiristesIds.length} {_t("επιλεγμένοι)")}</label>
+            <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('lawyer'); }} style={{ fontSize: 12 }}>{_t("+ Νέος δικηγόρος γραφείου")}</a>
           </div>
           <div style={{ maxHeight: 200, overflow: 'hidden auto', border: '1px solid #e2e8f0', borderRadius: 6, padding: 8 }}>
             {lawyers.length === 0 ? (
-              <div style={{ color: '#a0aec0', padding: 8 }}>Δεν υπάρχουν δικηγόροι γραφείου. Πάτησε «+ Νέος δικηγόρος γραφείου» για να προσθέσεις τον πρώτο.</div>
+              <div style={{ color: '#a0aec0', padding: 8 }}>{_t("Δεν υπάρχουν δικηγόροι γραφείου. Πάτησε «+ Νέος δικηγόρος γραφείου» για να προσθέσεις τον πρώτο.")}</div>
             ) : (() => {
               const hasSelected = xeiristesIds.length > 0;
               return [...lawyers].sort((a, b) => {
@@ -502,28 +502,28 @@ function CaseTab({ caseData, onSave, saving }) {
               });
             })()}
           </div>
-          <small style={{ color: '#a0aec0' }}>Ο δικηγόρος αντιδίκου, ο δικαστής και ο γραμματέας ορίζονται ξεχωριστά σε κάθε δικαστική ενέργεια.</small>
+          <small style={{ color: '#a0aec0' }}>{_t("Ο δικηγόρος αντιδίκου, ο δικαστής και ο γραμματέας ορίζονται ξεχωριστά σε κάθε δικαστική ενέργεια.")}</small>
         </div>
 
         {/* --- Εισφορά υπόθεσης --- */}
         <div className="form-group" style={{ marginTop: 12 }}>
-          <label>Εισφορά υπόθεσης — δικηγόροι γραφείου που έφεραν την υπόθεση ({eisforaIds.length} επιλεγμένοι)</label>
+          <label>{_t("Εισφορά υπόθεσης — δικηγόροι γραφείου που έφεραν την υπόθεση (")}{eisforaIds.length} {_t("επιλεγμένοι)")}</label>
           <EisforaSelect lawyers={lawyers} value={eisforaIds} onChange={setEisforaIds} />
-          <small style={{ color: '#a0aec0' }}>Χρησιμοποιείται στην «Ανάλυση τιμολόγησης» ανά δικηγόρο εισφοράς· με περισσότερους, το ποσό μοιράζεται ίσα.</small>
+          <small style={{ color: '#a0aec0' }}>{_t("Χρησιμοποιείται στην «Ανάλυση τιμολόγησης» ανά δικηγόρο εισφοράς· με περισσότερους, το ποσό μοιράζεται ίσα.")}</small>
         </div>
 
         <div style={{ textAlign: 'right', marginTop: 20 }}>
           <button type="button" className="btn" disabled={saving} onClick={saveAll}>
-            {saving ? 'Αποθήκευση...' : 'Αποθήκευση'}
+            {saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}
           </button>
         </div>
       </div>
 
       <aside className="case-tab-sidebar" style={{ position: 'sticky', top: 20 }}>
         <div className="section" style={{ marginBottom: 16 }}>
-          <h3 style={{ fontSize: 14, marginTop: 0, marginBottom: 8 }}>Υποθέσεις ίδιου πελάτη ({sameClientCases.length})</h3>
+          <h3 style={{ fontSize: 14, marginTop: 0, marginBottom: 8 }}>{_t("Υποθέσεις ίδιου πελάτη (")}{sameClientCases.length})</h3>
           {sameClientCases.length === 0 ? (
-            <div style={{ color: '#a0aec0', fontSize: 12 }}>Δεν υπάρχουν άλλες υποθέσεις.</div>
+            <div style={{ color: '#a0aec0', fontSize: 12 }}>{_t("Δεν υπάρχουν άλλες υποθέσεις.")}</div>
           ) : (
             <div style={{ maxHeight: 200, overflowY: 'auto' }}>
               {sameClientCases.map(sc => (
@@ -574,22 +574,22 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
     <div>
       {error && <div className="error">{error}</div>}
       <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
-        <div style={{ color: '#4a5568' }}>Δικαστικές ενέργειες (δικάσιμοι)</div>
-        <button type="button" className="btn btn-sm" onClick={openNew}>+ Νέα δικαστική ενέργεια</button>
+        <div style={{ color: '#4a5568' }}>{_t("Δικαστικές ενέργειες (δικάσιμοι)")}</div>
+        <button type="button" className="btn btn-sm" onClick={openNew}>{_t("+ Νέα δικαστική ενέργεια")}</button>
       </div>
 
       {rows.length === 0 ? (
-        <div className="empty-state">Δεν υπάρχουν δικαστικές ενέργειες.</div>
+        <div className="empty-state">{_t("Δεν υπάρχουν δικαστικές ενέργειες.")}</div>
       ) : (
         <table className="table">
           <thead><tr>
-            <th style={{width:110}}>Ημ/νία δικασίμου</th>
-            <th style={{width:110}}>Ημ. Απόφασης</th>
-            <th>Δικαστήριο</th>
-            <th>Τμήμα / Πόλη</th>
-            <th style={{width:130}}>ΓΑΚ / ΕΑΚ</th>
-            <th>Διαδικασία</th>
-            <th style={{width:90}}>Κατάσταση</th>
+            <th style={{width:110}}>{_t("Ημ/νία δικασίμου")}</th>
+            <th style={{width:110}}>{_t("Ημ. Απόφασης")}</th>
+            <th>{_t("Δικαστήριο")}</th>
+            <th>{_t("Τμήμα / Πόλη")}</th>
+            <th style={{width:130}}>{_t("ΓΑΚ / ΕΑΚ")}</th>
+            <th>{_t("Διαδικασία")}</th>
+            <th style={{width:90}}>{_t("Κατάσταση")}</th>
             <th style={{width:1}}></th>
           </tr></thead>
           <tbody>
@@ -603,13 +603,13 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
                 <td>{r.diadikasia_name || '—'}</td>
                 <td>
                   <span className={`badge ${r.ekkremis !== false ? 'badge-open' : 'badge-closed'}`}>
-                    {r.ekkremis !== false ? 'Εκκρεμής' : 'Έκλεισε'}
+                    {r.ekkremis !== false ? _t("Εκκρεμής") : _t("Έκλεισε")}
                   </span>
                 </td>
                 <td style={{ whiteSpace: 'nowrap' }}>
                   <CalendarExportButton event={eventFromCourtAction(r)} filename={`dikasimos-${r.aa}.ics`} />
                   {' '}
-                  <button className="btn btn-sm btn-secondary" onClick={() => openEdit(r)}>Επεξ.</button>
+                  <button className="btn btn-sm btn-secondary" onClick={() => openEdit(r)}>{_t("Επεξ.")}</button>
                   {' '}
                   <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
                 </td>
@@ -630,9 +630,9 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
       )}
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή Δικαστικής Ενέργειας"
-          message="Είστε σίγουρος;"
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή Δικαστικής Ενέργειας")}
+          message={_t("Είστε σίγουρος;")}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -717,7 +717,7 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
   const save = async () => {
     setSaving(true);
     setError('');
-    if (!form.date) { setError('Η ημερομηνία είναι υποχρεωτική.'); setSaving(false); return; }
+    if (!form.date) { setError(_t("Η ημερομηνία είναι υποχρεωτική.")); setSaving(false); return; }
     try {
       const payload = {
         ypothesi_id:            Number(caseId),
@@ -747,55 +747,55 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
 
   return (
     <Modal
-      title={initial ? 'Επεξεργασία δικαστικής ενέργειας' : 'Νέα δικαστική ενέργεια'}
+      title={initial ? _t("Επεξεργασία δικαστικής ενέργειας") : _t("Νέα δικαστική ενέργεια")}
       onClose={onClose}
       size="lg"
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       {/* ΑΦΑΙΡΕΘΗΚΕ: «Τίτλος / Ονομασία» (παρατήρηση Μαύρου #5). */}
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Ημερομηνία δικασίμου *</label>
+          <label>{_t("Ημερομηνία δικασίμου *")}</label>
           <DateInput value={form.date} onChange={c('date')} />
         </div>
         <div className="form-group">
-          <label>Δικαστήριο</label>
+          <label>{_t("Δικαστήριο")}</label>
           <select value={form.dikastirio_id} onChange={c('dikastirio_id')}>
-            <option value="">-- επιλογή --</option>
+            <option value="">{_t("-- επιλογή --")}</option>
             {courts.map(co => <option key={co.aa || co.id} value={co.aa || co.id}>{co.name || co.onomasia}</option>)}
           </select>
         </div>
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Τμήμα δικαστηρίου</label>
+          <label>{_t("Τμήμα δικαστηρίου")}</label>
           <select value={form.tmima_id} onChange={c('tmima_id')}>
-            <option value="">-- επιλογή --</option>
+            <option value="">{_t("-- επιλογή --")}</option>
             {tmimata.map(t => <option key={t.aa || t.id} value={t.aa || t.id}>{t.name}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label>Πόλη</label>
+          <label>{_t("Πόλη")}</label>
           <select value={form.city_id} onChange={c('city_id')}>
-            <option value="">-- επιλογή --</option>
+            <option value="">{_t("-- επιλογή --")}</option>
             {cities.map(ci => <option key={ci.aa || ci.id} value={ci.aa || ci.id}>{ci.name}</option>)}
           </select>
         </div>
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Διαδικασία</label>
+          <label>{_t("Διαδικασία")}</label>
           <select value={form.diadikasia_id} onChange={c('diadikasia_id')}>
-            <option value="">-- επιλογή --</option>
+            <option value="">{_t("-- επιλογή --")}</option>
             {procedures.map(p => <option key={p.aa || p.id} value={p.aa || p.id}>{p.name || p.onomasia}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label>Πινάκιο</label>
+          <label>{_t("Πινάκιο")}</label>
           <input type="text" value={form.pinakio} onChange={c('pinakio')} />
         </div>
       </div>
@@ -804,35 +804,35 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
           να δικαστεί σε περισσότερα από ένα δικαστήρια. */}
       <div className="form-grid-2">
         <div className="form-group">
-          <label>ΓΑΚ <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}>(Γενικός Αριθμός Κατάθεσης)</span></label>
-          <input type="text" value={form.gak} onChange={c('gak')} placeholder="π.χ. 12345/2026" />
+          <label>{_t("ΓΑΚ")} <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}>{_t("(Γενικός Αριθμός Κατάθεσης)")}</span></label>
+          <input type="text" value={form.gak} onChange={c('gak')} placeholder={_t("π.χ. 12345/2026")} />
         </div>
         <div className="form-group">
-          <label>ΕΑΚ <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}>(Ειδικός Αριθμός Κατάθεσης)</span></label>
-          <input type="text" value={form.eak} onChange={c('eak')} placeholder="π.χ. 6789/2026" />
+          <label>{_t("ΕΑΚ")} <span style={{ fontSize: 12, color: '#718096', fontWeight: 'normal' }}>{_t("(Ειδικός Αριθμός Κατάθεσης)")}</span></label>
+          <input type="text" value={form.eak} onChange={c('eak')} placeholder={_t("π.χ. 6789/2026")} />
         </div>
       </div>
       <div className="form-group">
-        <label>Αριθμός εισαγωγικού εγγράφου / Κωδικός</label>
+        <label>{_t("Αριθμός εισαγωγικού εγγράφου / Κωδικός")}</label>
         <input type="text" value={form.arithmos_eisagogikou} onChange={c('arithmos_eisagogikou')} />
       </div>
       <div className="form-grid-2">
         <div className="form-group">
           <label style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>Αντίδικος / Συμβαλλόμενος</span>
-            <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opponent'); }} style={{ fontSize: 12, fontWeight: 'normal' }}>+ Νέος</a>
+            <span>{_t("Αντίδικος / Συμβαλλόμενος")}</span>
+            <a href="#" onClick={e => { e.preventDefault(); setQuickCreate('opponent'); }} style={{ fontSize: 12, fontWeight: 'normal' }}>{_t("+ Νέος")}</a>
           </label>
           <select value={form.antidikos_id} onChange={c('antidikos_id')}>
-            <option value="">-- κανένας --</option>
+            <option value="">{_t("-- κανένας --")}</option>
             {opponents.map(o => <option key={o.aa || o.id} value={o.aa || o.id}>{`${o.eponymo || ''} ${o.onoma || ''}`.trim()}</option>)}
           </select>
         </div>
         <div className="form-group">
           <label style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span>Δικηγόρος αντιδίκου</span>
+            <span>{_t("Δικηγόρος αντιδίκου")}</span>
           </label>
           <select value={form.dikigoros_antidikou_id} onChange={c('dikigoros_antidikou_id')}>
-            <option value="">-- κανένας --</option>
+            <option value="">{_t("-- κανένας --")}</option>
             {opposingLawyers.map(o => (
               <option key={o.aa || o.id} value={o.aa || o.id}>
                 {(o.eponymia && o.eponymia.trim()) || `${o.eponymo || ''} ${o.onoma || ''}`.trim()}
@@ -840,19 +840,19 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
             ))}
           </select>
           <small style={{ color: '#718096', fontSize: 12 }}>
-            Από τα σχετικά πρόσωπα με ιδιότητα «Δικηγόρος»
+            {_t("Από τα σχετικά πρόσωπα με ιδιότητα «Δικηγόρος»")}
           </small>
         </div>
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Ημ. Έκδοσης Απόφασης</label>
+          <label>{_t("Ημ. Έκδοσης Απόφασης")}</label>
           <DateInput value={form.date_apofasis} onChange={c('date_apofasis')} />
         </div>
         <div className="form-group">
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 24 }}>
             <input type="checkbox" checked={form.ekkremis} onChange={e => setForm(f => ({ ...f, ekkremis: e.target.checked }))} />
-            <span>Εκκρεμής</span>
+            <span>{_t("Εκκρεμής")}</span>
           </label>
         </div>
       </div>
@@ -911,24 +911,24 @@ function CourtSubActionsSection({ courtAction }) {
   return (
     <div style={{ marginTop: 20, borderTop: '1px solid #e2e8f0', paddingTop: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
-        <h3 style={{ margin: 0, fontSize: 14 }}>Ενέργειες αυτής της δικασίμου ({rows.length})</h3>
-        <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowForm(true); }}>+ Νέα ενέργεια</button>
+        <h3 style={{ margin: 0, fontSize: 14 }}>{_t("Ενέργειες αυτής της δικασίμου (")}{rows.length})</h3>
+        <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowForm(true); }}>{_t("+ Νέα ενέργεια")}</button>
       </div>
       {error && <div className="error">{error}</div>}
       {loading ? (
-        <div style={{ color: '#a0aec0', fontSize: 13 }}>Φόρτωση...</div>
+        <div style={{ color: '#a0aec0', fontSize: 13 }}>{_t("Φόρτωση...")}</div>
       ) : rows.length === 0 ? (
         <div style={{ color: '#a0aec0', fontSize: 13, padding: 10, textAlign: 'center', background: '#f7fafc', borderRadius: 4 }}>
-          Δεν έχουν καταχωρηθεί ενέργειες για αυτή τη δικάσιμο.
+          {_t("Δεν έχουν καταχωρηθεί ενέργειες για αυτή τη δικάσιμο.")}
         </div>
       ) : (
         <table className="table" style={{ fontSize: 12 }}>
           <thead><tr>
-            <th style={{width:95}}>Ημ/νία</th>
-            <th>Ενέργεια</th>
-            <th style={{width:95}}>Ημ. Απόφασης</th>
-            <th style={{width:130}}>Χειριστής</th>
-            <th style={{width:80}}>Κατάσταση</th>
+            <th style={{width:95}}>{_t("Ημ/νία")}</th>
+            <th>{_t("Ενέργεια")}</th>
+            <th style={{width:95}}>{_t("Ημ. Απόφασης")}</th>
+            <th style={{width:130}}>{_t("Χειριστής")}</th>
+            <th style={{width:80}}>{_t("Κατάσταση")}</th>
             <th style={{width:1}}></th>
           </tr></thead>
           <tbody>
@@ -943,7 +943,7 @@ function CourtSubActionsSection({ courtAction }) {
                 <td>{r.dikigoros_name || '—'}</td>
                 <td>
                   <span className={`badge ${r.ekkremis !== false ? 'badge-open' : 'badge-closed'}`}>
-                    {r.ekkremis !== false ? 'Εκκρεμής' : 'Έκλεισε'}
+                    {r.ekkremis !== false ? _t("Εκκρεμής") : _t("Έκλεισε")}
                   </span>
                 </td>
                 <td style={{ whiteSpace: 'nowrap' }}>
@@ -971,9 +971,9 @@ function CourtSubActionsSection({ courtAction }) {
       )}
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή ενέργειας"
-          message="Η ενέργεια θα διαγραφεί οριστικά."
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή ενέργειας")}
+          message={_t("Η ενέργεια θα διαγραφεί οριστικά.")}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -1035,37 +1035,37 @@ function SubActionModal({ courtActionId, initial, lawyers, energeiaOptions, onCl
 
   return (
     <Modal
-      title={initial ? 'Επεξεργασία ενέργειας' : 'Νέα ενέργεια δικασίμου'}
+      title={initial ? _t("Επεξεργασία ενέργειας") : _t("Νέα ενέργεια δικασίμου")}
       onClose={onClose}
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       <div className="form-group">
-        <label>Είδος ενέργειας</label>
+        <label>{_t("Είδος ενέργειας")}</label>
         <select value={form.energeia_lookup_id} onChange={onEnergeiaSelect}>
-          <option value="">— επιλογή από λίστα —</option>
+          <option value="">{_t("— επιλογή από λίστα —")}</option>
           {energeiaOptions.map(o => (
             <option key={o.aa || o.id} value={o.aa || o.id}>{o.name || o.perigrafi}</option>
           ))}
         </select>
-        <small style={{ color: '#a0aec0' }}>Η περιγραφή θα γεμίσει αυτόματα από την επιλογή.</small>
+        <small style={{ color: '#a0aec0' }}>{_t("Η περιγραφή θα γεμίσει αυτόματα από την επιλογή.")}</small>
       </div>
       <div className="form-group">
-        <label>Περιγραφή</label>
+        <label>{_t("Περιγραφή")}</label>
         <textarea rows="3" value={form.perigrafi} onChange={c('perigrafi')} />
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Ημερομηνία</label>
+          <label>{_t("Ημερομηνία")}</label>
           <DateInput value={form.date} onChange={c('date')} />
         </div>
         <div className="form-group">
-          <label>Χειριστής δικηγόρος</label>
+          <label>{_t("Χειριστής δικηγόρος")}</label>
           <select value={form.dikigoros_id} onChange={c('dikigoros_id')}>
-            <option value="">— κανένας —</option>
+            <option value="">{_t("— κανένας —")}</option>
             {lawyers.map(l => (
               <option key={l.aa || l.id} value={l.aa || l.id}>
                 {`${l.eponymo || ''} ${l.onoma || ''}`.trim()}
@@ -1076,15 +1076,15 @@ function SubActionModal({ courtActionId, initial, lawyers, energeiaOptions, onCl
       </div>
       <div className="form-grid-2">
         <div className="form-group">
-          <label>Ημ. Έκδοσης Απόφασης</label>
+          <label>{_t("Ημ. Έκδοσης Απόφασης")}</label>
           <DateInput value={form.date_apofasis} onChange={c('date_apofasis')} />
         </div>
         <div className="form-group">
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 24 }}>
             <input type="checkbox" checked={form.ekkremis} onChange={c('ekkremis')} />
-            <span>Εκκρεμής</span>
+            <span>{_t("Εκκρεμής")}</span>
           </label>
-          <small style={{ color: '#a0aec0' }}>Μένει εκκρεμής μέχρι να σημειωθεί ολοκληρωμένη· εμφανίζεται στον Πίνακα Ελέγχου.</small>
+          <small style={{ color: '#a0aec0' }}>{_t("Μένει εκκρεμής μέχρι να σημειωθεί ολοκληρωμένη· εμφανίζεται στον Πίνακα Ελέγχου.")}</small>
         </div>
       </div>
     </Modal>
@@ -1116,7 +1116,7 @@ function DocsTab({ caseId, rows, onChange }) {
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        setUploadProgress(files.length > 1 ? `${i + 1} από ${files.length}: ${file.name}` : '');
+        setUploadProgress(files.length > 1 ? _t("{0} από {1}: {2}", [i + 1, files.length, file.name]) : '');
         try {
           // Τα μεταδεδομένα (συντάκτης, τελευταία αποθήκευση) διαβάζονται
           // στον browser πριν το ανέβασμα
@@ -1128,8 +1128,8 @@ function DocsTab({ caseId, rows, onChange }) {
       }
       if (failed.length) {
         setError(failed.length === files.length
-          ? `Δεν ανέβηκε κανένα αρχείο.\n${failed.join('\n')}`
-          : `Ανέβηκαν ${files.length - failed.length} από ${files.length}. Απέτυχαν:\n${failed.join('\n')}`);
+          ? _t("Δεν ανέβηκε κανένα αρχείο.\n{0}", [failed.join('\n')])
+          : _t("Ανέβηκαν {0} από {1}. Απέτυχαν:\n{2}", [files.length - failed.length, files.length, failed.join('\n')]));
       }
       onChange();
     } finally {
@@ -1140,7 +1140,7 @@ function DocsTab({ caseId, rows, onChange }) {
   };
 
   const createNewOfficeFile = async () => {
-    if (!newFileName.trim()) { setError('Δώσε όνομα για το νέο αρχείο.'); return; }
+    if (!newFileName.trim()) { setError(_t("Δώσε όνομα για το νέο αρχείο.")); return; }
     setError('');
     setUploading(true);
     try {
@@ -1166,8 +1166,8 @@ function DocsTab({ caseId, rows, onChange }) {
       // inline: το αρχείο ανοίγει αντί να κατεβαίνει
       const res = await documents.downloadUrl(doc.aa || doc.id, { inline: true });
       const url = res?.url || res?.download_url || res?.data?.url || res?.signed_url || res?.signedUrl;
-      if (!url) { setError('Δεν βρέθηκε URL αρχείου.'); return; }
-      const name = doc.file_name || doc.fileName || doc.filename || doc.name || doc.original_name || doc.originalName || 'αρχείο';
+      if (!url) { setError(_t("Δεν βρέθηκε URL αρχείου.")); return; }
+      const name = doc.file_name || doc.fileName || doc.filename || doc.name || doc.original_name || doc.originalName || _t("αρχείο");
       const ext = (name.split('.').pop() || '').toLowerCase();
       setPreview({ url, name, ext });
     } catch (e) {
@@ -1210,7 +1210,7 @@ function DocsTab({ caseId, rows, onChange }) {
     try {
       const res = await documents.downloadUrl(doc.aa || doc.id);
       const url = res?.url || res?.download_url || res?.data?.url || res?.signed_url || res?.signedUrl;
-      if (!url) { setError('Δεν βρέθηκε URL αρχείου.'); return; }
+      if (!url) { setError(_t("Δεν βρέθηκε URL αρχείου.")); return; }
       // Open in new tab — browser will download or preview depending on content-disposition
       window.open(url, '_blank', 'noopener');
     } catch (e) {
@@ -1222,13 +1222,13 @@ function DocsTab({ caseId, rows, onChange }) {
     <div>
       {error && <div className="error">{error}</div>}
       <div className="section-header" style={{ padding: 0, marginBottom: 16, gap: 8, flexWrap: 'wrap' }}>
-        <div style={{ color: '#4a5568' }}>Αρχεία υπόθεσης</div>
+        <div style={{ color: '#4a5568' }}>{_t("Αρχεία υπόθεσης")}</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button type="button" className="btn btn-sm btn-secondary" onClick={() => setShowTemplatePicker(true)}>📋 Από υπόδειγμα</button>
-          <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('docx'); setNewFileName(''); }}>📄 Νέο Word</button>
-          <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('xlsx'); setNewFileName(''); }}>📊 Νέο Excel</button>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={() => setShowTemplatePicker(true)}>{_t("📋 Από υπόδειγμα")}</button>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('docx'); setNewFileName(''); }}>{_t("📄 Νέο Word")}</button>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setNewFilePrompt('xlsx'); setNewFileName(''); }}>{_t("📊 Νέο Excel")}</button>
           <label className={`btn btn-sm ${uploading ? 'btn-disabled' : ''}`} style={{ margin: 0, cursor: 'pointer' }}>
-            {uploading ? (uploadProgress || 'Ανέβασμα...') : '📎 Ανέβασμα αρχείων'}
+            {uploading ? (uploadProgress || _t("Ανέβασμα...")) : _t("📎 Ανέβασμα αρχείων")}
             <input type="file" multiple style={{ display: 'none' }} onChange={onUpload} disabled={uploading} />
           </label>
         </div>
@@ -1237,14 +1237,14 @@ function DocsTab({ caseId, rows, onChange }) {
       <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           {rows.length === 0 ? (
-            <div className="empty-state">Δεν υπάρχουν αρχεία σε αυτή την υπόθεση.</div>
+            <div className="empty-state">{_t("Δεν υπάρχουν αρχεία σε αυτή την υπόθεση.")}</div>
           ) : (
             <table className="table">
               <thead><tr>
-                <th>Όνομα</th>
-                <th style={{width:110}}>Μέγεθος</th>
-                <th style={{width:160}}>Ανέβηκε</th>
-                <th style={{width:180}}>Επεξεργάστηκε από</th>
+                <th>{_t("Όνομα")}</th>
+                <th style={{width:110}}>{_t("Μέγεθος")}</th>
+                <th style={{width:160}}>{_t("Ανέβηκε")}</th>
+                <th style={{width:180}}>{_t("Επεξεργάστηκε από")}</th>
                 <th style={{width:1}}></th>
               </tr></thead>
               <tbody>
@@ -1269,12 +1269,12 @@ function DocsTab({ caseId, rows, onChange }) {
                         </span>
                         {missing && (
                           <span
-                            title="Η εγγραφή υπάρχει, αλλά το αρχείο δεν βρέθηκε στον αποθηκευτικό χώρο. Πιθανόν δεν μεταφέρθηκε από το παλιό σύστημα."
+                            title={_t("Η εγγραφή υπάρχει, αλλά το αρχείο δεν βρέθηκε στον αποθηκευτικό χώρο. Πιθανόν δεν μεταφέρθηκε από το παλιό σύστημα.")}
                             style={{
                               marginLeft: 8, fontSize: 12, padding: '2px 8px', borderRadius: 10,
                               background: '#FEEBC8', color: '#9C4221', whiteSpace: 'nowrap',
                             }}
-                          >μη διαθέσιμο</span>
+                          >{_t("μη διαθέσιμο")}</span>
                         )}
                       </td>
                       <td>{size != null ? formatBytes(size) : '—'}</td>
@@ -1285,9 +1285,9 @@ function DocsTab({ caseId, rows, onChange }) {
                           <span style={{ fontSize: 12, color: '#A0AEC0' }}>—</span>
                         ) : (
                           <>
-                            <button className="btn btn-sm" onClick={(e) => { e.stopPropagation(); openDownload(d); }}>⬇ Λήψη</button>
+                            <button className="btn btn-sm" onClick={(e) => { e.stopPropagation(); openDownload(d); }}>{_t("⬇ Λήψη")}</button>
                             {' '}
-                            <button className="btn btn-sm btn-secondary" onClick={(e) => { e.stopPropagation(); openPreview(d); }}>Προβολή</button>
+                            <button className="btn btn-sm btn-secondary" onClick={(e) => { e.stopPropagation(); openPreview(d); }}>{_t("Προβολή")}</button>
                             {' '}
                           </>
                         )}
@@ -1303,28 +1303,28 @@ function DocsTab({ caseId, rows, onChange }) {
 
         {selected && (
           <div style={{ width: 280, flexShrink: 0, background: '#f7fafc', borderRadius: 8, padding: 16 }}>
-            <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>Λεπτομέρειες αρχείου</h3>
+            <h3 style={{ fontSize: 13, color: '#718096', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 12 }}>{_t("Λεπτομέρειες αρχείου")}</h3>
             <div style={{ fontSize: 13, lineHeight: 1.7 }}>
               <div><strong>{docName(selected)}</strong></div>
               <div style={{ color: '#718096', marginTop: 8 }}>
-                <div><strong>Μέγεθος:</strong> {docSize(selected) != null ? formatBytes(docSize(selected)) : '—'}</div>
-                <div><strong>Ανέβηκε:</strong> {docDate(selected) ? fmtDateTime(docDate(selected)) : '—'}</div>
-                <div><strong>Ανέβηκε από:</strong> {docUser(selected)}</div>
+                <div><strong>{_t("Μέγεθος:")}</strong> {docSize(selected) != null ? formatBytes(docSize(selected)) : '—'}</div>
+                <div><strong>{_t("Ανέβηκε:")}</strong> {docDate(selected) ? fmtDateTime(docDate(selected)) : '—'}</div>
+                <div><strong>{_t("Ανέβηκε από:")}</strong> {docUser(selected)}</div>
                 {(selected.metadata_author || selected.metadata_created_at) && (
                   <>
                     <hr style={{ margin: '10px 0', border: 'none', borderTop: '1px solid #cbd5e0' }} />
-                    <div style={{ fontWeight: 600, color: '#4a5568', marginBottom: 6 }}>Ιδιότητες εγγράφου</div>
-                    {selected.metadata_author && <div><strong>Συγγραφέας:</strong> {selected.metadata_author}</div>}
+                    <div style={{ fontWeight: 600, color: '#4a5568', marginBottom: 6 }}>{_t("Ιδιότητες εγγράφου")}</div>
+                    {selected.metadata_author && <div><strong>{_t("Συγγραφέας:")}</strong> {selected.metadata_author}</div>}
                     {selected.metadata_last_modified_by && selected.metadata_last_modified_by !== selected.metadata_author && (
-                      <div><strong>Τελ. επιμελητής:</strong> {selected.metadata_last_modified_by}</div>
+                      <div><strong>{_t("Τελ. επιμελητής:")}</strong> {selected.metadata_last_modified_by}</div>
                     )}
-                    {selected.metadata_created_at && <div><strong>Ημ. δημιουργίας:</strong> {fmtDateTime(selected.metadata_created_at)}</div>}
-                    {selected.metadata_modified_at && <div><strong>Ημ. αποθήκευσης:</strong> {fmtDateTime(selected.metadata_modified_at)}</div>}
-                    {selected.metadata_title && <div><strong>Τίτλος:</strong> {selected.metadata_title}</div>}
+                    {selected.metadata_created_at && <div><strong>{_t("Ημ. δημιουργίας:")}</strong> {fmtDateTime(selected.metadata_created_at)}</div>}
+                    {selected.metadata_modified_at && <div><strong>{_t("Ημ. αποθήκευσης:")}</strong> {fmtDateTime(selected.metadata_modified_at)}</div>}
+                    {selected.metadata_title && <div><strong>{_t("Τίτλος:")}</strong> {selected.metadata_title}</div>}
                   </>
                 )}
               </div>
-              <button className="btn btn-sm btn-secondary" style={{ marginTop: 12, width: '100%' }} onClick={() => setSelected(null)}>Κλείσιμο</button>
+              <button className="btn btn-sm btn-secondary" style={{ marginTop: 12, width: '100%' }} onClick={() => setSelected(null)}>{_t("Κλείσιμο")}</button>
             </div>
           </div>
         )}
@@ -1332,26 +1332,26 @@ function DocsTab({ caseId, rows, onChange }) {
 
       {newFilePrompt && (
         <Modal
-          title={newFilePrompt === 'docx' ? 'Νέο Word έγγραφο' : 'Νέο Excel αρχείο'}
+          title={newFilePrompt === 'docx' ? _t("Νέο Word έγγραφο") : _t("Νέο Excel αρχείο")}
           onClose={() => setNewFilePrompt(null)}
           actions={<>
-            <button type="button" className="btn btn-secondary" onClick={() => setNewFilePrompt(null)}>Ακύρωση</button>
+            <button type="button" className="btn btn-secondary" onClick={() => setNewFilePrompt(null)}>{_t("Ακύρωση")}</button>
             <button type="button" className="btn" disabled={uploading || !newFileName.trim()} onClick={createNewOfficeFile}>
-              {uploading ? 'Δημιουργία...' : 'Δημιουργία & Ανέβασμα'}
+              {uploading ? _t("Δημιουργία...") : _t("Δημιουργία & Ανέβασμα")}
             </button>
           </>}
         >
           <div className="form-group">
-            <label>Όνομα αρχείου</label>
+            <label>{_t("Όνομα αρχείου")}</label>
             <input
               type="text"
               autoFocus
               value={newFileName}
               onChange={e => setNewFileName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && newFileName.trim() && createNewOfficeFile()}
-              placeholder={newFilePrompt === 'docx' ? 'π.χ. Αγωγή' : 'π.χ. Υπολογισμός κόστους'}
+              placeholder={newFilePrompt === 'docx' ? _t("π.χ. Αγωγή") : _t("π.χ. Υπολογισμός κόστους")}
             />
-            <small style={{ color: '#a0aec0' }}>Η κατάληξη {newFilePrompt === 'docx' ? '.docx' : '.xlsx'} θα προστεθεί αυτόματα αν λείπει.</small>
+            <small style={{ color: '#a0aec0' }}>{_t("Η κατάληξη")} {newFilePrompt === 'docx' ? '.docx' : '.xlsx'} {_t("θα προστεθεί αυτόματα αν λείπει.")}</small>
           </div>
         </Modal>
       )}
@@ -1359,8 +1359,8 @@ function DocsTab({ caseId, rows, onChange }) {
       {preview && (
         <Modal title={preview.name} onClose={() => setPreview(null)} size="xl"
           actions={<>
-            <a href={preview.url} target="_blank" rel="noreferrer" className="btn">⬇ Λήψη</a>
-            <button type="button" className="btn btn-secondary" onClick={() => setPreview(null)}>Κλείσιμο</button>
+            <a href={preview.url} target="_blank" rel="noreferrer" className="btn">{_t("⬇ Λήψη")}</a>
+            <button type="button" className="btn btn-secondary" onClick={() => setPreview(null)}>{_t("Κλείσιμο")}</button>
           </>}
         >
           <FilePreview url={preview.url} ext={preview.ext} name={preview.name} />
@@ -1369,9 +1369,9 @@ function DocsTab({ caseId, rows, onChange }) {
 
       {confirmDel && (
         <ConfirmDialog
-          title="Διαγραφή αρχείου"
-          message={`Διαγραφή του "${docName(confirmDel)}"; Η ενέργεια δεν αναιρείται.`}
-          confirmLabel="Διαγραφή"
+          title={_t("Διαγραφή αρχείου")}
+          message={_t("Διαγραφή του \"{0}\"; Η ενέργεια δεν αναιρείται.", [docName(confirmDel)])}
+          confirmLabel={_t("Διαγραφή")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -1402,7 +1402,7 @@ function TemplatePickerModal({ caseId, onClose, onCreated }) {
   }, []);
 
   const doCreate = async () => {
-    if (!selectedId) { setError('Επίλεξε ένα υπόδειγμα.'); return; }
+    if (!selectedId) { setError(_t("Επίλεξε ένα υπόδειγμα.")); return; }
     setCreating(true);
     setError('');
     try {
@@ -1417,33 +1417,33 @@ function TemplatePickerModal({ caseId, onClose, onCreated }) {
 
   const grouped = {};
   templateList.forEach(t => {
-    const cat = t.category || 'Χωρίς κατηγορία';
+    const cat = t.category || _t("Χωρίς κατηγορία");
     if (!grouped[cat]) grouped[cat] = [];
     grouped[cat].push(t);
   });
 
   return (
     <Modal
-      title="Δημιουργία εγγράφου από υπόδειγμα"
+      title={_t("Δημιουργία εγγράφου από υπόδειγμα")}
       onClose={onClose}
       size="lg"
       actions={<>
-        <button className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
+        <button className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
         <button className="btn" disabled={creating || !selectedId} onClick={doCreate}>
-          {creating ? 'Δημιουργία...' : 'Δημιουργία εγγράφου'}
+          {creating ? _t("Δημιουργία...") : _t("Δημιουργία εγγράφου")}
         </button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       <div style={{ color: '#718096', fontSize: 13, marginBottom: 12 }}>
-        Επίλεξε ένα υπόδειγμα. Τα placeholders θα γεμίσουν αυτόματα με τα στοιχεία της υπόθεσης και το έγγραφο θα αποθηκευτεί στα Αρχεία της υπόθεσης.
+        {_t("Επίλεξε ένα υπόδειγμα. Τα placeholders θα γεμίσουν αυτόματα με τα στοιχεία της υπόθεσης και το έγγραφο θα αποθηκευτεί στα Αρχεία της υπόθεσης.")}
       </div>
       {loading ? (
-        <div className="empty-state">Φόρτωση υποδειγμάτων...</div>
+        <div className="empty-state">{_t("Φόρτωση υποδειγμάτων...")}</div>
       ) : templateList.length === 0 ? (
         <div className="empty-state">
-          Δεν υπάρχουν υποδείγματα.
-          <br /><small>Ζήτησε από τον διαχειριστή να ανεβάσει από τη σελίδα «Υποδείγματα».</small>
+          {_t("Δεν υπάρχουν υποδείγματα.")}
+          <br /><small>{_t("Ζήτησε από τον διαχειριστή να ανεβάσει από τη σελίδα «Υποδείγματα».")}</small>
         </div>
       ) : (
         <div style={{ maxHeight: 400, overflowY: 'auto' }}>
@@ -1492,8 +1492,8 @@ function FilePreview({ url, ext, name }) {
   return (
     <div style={{ textAlign: 'center', padding: 40 }}>
       <div style={{ fontSize: 48, opacity: 0.4, marginBottom: 12 }}>📄</div>
-      <p style={{ color: '#718096', marginBottom: 20 }}>Δεν είναι δυνατή η προεπισκόπηση αυτού του τύπου αρχείου ({ext.toUpperCase()}).</p>
-      <a href={url} target="_blank" rel="noreferrer" className="btn">⬇ Λήψη αρχείου</a>
+      <p style={{ color: '#718096', marginBottom: 20 }}>{_t("Δεν είναι δυνατή η προεπισκόπηση αυτού του τύπου αρχείου (")}{ext.toUpperCase()}).</p>
+      <a href={url} target="_blank" rel="noreferrer" className="btn">{_t("⬇ Λήψη αρχείου")}</a>
     </div>
   );
 }

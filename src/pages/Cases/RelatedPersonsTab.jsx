@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { caseRelatedPersons, people, lists } from '../../api';
+import { _t } from '../../i18n';
 
 /**
  * RelatedPersonsTab — Σχετιζόμενα πρόσωπα της υπόθεσης (case_related_persons)
@@ -44,19 +45,19 @@ function RelatedPersonsTab({ caseId }) {
     <div>
       {error && <div className="error">{error}</div>}
       <div className="section-header" style={{ padding: 0, marginBottom: 16 }}>
-        <div style={{ color: '#4a5568' }}>Πρόσωπα που σχετίζονται με την υπόθεση (μάρτυρες, εμπλεκόμενοι, τρίτοι)</div>
-        <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowModal(true); }}>+ Νέο σχετιζόμενο πρόσωπο</button>
+        <div style={{ color: '#4a5568' }}>{_t("Πρόσωπα που σχετίζονται με την υπόθεση (μάρτυρες, εμπλεκόμενοι, τρίτοι)")}</div>
+        <button type="button" className="btn btn-sm" onClick={() => { setEditing(null); setShowModal(true); }}>{_t("+ Νέο σχετιζόμενο πρόσωπο")}</button>
       </div>
 
       {loading ? (
-        <div className="empty-state">Φόρτωση...</div>
+        <div className="empty-state">{_t("Φόρτωση...")}</div>
       ) : rows.length === 0 ? (
-        <div className="empty-state">Δεν υπάρχουν σχετιζόμενα πρόσωπα σε αυτή την υπόθεση.</div>
+        <div className="empty-state">{_t("Δεν υπάρχουν σχετιζόμενα πρόσωπα σε αυτή την υπόθεση.")}</div>
       ) : (
         <table className="table">
           <thead><tr>
-            <th>Πρόσωπο</th>
-            <th style={{ width: 220 }}>Είδος σχέσης</th>
+            <th>{_t("Πρόσωπο")}</th>
+            <th style={{ width: 220 }}>{_t("Είδος σχέσης")}</th>
             <th style={{ width: 1 }}></th>
           </tr></thead>
           <tbody>
@@ -65,7 +66,7 @@ function RelatedPersonsTab({ caseId }) {
                 <td>{personLabel(r)}</td>
                 <td>{r.eidos_sxesis_name || '—'}</td>
                 <td style={{ whiteSpace: 'nowrap' }}>
-                  <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>Επεξ.</button>
+                  <button className="btn btn-sm btn-secondary" onClick={() => { setEditing(r); setShowModal(true); }}>{_t("Επεξ.")}</button>
                   {' '}
                   <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
                 </td>
@@ -85,9 +86,9 @@ function RelatedPersonsTab({ caseId }) {
       )}
       {confirmDel && (
         <ConfirmDialog
-          title="Αφαίρεση σχετιζόμενου προσώπου"
-          message="Το πρόσωπο δεν διαγράφεται — αφαιρείται μόνο η σύνδεση με αυτή την υπόθεση."
-          confirmLabel="Αφαίρεση"
+          title={_t("Αφαίρεση σχετιζόμενου προσώπου")}
+          message={_t("Το πρόσωπο δεν διαγράφεται — αφαιρείται μόνο η σύνδεση με αυτή την υπόθεση.")}
+          confirmLabel={_t("Αφαίρεση")}
           onConfirm={() => doDelete(confirmDel)}
           onClose={() => setConfirmDel(null)}
         />
@@ -118,7 +119,7 @@ function RelatedPersonModal({ caseId, initial, onClose, onSaved }) {
   const save = async () => {
     setSaving(true);
     setError('');
-    if (!form.sxetiko_prosopo_id) { setError('Επιλέξτε πρόσωπο.'); setSaving(false); return; }
+    if (!form.sxetiko_prosopo_id) { setError(_t("Επιλέξτε πρόσωπο.")); setSaving(false); return; }
     try {
       const payload = {
         ypothesi_id:        Number(caseId),
@@ -142,35 +143,35 @@ function RelatedPersonModal({ caseId, initial, onClose, onSaved }) {
 
   return (
     <Modal
-      title={initial ? 'Επεξεργασία σχέσης' : 'Προσθήκη σχετιζόμενου προσώπου'}
+      title={initial ? _t("Επεξεργασία σχέσης") : _t("Προσθήκη σχετιζόμενου προσώπου")}
       onClose={onClose}
       actions={<>
-        <button type="button" className="btn btn-secondary" onClick={onClose}>Ακύρωση</button>
-        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? 'Αποθήκευση...' : 'Αποθήκευση'}</button>
+        <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
+        <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}</button>
       </>}
     >
       {error && <div className="error">{error}</div>}
       <div className="form-group">
-        <label>Πρόσωπο *</label>
+        <label>{_t("Πρόσωπο *")}</label>
         <select
           value={form.sxetiko_prosopo_id}
           onChange={e => setForm(f => ({ ...f, sxetiko_prosopo_id: e.target.value }))}
           disabled={!!initial}
         >
-          <option value="">-- επιλογή --</option>
+          <option value="">{_t("-- επιλογή --")}</option>
           {sxetika.map(p => <option key={p.aa || p.id} value={p.aa || p.id}>{personLabel(p)}</option>)}
         </select>
-        {initial && <small style={{ color: '#a0aec0' }}>Το πρόσωπο δεν αλλάζει σε υπάρχουσα σχέση — μόνο το είδος σχέσης.</small>}
+        {initial && <small style={{ color: '#a0aec0' }}>{_t("Το πρόσωπο δεν αλλάζει σε υπάρχουσα σχέση — μόνο το είδος σχέσης.")}</small>}
       </div>
       <div className="form-group">
-        <label>Είδος σχέσης</label>
+        <label>{_t("Είδος σχέσης")}</label>
         <select value={form.eidos_sxesis_id} onChange={e => setForm(f => ({ ...f, eidos_sxesis_id: e.target.value }))}>
-          <option value="">-- επιλογή --</option>
+          <option value="">{_t("-- επιλογή --")}</option>
           {eidiSxesis.map(es => <option key={es.aa || es.id} value={es.aa || es.id}>{es.name}</option>)}
         </select>
       </div>
       <div style={{ color: '#a0aec0', fontSize: 13, marginTop: 8 }}>
-        Δημιούργησε νέα σχετικά πρόσωπα από τη σελίδα «Σχετικά πρόσωπα». Διαχειρίσου τα είδη σχέσης από «Λίστες → Είδος σχέσης».
+        {_t("Δημιούργησε νέα σχετικά πρόσωπα από τη σελίδα «Σχετικά πρόσωπα». Διαχειρίσου τα είδη σχέσης από «Λίστες → Είδος σχέσης».")}
       </div>
     </Modal>
   );
