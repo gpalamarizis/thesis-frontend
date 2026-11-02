@@ -1646,4 +1646,13 @@ export default {
   "Reset κωδικού: {0}": "Password reset: {0}",
   "Trial λήγει": "Trial ends",
   "verb|Έκδοση": "Issue",
+  // 02/11: λοιποί πελάτες λογαριασμού, πελατεία ανά είδος υπόθεσης
+  "Μόνο εκκρεμείς υποθέσεις": "Pending cases only",
+  "Υποθέσεις από το έτος": "Cases from year",
+  "Πελατεία ανά είδος υπόθεσης": "Clients by case type",
+  "Λοιποί πελάτες": "Other clients",
+  "Στο έντυπο, ως λοιποί πελάτες της υπόθεσης:": "On the statement, as other clients in the case:",
+  "Λοιποί πελάτες της υπόθεσης, όπως τυπώθηκαν στον λογαριασμό": "Other clients in the case, as printed on the statement",
+  "Πελάτες υπόθεσης: ο κύριος και οι επιπλέον. Το ποσοστό είναι επί των υποθέσεων.": "Case clients: the main client and any additional clients. The percentage is of cases.",
+  "Όποιος έχει υποθέσεις διαφορετικού είδους μετράει σε καθένα, γι' αυτό το σύνολο πελατών είναι οι διακριτοί πελάτες και όχι το άθροισμα των γραμμών.": "A client with cases of different types counts under each, so the client total is the number of distinct clients, not the sum of the rows.",
 };

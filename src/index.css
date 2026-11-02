@@ -820,7 +820,9 @@ body {
 /* ===== Month Calendar ===== */
 .cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* minmax(0,1fr): ίσες στήλες ακόμα κι όταν ένα πλακίδιο έχει μακρύ
+     κείμενο (π.χ. ονόματα χειριστών) — κόβεται με «…» αντί να φαρδαίνει */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
   background: #edf2f7;
   padding: 4px;

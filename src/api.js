@@ -577,6 +577,10 @@ export const reports = {
   clientsByNationalityUrl: (p = {}) => '/api/reports/clients-by-nationality?'
     + new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(),
   clientsByNationality: (p = {}) => api.get(reports.clientsByNationalityUrl(p)),
+  // Πελατεία ανά είδος υπόθεσης (ανεξάρτητα από τιμολόγηση)
+  clientsByCaseTypeUrl: (p = {}) => '/api/reports/clients-by-case-type?'
+    + new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(),
+  clientsByCaseType: (p = {}) => api.get(reports.clientsByCaseTypeUrl(p)),
   billingAnalysisUrl: (p = {}) => '/api/reports/billing-analysis?'
     + new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(),
   billingAnalysis: (p = {}) => api.get(reports.billingAnalysisUrl(p)),

@@ -69,6 +69,16 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
   const countFor = (id) => ['hours', 'fees', 'grammatia', 'expenses', 'advances']
     .reduce((a, k) => a + (data[k] || []).filter(r => r.ypothesi_id === id).length, 0);
 
+  // ΛΟΙΠΟΙ ΠΕΛΑΤΕΣ στο έντυπο (02/11) — ίδιος κανόνας με τον server: από
+  // τις επιλεγμένες υποθέσεις που έχουν εγγραφές που θα τυπωθούν· αν δεν
+  // έχει καμία, από την τρέχουσα υπόθεση. Χωρίς διπλοεγγραφές.
+  const caseClients = data.caseClients || {};
+  const printedCases = cases.filter(id => sel.has(id)
+    && ['hours', 'fees', 'grammatia', 'expenses', 'advances']
+      .some(k => inSel(data[k]).some(r => r.ypothesi_id === id)));
+  if (!printedCases.length && currentCaseId && sel.has(Number(currentCaseId))) printedCases.push(Number(currentCaseId));
+  const otherClients = [...new Set(printedCases.flatMap(id => caseClients[id] || []))];
+
   // Τρίμηνο σε ΤΟΠΙΚΗ ώρα: με toISOString η 1η του μήνα γίνεται 31η του
   // προηγούμενου στην Ελλάδα.
   const quarter = (offset) => {
@@ -174,6 +184,7 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
               <tr>
                 <th style={{ width: 40 }}></th>
                 <th>{_t("Υπόθεση")}</th>
+                <th>{_t("Λοιποί πελάτες")}</th>
                 <th style={{ width: 110, textAlign: 'right' }}>{_t("Εγγραφές")}</th>
               </tr>
             </thead>
@@ -187,6 +198,9 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
                     <Link to={`/cases/${id}?tab=finance`}>
                       {String(id) === String(currentCaseId) ? _t("Τρέχουσα υπόθεση") : _t("Υπόθεση #{0}", [id])}
                     </Link>
+                  </td>
+                  <td style={{ color: '#4a5568', fontSize: 13 }}>
+                    {(caseClients[id] || []).length ? caseClients[id].join(', ') : '—'}
                   </td>
                   <td style={{ textAlign: 'right' }}>{countFor(id)}</td>
                 </tr>
@@ -206,6 +220,12 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
           <AccountLinesEditor data={data} selectedCases={sel} lang={lang}
                               excluded={excluded} setExcluded={setExcluded}
                               onChanged={() => setReloadKey(k => k + 1)} />
+
+          {otherClients.length > 0 && (
+            <div style={{ marginTop: 12, fontSize: 13, color: '#4a5568' }}>
+              {_t("Στο έντυπο, ως λοιποί πελάτες της υπόθεσης:")} <strong>{otherClients.join(', ')}</strong>
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
             <button type="button" className="btn btn-sm"

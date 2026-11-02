@@ -6,6 +6,7 @@ import { fmtDate, trunc, toISODate } from '../../utils/format';
 import CalendarExportButton from '../../components/CalendarExportButton';
 import { eventFromCourtAction } from '../../utils/calendar';
 import { _t, LOCALE } from '../../i18n';
+import { handlerOf, handlerShort, HandlerCell } from '../../components/Handler';
 
 /**
  * CourtActionsCalendar — Ημερολόγιο δικαστικών ενεργειών με φίλτρα και calendar view.
@@ -78,14 +79,16 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
       >
         <div className="cal-day-num">{day}</div>
         {dayEvents.slice(0, 3).map((e, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
             <div
               className="cal-event"
-              style={{ flex: 1 }}
-              title={`${e.xeirokinito_id || ''} - ${e.dikastirio_name || ''} - ${e.perigrafi || e.name || ''}`}
+              style={{ flex: 1, minWidth: 0 }}
+              title={[e.xeirokinito_id, e.dikastirio_name, e.perigrafi || e.name, handlerOf(e) && `— ${handlerOf(e)}`]
+                .filter(Boolean).join(' - ')}
               onClick={(ev) => { ev.stopPropagation(); if (e.ypothesi_id) navigate(`/cases/${e.ypothesi_id}`); }}
             >
-              {e.xeirokinito_id || '•'}
+              <span className="cal-event-proto">{e.xeirokinito_id || '•'}</span>
+              {handlerShort(e) && <span className="cal-event-handler">{handlerShort(e)}</span>}
             </div>
             <span onClick={ev => ev.stopPropagation()}>
               <CalendarExportButton event={eventFromCourtAction(e)} filename={`dikasimos-${e.aa || e.id}.ics`} />
@@ -131,9 +134,9 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
       </div>
 
       <div className="section">
-        <div className="cal-header-row">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date(y, m - 1, 1))}>{_t("‹ Προηγ.")}</button>
-          <h2 style={{ margin: 0 }}>{monthName}</h2>
+          <h2 style={{ textTransform: 'capitalize', margin: 0 }}>{monthName}</h2>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date())}>{_t("Σήμερα")}</button>
             <button className="btn btn-secondary btn-sm" onClick={() => setMonthCursor(new Date(y, m + 1, 1))}>{_t("Επόμ. ›")}</button>
@@ -150,10 +153,10 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
         )}
 
         {selectedEvents.length > 0 && (
-          <div style={{ marginTop: 20 }}>
-            <h3>{_t("Δικάσιμοι")} {fmtDate(selectedDate)}</h3>
-            <table className="data-table">
-              <thead><tr><th>{_t("Πρωτόκολλο")}</th><th>{_t("Δικαστήριο")}</th><th>{_t("Διαδικασία")}</th><th>{_t("Πελάτης")}</th><th>{_t("Περιγραφή")}</th><th style={{width:60}}></th></tr></thead>
+          <div style={{ marginTop: 14, padding: 12, background: '#f7fafc', borderRadius: 6 }}>
+            <h3 style={{ marginBottom: 8, fontSize: 14 }}>{_t("Δικάσιμοι")} {fmtDate(selectedDate)} ({selectedEvents.length})</h3>
+            <table className="table" style={{ marginBottom: 0 }}>
+              <thead><tr><th>{_t("Πρωτόκολλο")}</th><th>{_t("Δικαστήριο")}</th><th>{_t("Διαδικασία")}</th><th>{_t("Πελάτης")}</th><th>{_t("Χειριστής")}</th><th>{_t("Περιγραφή")}</th><th style={{width:60}}></th></tr></thead>
               <tbody>
                 {selectedEvents.map((e, i) => (
                   <tr key={i} className="clickable" onClick={() => e.ypothesi_id && navigate(`/cases/${e.ypothesi_id}`)}>
@@ -161,6 +164,7 @@ function CourtActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
                     <td>{e.dikastirio_name || '—'}</td>
                     <td>{e.diadikasia_name || '—'}</td>
                     <td>{e.pelatis || '—'}</td>
+                    <td><HandlerCell e={e} /></td>
                     <td>{trunc(e.perigrafi || e.dikastirio_name, 50)}</td>
                     <td onClick={ev => ev.stopPropagation()}>
                       <CalendarExportButton event={eventFromCourtAction(e)} filename={`dikasimos-${e.aa || e.id}.ics`} />

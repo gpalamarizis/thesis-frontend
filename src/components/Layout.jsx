@@ -36,6 +36,7 @@ const menuGroups = [
       { path: '/reports/courts',         label: _t("Αναφορά Δικαστηρίων"),           icon: '⚖️' },
       { path: '/reports/tax-property',   label: _t("Φορολογικά & Ιδιοκτησία"),       icon: '🏠' },
       { path: '/reports/clients-nationality', label: _t("Πελατεία ανά υπηκοότητα"), icon: '🌍' },
+      { path: '/reports/clients-case-type',   label: _t("Πελατεία ανά είδος υπόθεσης"), icon: '🗂️' },
       { path: '/reports/finance',        label: _t("Συγκεντρωτικά οικονομικά"),      icon: '💶', finance: true },
       { path: '/reports/billing-analysis', label: _t("Ανάλυση τιμολόγησης"),     icon: '📈', finance: true },
   ]},

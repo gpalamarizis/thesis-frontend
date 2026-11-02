@@ -127,9 +127,9 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
                 <th style={{ ...NUM, width: 90 }}>{_t("Αρ. λογ.")}</th>
                 <th style={{ ...NUM, width: 90 }}>{_t("Αρ. πελάτη")}</th>
                 <th style={{ width: 100 }}>{_t("Έκδοση")}</th>
-                {showClient && <th style={{ minWidth: 240 }}>{_t("Πελάτης")}</th>}
+                {showClient && <th style={{ minWidth: 150 }}>{_t("Πελάτης")}</th>}
                 <th style={{ width: 120 }}>{_t("Αρ. φακέλου")}</th>
-                <th style={{ width: 170 }}>{_t("Περίοδος")}</th>
+                <th style={{ width: 150 }}>{_t("Περίοδος")}</th>
                 <th style={{ ...NUM, width: 110 }}>{_t("Αμοιβές")}</th>
                 <th style={{ ...NUM, width: 100 }}>{_t("Έξοδα")}</th>
                 <th style={{ width: 1 }}></th>
@@ -141,7 +141,17 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
                   <td style={NUM}><strong>{pad2(r.no_org)}</strong></td>
                   <td style={NUM}>{pad2(r.no_client)}</td>
                   <td style={{ whiteSpace: 'nowrap' }}>{dmy(r.date)}</td>
-                  {showClient && <td>{r.pelatis || '—'}</td>}
+                  {showClient && (
+                    <td>
+                      {r.pelatis || '—'}
+                      {(r.loipoi_pelates || []).length > 0 && (
+                        <div style={{ fontSize: 12, color: '#718096', marginTop: 2 }}
+                             title={_t("Λοιποί πελάτες της υπόθεσης, όπως τυπώθηκαν στον λογαριασμό")}>
+                          + {r.loipoi_pelates.join(', ')}
+                        </div>
+                      )}
+                    </td>
+                  )}
                   <td style={{ whiteSpace: 'nowrap' }}>{r.doc_no || '—'}</td>
                   <td style={{ whiteSpace: 'nowrap' }}>
                     {(r.period_from || r.period_to) ? `${dmy(r.period_from) || '…'} – ${dmy(r.period_to) || '…'}` : '—'}
@@ -154,10 +164,12 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
                             title={r.has_file ? r.filename : _t("Θα αναπαραχθεί από τις εγγραφές του λογαριασμού")}>
                       {busy === r.aa ? '…' : (r.has_file ? '⬇ Word' : '⬇ Word*')}
                     </button>
-                    <div style={{ fontSize: 11.5, marginTop: 4, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    {/* Ο ένας σύνδεσμος κάτω από τον άλλο: στη μία γραμμή η στήλη
+                        έβγαινε έξω από την κάρτα σε οθόνη 1280px */}
+                    <div style={{ fontSize: 11.5, marginTop: 4, display: 'flex', flexDirection: 'column',
+                                  alignItems: 'flex-end', gap: 2, whiteSpace: 'nowrap' }}>
                       <a href="#" className="link-inline" onClick={e => { e.preventDefault(); if (busy !== r.aa) pickUpload(r); }}
                          title={_t("Ανέβασμα του Word που στάλθηκε, αν διορθώθηκε μετά την έκδοση")}>{_t("⬆ Διορθωμένο")}</a>
-                      {' · '}
                       <a href="#" className="link-inline" onClick={e => { e.preventDefault(); if (busy !== r.aa) makeInvoice(r); }}
                          title={_t("Πρόχειρο τιμολόγιο από τις αμοιβές του λογαριασμού")}>{_t("🧾 Τιμολόγιο")}</a>
                     </div>

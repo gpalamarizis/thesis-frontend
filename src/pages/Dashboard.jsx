@@ -7,6 +7,7 @@ import { fmtDate, toISODate } from '../utils/format';
 
 import DueActionsPanel from '../components/DueActionsPanel';
 import { _t, LOCALE } from '../i18n';
+import { handlerOf, handlerShort, HandlerCell } from '../components/Handler';
 function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ total_cases: 0, pending_cases: 0, hearings_next_30d: 0, open_tasks: 0, max_protocol_no: 0 });
@@ -223,59 +224,9 @@ function Dashboard({ user, onLogout, onOpenCaseSearch }) {
   );
 }
 
-// Χειριστής: προτεραιότητα στον δικηγόρο της ίδιας της δικασίμου, αλλιώς ο χειριστής της υπόθεσης.
-// Η στήλη λέει «Χειριστής», άρα πρώτα ο χειριστής ΤΗΣ ΥΠΟΘΕΣΗΣ. Ο
-// δικηγόρος της δικασίμου μόνο αν η υπόθεση δεν έχει χειριστή.
-//
-// Πριν ήταν ανάποδα: έδειχνε δικηγόρους που είχαν κολλήσει σε δικάσιμους
-// από τη μετάπτωση, ανενεργούς και ποτέ ανατεθειμένους στην υπόθεση.
-//
-// ΕΝΕΡΓΕΙΕΣ (λοιπές και δικασίμων): ο δικηγόρος που καταχωρήθηκε ΣΤΗΝ
-// ΕΝΕΡΓΕΙΑ — το backend τον στέλνει έτοιμο ως «xeiristis» (αίτημα Μαύρου
-// 26/10). Ο χειριστής της υπόθεσης μόνο αν η ενέργεια δεν έχει δικηγόρο,
-// και τότε φαίνεται αχνός.
-function handlerOf(e) {
-  if (e.xeiristis !== undefined) return e.xeiristis || '';
-  return e.xeiristes || e.dikigoroi_energeias || '';
-}
-function HandlerCell({ e }) {
-  const name = handlerOf(e);
-  if (!name) return '—';
-  if (!e.xeiristis_apo_ypothesi) return name;
-  return (
-    <span style={{ color: '#a0aec0' }}
-          title={_t("Η ενέργεια δεν έχει δικηγόρο — εμφανίζεται ο χειριστής της υπόθεσης")}>
-      {name}
-    </span>
-  );
-}
 // Καρτέλα της υπόθεσης όπου ζει η ενέργεια
 function tabOf(e) {
   return e.kind === 'court_sub' ? 'court' : 'tasks';
-}
-// Σύντομη μορφή για το πλακίδιο του ημερολογίου: «Επώνυμο Α.»
-//
-// Το backend στέλνει «Επώνυμο Όνομα», χωρισμένα με κόμμα. Σκέτο το επώνυμο
-// δεν αρκεί όταν στο γραφείο υπάρχουν περισσότεροι από ένας με το ίδιο,
-// οπότε κρατάμε και το αρχικό του μικρού ονόματος.
-function handlerShort(e) {
-  const full = handlerOf(e);
-  if (!full) return '';
-  return full
-    .split(',')
-    .map(p => {
-      const parts = p.trim().split(/\s+/).filter(Boolean);
-      if (parts.length === 0) return '';
-      const eponymo = parts[0];
-      const onoma = parts[1] || '';
-      // Το αρχικό με κεφαλαίο, χωρίς τόνο (Ά -> Α), όπως γράφεται στις συντομογραφίες
-      const arxiko = onoma
-        ? onoma.charAt(0).toLocaleUpperCase('el-GR').normalize('NFD').replace(/[\u0300-\u036f]/g, '') + '.'
-        : '';
-      return arxiko ? `${eponymo} ${arxiko}` : eponymo;
-    })
-    .filter(Boolean)
-    .join(', ');
 }
 
 // Ημερολόγιο μήνα: δικάσιμοι (μωβ) και λοιπές ενέργειες (πορτοκαλί).

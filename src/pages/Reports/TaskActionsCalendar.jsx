@@ -6,6 +6,7 @@ import { fmtDate, trunc } from '../../utils/format';
 import CalendarExportButton from '../../components/CalendarExportButton';
 import { eventFromTaskAction } from '../../utils/calendar';
 import { _t, LOCALE } from '../../i18n';
+import { handlerOf, handlerShort, HandlerCell } from '../../components/Handler';
 
 /**
  * TaskActionsCalendar — Ημερολόγιο λοιπών ενεργειών με φίλτρα.
@@ -85,14 +86,16 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
       >
         <div className="cal-day-num">{day}</div>
         {dayEvents.slice(0, 3).map((e, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
             <div
               className="cal-event cal-event-task"
-              style={{ flex: 1 }}
-              title={`${e.perigrafi_energias || ''} - ${e.pelatis || ''}`}
+              style={{ flex: 1, minWidth: 0 }}
+              title={[e.xeirokinito_id, e.perigrafi_energias, e.pelatis, handlerOf(e) && `— ${handlerOf(e)}`]
+                .filter(Boolean).join(' - ')}
               onClick={(ev) => { ev.stopPropagation(); if (e.ypothesi_id) navigate(`/cases/${e.ypothesi_id}?tab=${e.kind === 'court_sub' ? 'court' : 'tasks'}`); }}
             >
-              {trunc(e.perigrafi_energias, 15) || '•'}
+              <span className="cal-event-proto">{trunc(e.perigrafi_energias, 15) || '•'}</span>
+              {handlerShort(e) && <span className="cal-event-handler">{handlerShort(e)}</span>}
             </div>
             <span onClick={ev => ev.stopPropagation()}>
               <CalendarExportButton event={eventFromTaskAction(e)} filename={`prothesmia-${e.kind === 'court_sub' ? 'd' : ''}${e.aa || e.id}.ics`} />
@@ -151,13 +154,14 @@ function TaskActionsCalendar({ user, onLogout, onOpenCaseSearch }) {
               {_t("Προθεσμίες στις")} {selectedDate.toLocaleDateString('el-GR')} ({selectedEvents.length})
             </h3>
             <table className="table" style={{ marginBottom: 0 }}>
-              <thead><tr><th>{_t("Πρωτόκολλο")}</th><th>{_t("Περιγραφή")}</th><th>{_t("Πελάτης")}</th><th style={{width:100}}>{_t("Κατάσταση")}</th><th style={{width:60}}></th></tr></thead>
+              <thead><tr><th>{_t("Πρωτόκολλο")}</th><th>{_t("Περιγραφή")}</th><th>{_t("Πελάτης")}</th><th>{_t("Χειριστής")}</th><th style={{width:100}}>{_t("Κατάσταση")}</th><th style={{width:60}}></th></tr></thead>
               <tbody>
                 {selectedEvents.map((e, i) => (
                   <tr key={i} className="clickable" onClick={() => e.ypothesi_id && navigate(`/cases/${e.ypothesi_id}?tab=${e.kind === 'court_sub' ? 'court' : 'tasks'}`)}>
                     <td><strong>{e.xeirokinito_id || '—'}</strong></td>
                     <td>{trunc(e.perigrafi_energias, 60) || '—'}</td>
                     <td>{e.pelatis || '—'}</td>
+                    <td><HandlerCell e={e} /></td>
                     <td>
                       <span className={`badge ${e.ekkremis !== false ? 'badge-open' : 'badge-closed'}`}>
                         {e.ekkremis !== false ? _t("Εκκρεμής") : _t("Έκλεισε")}
