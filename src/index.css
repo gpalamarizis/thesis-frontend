@@ -1124,3 +1124,9 @@ body {
   opacity: 0.5;
   text-decoration: line-through;
 }
+
+/* Φορολογικά & Ιδιοκτησία: 15 στήλες — πυκνότερος πίνακας ώστε οι ενδείξεις
+   (υπόχρεος, ακίνητο, Α.Μ.Α., ΙΧ, σκάφος) να χωρούν στα 1280px χωρίς κύλιση.
+   Τα κελιά με πολλές γραμμές (ένα Α.Μ.Α. ανά γραμμή) στοιχίζονται πάνω. */
+.tax-table .table th { padding: 10px 8px; font-size: 12px; letter-spacing: 0.3px; }
+.tax-table .table td { padding: 10px 8px; font-size: 13px; vertical-align: top; }

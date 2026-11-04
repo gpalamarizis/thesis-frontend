@@ -219,6 +219,33 @@ function ClientCredentialsSection({ form, onChange, kind, accountsPanel, ownerId
           />
         </div>
       )}
+
+      {/* Ιδιοκτησία σκάφους (αίτημα Μαύρου 04/11) — ίδιο σχήμα με το ΙΧ */}
+      <h3 style={{ marginTop: 20, marginBottom: 8, fontSize: 14, color: '#2d3748' }}>
+        {_t("Ιδιοκτησία σκάφους")}
+      </h3>
+      <div className="form-group">
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input
+            type="checkbox"
+            checked={!!form.idioktitis_skafous}
+            onChange={onChange('idioktitis_skafous')}
+          />
+          {_t("Ιδιοκτήτης σκάφους")}
+        </label>
+      </div>
+
+      {form.idioktitis_skafous && (
+        <div style={{ paddingLeft: 20, borderLeft: '3px solid #cbd5e0' }}>
+          <MultiValueField
+            label={_t("Σκάφος/η (όνομα / αρ. νηολογίου)")}
+            hint={_t("(μία γραμμή ανά σκάφος)")}
+            value={form.stoixeia_skafon}
+            onChange={onChange('stoixeia_skafon')}
+            placeholder={_t("π.χ. ΑΡΤΕΜΙΣ — Ν.Π. 1234")}
+          />
+        </div>
+      )}
     </div>
   );
 }
