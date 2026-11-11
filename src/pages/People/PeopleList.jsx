@@ -33,6 +33,10 @@ const KIND_CONFIG = {
       { key: 'email',         label: 'Email',           type: 'email' },
       { key: 'date_eggrafis', label: _t("Ημ/νία εγγραφής"), type: 'date' },
       { key: 'exoterikos',    label: _t("Εξωτερικός συνεργάτης"), type: 'checkbox' },
+      // Εταίροι: οι στήλες της εκκαθάρισης λογαριασμών (11/11). Τα αλλάζει
+      // μόνο ο διαχειριστής του γραφείου.
+      { key: 'etairos',       label: _t("Εταίρος (στήλη στην εκκαθάριση)"), type: 'checkbox' },
+      { key: 'arxika',        label: _t("Αρχικά εταίρου (π.χ. ΔΜ)"), type: 'text' },
       { key: 'energos',       label: _t("Ενεργός"),         type: 'checkbox', default: true },
     ],
     columns: [
@@ -43,6 +47,8 @@ const KIND_CONFIG = {
       { key: 'syllogos',   label: _t("Σύλλογος"),    width: 150 },
       { key: 'mobile',     label: _t("Κινητό"),      width: 120 },
       { key: 'email',      label: 'Email' },
+      { key: 'arxika',     label: _t("Εταίρος"),     width: 80,
+        render: r => (r.etairos ? (r.arxika || '✓') : '') },
     ],
   },
   opponents: {

@@ -342,6 +342,22 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
     } catch (e) { setErr(e.message); }
   };
 
+  // Εκκαθάριση λογαριασμών (11/11): ορίζεται ΜΟΝΟ από εδώ, όχι από το γραφείο
+  const toggleUserEkk = async (u) => {
+    const on = !u.ekkatharisi;
+    if (!await ask({
+      title: on ? _t("Πρόσβαση στην εκκαθάριση") : _t("Αφαίρεση πρόσβασης"),
+      message: on
+        ? _t("Ο χρήστης {0} θα βλέπει την εκκαθάριση λογαριασμών (μερίδια εταίρων). Συνέχεια;", [u.email])
+        : _t("Ο χρήστης {0} δεν θα βλέπει πλέον την εκκαθάριση. Ισχύει αμέσως.", [u.email]),
+      confirmLabel: on ? _t("Παραχώρηση") : _t("Αφαίρεση"), danger: !on,
+    })) return;
+    try {
+      await platform.updateUser(u.id, { ekkatharisi: on });
+      load();
+    } catch (e) { setErr(e.message); }
+  };
+
   const resetUserPassword = async (u) => {
     const pwd = await askText({
       title: _t("Νέο password"),
@@ -421,13 +437,14 @@ function OrgDetailModal({ orgId, onClose, onReload }) {
         <button className="btn btn-sm btn-success" onClick={() => setShowAddUser(true)}>{_t("+ Νέος χρήστης")}</button>
       </div>
       <table className="table" style={{ marginBottom: 20 }}>
-        <thead><tr><th>Email</th><th>{_t("Όνομα")}</th><th>{_t("Ρόλος")}</th><th>{_t("Ενεργός")}</th><th>{_t("Ενέργειες")}</th></tr></thead>
+        <thead><tr><th>Email</th><th>{_t("Όνομα")}</th><th>{_t("Ρόλος")}</th><th>{_t("Ενεργός")}</th><th title={_t("Πρόσβαση στην εκκαθάριση λογαριασμών")}>{_t("Εκκαθάριση")}</th><th>{_t("Ενέργειες")}</th></tr></thead>
         <tbody>{data.users.map(u => (
           <tr key={u.id}>
             <td>{u.email}</td>
             <td>{u.first_name} {u.last_name}</td>
             <td>{u.role} {u.is_platform_admin && <span style={{ color: '#805ad5', fontSize: 12 }}>(platform)</span>}</td>
             <td><input type="checkbox" checked={u.is_active} onChange={() => toggleUserActive(u)} /></td>
+            <td><input type="checkbox" checked={!!u.ekkatharisi} onChange={() => toggleUserEkk(u)} /></td>
             <td style={{ fontSize: 12 }}>
               <button className="btn btn-sm" onClick={() => resetUserPassword(u)}>Reset PW</button>
               {' '}

@@ -1135,3 +1135,9 @@ body {
    οι επικεφαλίδες σπάνε σε δύο γραμμές ώστε ο πίνακας και τα κουμπιά να
    χωρούν στο πλάτος της κάρτας στα 1280px. */
 .table.table-wrap-head th { white-space: normal; vertical-align: bottom; }
+
+/* Εκκαθάριση λογαριασμών: πυκνός πίνακας, για να χωρούν όλοι οι εταίροι */
+.ekk-table { font-size: 13px; }
+.ekk-table th, .ekk-table td { padding: 6px 7px; }
+.ekk-table th { font-size: 11px; }
+.ekk-table td:first-child { white-space: nowrap; }

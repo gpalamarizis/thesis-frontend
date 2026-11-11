@@ -42,6 +42,8 @@ const menuGroups = [
   ]},
   { title: _t("Τιμολόγηση"), items: [
       { path: '/accounts',                 label: _t("Λογαριασμοί"),        icon: '📑', finance: true },
+      // Μόνο με τη σήμανση «Εκκαθάριση» (Platform Admin) — Μαύρος 11/11
+      { path: '/ekkatharisi',              label: _t("Εκκαθάριση"),         icon: '🔐', ekk: true },
       { path: '/invoices',                 label: _t("Τιμολόγια"),          icon: '🧾', finance: true },
       { path: '/invoices/new',             label: _t("Νέο τιμολόγιο"),      icon: '➕', finance: true },
       { path: '/settings/invoice-series',  label: _t("Σειρές τιμολογίων"),  icon: '🔢' },
@@ -134,7 +136,8 @@ function Layout({ user, onLogout, title, children, onOpenCaseSearch }) {
             <div className="sidebar-group" key={gi}>
               {group.title && <div className="sidebar-group-title">{group.title}</div>}
               <ul className="sidebar-menu">
-                {group.items.filter(item => (!item.platformOnly || user.is_platform_admin) && (!item.finance || hasFinance(user))).map(item => (
+                {group.items.filter(item => (!item.platformOnly || user.is_platform_admin) && (!item.finance || hasFinance(user))
+                  && (!item.ekk || user.ekkatharisi === true)).map(item => (
                   <li key={item.path || item.href}>
                     {item.external ? (
                       <a href={item.href} target="_blank" rel="noopener noreferrer">

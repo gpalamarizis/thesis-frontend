@@ -59,6 +59,14 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
       .catch(() => {});
   }, []);
 
+  // Εκδοθέντες λογαριασμοί της υπόθεσης: η πληρωμή δηλώνει ποιον εξοφλεί
+  const [caseAccounts, setCaseAccounts] = useState([]);
+  useEffect(() => {
+    reports.accounts({ ypothesi_id: caseId })
+      .then(d => setCaseAccounts(Array.isArray(d) ? d : (d?.data || [])))
+      .catch(() => setCaseAccounts([]));
+  }, [caseId, accReload]);
+
   const bumpCount = (k, n) => setCounts(c => ({ ...c, [k]: n }));
 
   const lawyerOptions = lawyers.map(l => ({ value: l.aa, label: `${l.eponymo || ''} ${l.onoma || ''}`.trim() }));
@@ -114,22 +122,41 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     { key: 'arithmos',               label: _t("Αριθμός γραμματίου"), type: 'text' },
     { key: 'dikigoros_id',           label: _t("Δικηγόρος"),  type: 'select', options: lawyerOptions },
     { key: 'amount',                 label: _t("Ποσό (€)"),   type: 'number', required: true, step: '0.01' },
-    plironeiField,
+    // Για την εκκαθάριση (11/11). Με το χέρι μέχρι να οριστούν τα ποσοστά.
+    { key: 'efka',                   label: _t("ΕΦΚΑ (€)"),   type: 'number', step: '0.01', hideInList: true },
+    { key: 'foros',                  label: _t("Φόρος (€)"),  type: 'number', step: '0.01', hideInList: true },
+    { key: 'kratiseis_dsa',          label: _t("Κρατήσεις ΔΣΑ (€)"), type: 'number', step: '0.01', hideInList: true },
+    { ...plironeiField, hint: _t("κενό = η εταιρεία") },
     { key: 'perigrafi',              label: _t("Σημειώσεις"), type: 'textarea' },
     xorisFpaField,
     { ...parastatikoField, label: _t("Γραμμάτιο (αρχείο)") },
   ];
 
+  // ΠΛΗΡΩΜΕΣ (Μαύρος 11/11) — οι παλιές «προκαταβολές», ενιαίες: πριν ή
+  // μετά την έκδοση του λογαριασμού, με τράπεζα ή μετρητά. Τα μετρητά τα
+  // κρατά όποιος τα εισέπραξε (κενό = η εταιρεία)· έτσι μπαίνουν στη στήλη
+  // του στην εκκαθάριση.
+  const partnerOptions = lawyers.filter(l => l.etairos)
+    .map(l => ({ value: l.aa, label: `${l.arxika ? l.arxika + ' — ' : ''}${l.eponymo || ''} ${l.onoma || ''}`.trim() }));
   const prokatavolesFields = [
     { key: 'date',       label: _t("Ημερομηνία"), type: 'date',   required: true },
+    { key: 'tropos',     label: _t("Τρόπος"),     type: 'select', required: true, defaultValue: 'trapeza', noEmpty: true,
+      listLabel: _t("Τρόπος / Τράπεζα"),
+      options: [{ value: 'trapeza', label: _t("Τράπεζα") }, { value: 'metrita', label: _t("Μετρητά") }] },
     // Οι τράπεζες του γραφείου προτείνονται (Επεξεργασία λιστών → Τράπεζες),
     // αλλά γράφεται και άλλη ελεύθερα: η στήλη μένει κείμενο.
     { key: 'trapeza',    label: _t("Τράπεζα"),    type: 'combo',
-      options: bankDefs.map(b => b.name).filter(Boolean) },
+      options: bankDefs.map(b => b.name).filter(Boolean), showIf: (fm) => fm.tropos !== 'metrita', hideInList: true },
+    { key: 'eispraxe_dikigoros_id', label: _t("Εισέπραξε"), type: 'select', options: partnerOptions, nowrap: true,
+      emptyLabel: _t("— η εταιρεία —"), listLabel: _t("Εισέπραξε"),
+      hint: _t("για μετρητά που κράτησε εταίρος") },
     { key: 'apostoleas', label: _t("Αποστολέας"), type: 'text' },
     { key: 'amount',     label: _t("Ποσό (€)"),   type: 'number', required: true, step: '0.01' },
+    { key: 'logariasmos_id', label: _t("Εξοφλεί τον λογαριασμό"), type: 'select',
+      options: caseAccounts.map(a => ({ value: a.aa, label: `${_t("Λογ.")} ${a.no_org} (${String(a.no_client).padStart(2, '0')}.${String(a.no_org).padStart(2, '0')}) — ${fmtDate(a.date)}` })),
+      emptyLabel: _t("— κανένας ακόμα (προκαταβολή) —"), listLabel: _t("Λογαριασμός"), hideInList: true },
     { key: 'perigrafi',  label: _t("Σημειώσεις"), type: 'textarea' },
-    { ...parastatikoField, label: _t("Παραστατικό τράπεζας") },
+    { ...parastatikoField, label: _t("Παραστατικό τράπεζας"), hideInList: true },
   ];
 
 
@@ -268,7 +295,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
             </div>
           ) },
         { label: _t("Γραμμάτια"),       badge: counts.grammatia,           content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="grammatia"      fields={grammatiaFields}    onCountChange={n => bumpCount('grammatia', n)} /> },
-        { label: _t("Προκαταβολές"),    badge: counts.prokatavoles,        content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="prokatavoles"   fields={prokatavolesFields} onCountChange={n => bumpCount('prokatavoles', n)} /> },
+        { label: _t("Πληρωμές"),        badge: counts.prokatavoles,        content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="prokatavoles"   fields={prokatavolesFields} onCountChange={n => bumpCount('prokatavoles', n)} /> },
         { label: _t("Πάγιες αμοιβές"),  badge: counts.amoives,             content: <FinanceResource reloadKey={finReload} caseId={caseId} resource="amoives"         fields={amoivesFields}   onCountChange={n => bumpCount('amoives', n)} /> },
       ]} />
     </div>
@@ -335,6 +362,8 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
       const opt = (f.options || []).find(o => String(o.value) === `${col}:${r[col]}`);
       return opt ? opt.label : `#${r[col]}`;
     }
+    if (f.key === 'tropos') return v === 'metrita' ? _t("Μετρητά") : (r.trapeza || _t("Τράπεζα"));
+    if (f.key === 'eispraxe_dikigoros_id') return v ? (r.eispraxe_name || `#${v}`) : _t("Εταιρεία");
     if (f.type === 'select' && Array.isArray(f.options)) {
       const opt = f.options.find(o => String(o.value) === String(v));
       return opt ? opt.label : (v ?? '—');
@@ -343,7 +372,7 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
   };
 
   // In the list, hide virtual fields (like timi_oras) and textarea (too long)
-  const listColumns = fields.filter(f => f.type !== 'textarea' && !f.virtual);
+  const listColumns = fields.filter(f => f.type !== 'textarea' && !f.virtual && !f.hideInList);
 
   const openRows = rows.filter(r => !r.settled_at);
   const settledRows = rows.filter(r => r.settled_at);
@@ -362,7 +391,7 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
         {list.map(r => (
           <tr key={r.aa || r.id}>
             {listColumns.map(f => (
-              <td key={f.key}>{renderCell(r, f)}</td>
+              <td key={f.key} style={f.nowrap ? { whiteSpace: 'nowrap' } : undefined}>{renderCell(r, f)}</td>
             ))}
             {settled && <td style={{ whiteSpace: 'nowrap' }}>{r.settled_doc || '✓'}</td>}
             <td style={{ whiteSpace: 'nowrap' }}>
@@ -594,7 +623,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
       </>}
     >
       {error && <div className="error">{error}</div>}
-      {fields.map(f => {
+      {fields.filter(f => !f.showIf || f.showIf(form)).map(f => {
         const showEmptyHint = f.type === 'select' && (!f.options || f.options.length === 0) && f.emptyHint;
         return (
           <div className="form-group" key={f.key}>
@@ -634,7 +663,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
             ) : f.type === 'select' ? (
               <>
                 <select value={form[f.key] || ''} onChange={e => setField(f.key, e.target.value)}>
-                  <option value="">{_t("-- επιλογή --")}</option>
+                  {!f.noEmpty && <option value="">{f.emptyLabel || _t("-- επιλογή --")}</option>}
                   {(f.options || []).map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
                 {showEmptyHint && <small style={{ color: '#a0aec0', display: 'block', marginTop: 4 }}>{f.emptyHint}</small>}

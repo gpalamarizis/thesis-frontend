@@ -52,6 +52,7 @@ import ReportClientsNationality from './pages/ReportClientsNationality';
 import ReportClientsCaseType from './pages/ReportClientsCaseType';
 import ReportBillingAnalysis from './pages/ReportBillingAnalysis';
 import AccountsFolder from './pages/AccountsFolder';
+import Ekkatharisi from './pages/Ekkatharisi';
 import { _t } from './i18n';
 
 function App() {
@@ -185,6 +186,7 @@ function App() {
         <Route path="/reports/clients-case-type" element={guard(ReportClientsCaseType)} />
         <Route path="/reports/billing-analysis" element={guard(ReportBillingAnalysis)} />
         <Route path="/accounts" element={guard(AccountsFolder)} />
+        <Route path="/ekkatharisi" element={guard(Ekkatharisi)} />
         <Route path="/settings/gdpr" element={guard(GdprSettings)} />
         <Route path="/platform"            element={guard(PlatformAdmin)} />
         <Route path="/invoices"     element={guard(InvoicesList)} />
