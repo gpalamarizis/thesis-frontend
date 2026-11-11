@@ -20,7 +20,8 @@ const fullName = (p) =>
   || `${p?.eponymo || ''} ${p?.onoma || ''}`.trim()
   || _t("(χωρίς όνομα)");
 
-function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled, label }) {
+// hideLabel: όταν η φόρμα που το φιλοξενεί τυπώνει ήδη την ετικέτα (Οικονομικά)
+function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled, label, hideLabel = false }) {
   const [lawyers, setLawyers] = useState([]);
   const [chosenSxetiko, setChosenSxetiko] = useState(null);
   const [q, setQ] = useState('');
@@ -69,8 +70,8 @@ function FilerPicker({ dikigorosId, sxetikoId, onChange, disabled, label }) {
   const clearAll = () => { setQ(''); setHits([]); onChange({ dilosi_dikigoros_id: null, dilosi_sxetiko_id: null }); };
 
   return (
-    <div className="form-group">
-      <label>{label || _t("Δήλωση υποβάλλεται από")}</label>
+    <div className={hideLabel ? undefined : 'form-group'}>
+      {!hideLabel && <label>{label || _t("Δήλωση υποβάλλεται από")}</label>}
 
       {sxetikoId ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

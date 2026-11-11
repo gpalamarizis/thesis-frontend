@@ -5,6 +5,7 @@ import Tabs from '../../components/Tabs';
 import ClientCredentialsSection from '../../components/ClientCredentialsSection';
 import ClientAccountsPanel from '../../components/ClientAccountsPanel';
 import AccountsList from '../../components/AccountsList';
+import FinanceDocsList from '../../components/FinanceDocsList';
 import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { nomika } from '../../api';
 import { COUNTRY_OPTIONS } from '../../utils/countries';
@@ -206,7 +207,15 @@ function NomikaEdit({ user, onLogout, onOpenCaseSearch }) {
             { label: _t("Έδρα"),        content: tabAddress },
             { label: _t("Επικοινωνία"), content: tabPhones },
             { label: _t("Φορολογικά & Ιδιοκτησία"), content: <ClientCredentialsSection form={form} onChange={onChange} kind="nomiko" ownerId={isNew ? null : Number(id)} accountsPanel={<ClientAccountsPanel ownerType="nomiko" ownerId={isNew ? null : Number(id)} />} /> },
-            ...(isNew ? [] : [{ label: _t("Λογαριασμοί"), content: <AccountsList filter={{ clientType: 'nomiko', clientId: Number(id) }} showClient={false} /> }]),
+            // Οικονομικός φάκελος (09/11): εκδοθέντες λογαριασμοί και παραστατικά οικονομικών
+            ...(isNew ? [] : [{ label: _t("Οικονομικός φάκελος"), content: (
+              <div>
+                <h3 style={{ fontSize: 14, color: '#2d3748', margin: '0 0 8px' }}>{_t("Εκδοθέντες λογαριασμοί")}</h3>
+                <AccountsList filter={{ clientType: 'nomiko', clientId: Number(id) }} showClient={false} />
+                <h3 style={{ fontSize: 14, color: '#2d3748', margin: '24px 0 8px' }}>{_t("Παραστατικά οικονομικών")}</h3>
+                <FinanceDocsList clientType="nomiko" clientId={Number(id)} />
+              </div>
+            ) }]),
           ]}/>
         </div>
         <div className="form-actions">

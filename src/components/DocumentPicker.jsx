@@ -2,29 +2,31 @@ import { useState, useEffect, useRef } from 'react';
 import { documents } from '../api';
 import { _t } from '../i18n';
 
-// Σύνδεση εγγράφου με εγγραφή — παραστατικό εξόδου.
+// Σύνδεση εγγράφου με εγγραφή οικονομικών — παραστατικό εξόδου, γραμματίου,
+// προκαταβολής.
 //
-// Το αρχείο ΔΕΝ αποθηκεύεται χωριστά: ανεβαίνει στα Αρχεία της υπόθεσης,
-// όπως κάθε άλλο έγγραφο, και η εγγραφή κρατά μόνο αναφορά. Έτσι το
-// παραστατικό φαίνεται και στα Αρχεία, δεν κρύβεται μέσα στο έξοδο, και
-// δεν υπάρχει δεύτερο σύστημα αρχείων με δικά του δικαιώματα και διαγραφές.
-//
-// Ο κατάλογος είναι τα έγγραφα της συγκεκριμένης υπόθεσης — κατά μέσο όρο
-// δεκατρία, οπότε απλή λίστα αρκεί.
+// Από 09/11 (Μαύρος): τα παραστατικά ΔΕΝ μπαίνουν στα Αρχεία της υπόθεσης.
+// Ανεβαίνουν στον ΟΙΚΟΝΟΜΙΚΟ ΦΑΚΕΛΟ (σημαία oikonomiko) και φαίνονται στην
+// καρτέλα του πελάτη μαζί με τους εκδοθέντες λογαριασμούς. Ο κατάλογος
+// είναι τα παραστατικά της υπόθεσης και τον βλέπει μόνο όποιος έχει
+// δικαίωμα οικονομικών· οι υπόλοιποι μπορούν μόνο να ανεβάσουν το
+// παραστατικό του δικού τους εξόδου.
 
 function DocumentPicker({ caseId, value, onChange, disabled }) {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [noList, setNoList] = useState(false);   // χωρίς δικαίωμα οικονομικών
+  const [uploaded, setUploaded] = useState(null); // ό,τι ανέβηκε τώρα, για να φαίνεται
   const fileRef = useRef(null);
 
   const load = () => {
     if (!caseId) return;
     setLoading(true);
-    documents.listByCase(caseId)
-      .then(d => setDocs(Array.isArray(d) ? d : (d?.data || [])))
-      .catch(() => setDocs([]))
+    documents.listFinanceByCase(caseId)
+      .then(d => { setNoList(false); setDocs(Array.isArray(d) ? d : (d?.data || [])); })
+      .catch(e => { setDocs([]); if (e.status === 403) setNoList(true); })
       .finally(() => setLoading(false));
   };
   useEffect(load, [caseId]);
@@ -34,8 +36,9 @@ function DocumentPicker({ caseId, value, onChange, disabled }) {
     setUploading(true);
     setError('');
     try {
-      const created = await documents.upload(caseId, file);
+      const created = await documents.upload(caseId, file, '', { oikonomiko: 1 });
       const rec = created?.data || created;
+      if (rec?.aa) setUploaded({ aa: rec.aa, filename: rec.filename });
       load();
       if (rec?.aa) onChange(rec.aa);
     } catch (e) {
@@ -67,6 +70,11 @@ function DocumentPicker({ caseId, value, onChange, disabled }) {
           {docs.map(d => (
             <option key={d.aa} value={d.aa}>{d.filename}</option>
           ))}
+          {/* Χωρίς δικαίωμα οικονομικών δεν φορτώνεται λίστα: δείχνουμε
+              μόνο ό,τι επιλέχθηκε / ανέβηκε τώρα */}
+          {value && !docs.some(d => d.aa === Number(value)) && (
+            <option value={value}>{uploaded && uploaded.aa === Number(value) ? uploaded.filename : _t("(παραστατικό)")}</option>
+          )}
         </select>
         <button
           type="button"
@@ -86,7 +94,9 @@ function DocumentPicker({ caseId, value, onChange, disabled }) {
       {error && <div style={{ color: '#e53e3e', fontSize: 13, marginTop: 4 }}>{error}</div>}
       {!loading && docs.length === 0 && !error && (
         <div style={{ fontSize: 12, color: '#718096', marginTop: 4 }}>
-          {_t("Η υπόθεση δεν έχει αρχεία. Ανέβασε το παραστατικό με το κουμπί.")}
+          {noList
+            ? _t("Το παραστατικό ανεβαίνει στον οικονομικό φάκελο του πελάτη.")
+            : _t("Δεν υπάρχουν παραστατικά. Ανέβασε το παραστατικό με το κουμπί.")}
         </div>
       )}
     </div>

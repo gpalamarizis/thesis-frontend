@@ -24,6 +24,7 @@ const RESOURCE = {
   finance_exoda_exoterikou_synergati: 'exoda-synergati',
   finance_prokatavoles: 'prokatavoles',
 };
+// Εγγραφές που δέχονται απαλλαγή ΦΠΑ: αμοιβές και γραμμάτια (έξοδο με ΦΠΑ)
 const FEE = new Set(['finance_ores', 'finance_amoives_dikigoron', 'finance_grammatia']);
 const GREEK = /[Ͱ-Ͽἀ-῿]/;
 const norm = (s) => String(s || '').trim().replace(/\s+/g, ' ');
@@ -44,8 +45,9 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
     const inSel = (rows) => (rows || []).filter(r => selectedCases.has(r.ypothesi_id));
     return [
       { title: _t("Ώρες"), rows: inSel(data.hours) },
-      { title: _t("Πάγιες αμοιβές και γραμμάτια"), rows: [...inSel(data.fees), ...inSel(data.grammatia)] },
-      { title: _t("Έξοδα"), rows: inSel(data.expenses) },
+      { title: _t("Πάγιες αμοιβές"), rows: inSel(data.fees) },
+      // Τα γραμμάτια είναι έξοδο με ΦΠΑ (Μαύρος 09/11)
+      { title: _t("Έξοδα"), rows: [...inSel(data.expenses), ...inSel(data.grammatia)] },
       { title: _t("Προκαταβολές"), rows: inSel(data.advances) },
     ].filter(s => s.rows.length);
   }, [data, selectedCases]);

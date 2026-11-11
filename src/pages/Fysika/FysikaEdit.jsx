@@ -5,6 +5,7 @@ import Tabs from '../../components/Tabs';
 import ClientCredentialsSection from '../../components/ClientCredentialsSection';
 import ClientAccountsPanel from '../../components/ClientAccountsPanel';
 import AccountsList from '../../components/AccountsList';
+import FinanceDocsList from '../../components/FinanceDocsList';
 import PersonEditToolbar from '../../components/PersonEditToolbar';
 import { fysika } from '../../api';
 import { toDateInput } from '../../utils/format';
@@ -247,7 +248,15 @@ function FysikaEdit({ user, onLogout, onOpenCaseSearch }) {
             { label: _t("Διευθύνσεις"), content: tabAddresses },
             { label: _t("Τηλέφωνα"),    content: tabPhones },
             { label: _t("Φορολογικά & Ιδιοκτησία"), content: <ClientCredentialsSection form={form} onChange={onChange} kind="fysiko" ownerId={isNew ? null : Number(id)} accountsPanel={<ClientAccountsPanel ownerType="fysiko" ownerId={isNew ? null : Number(id)} />} /> },
-            ...(isNew ? [] : [{ label: _t("Λογαριασμοί"), content: <AccountsList filter={{ clientType: 'fysiko', clientId: Number(id) }} showClient={false} /> }]),
+            // Οικονομικός φάκελος (09/11): εκδοθέντες λογαριασμοί και παραστατικά οικονομικών
+            ...(isNew ? [] : [{ label: _t("Οικονομικός φάκελος"), content: (
+              <div>
+                <h3 style={{ fontSize: 14, color: '#2d3748', margin: '0 0 8px' }}>{_t("Εκδοθέντες λογαριασμοί")}</h3>
+                <AccountsList filter={{ clientType: 'fysiko', clientId: Number(id) }} showClient={false} />
+                <h3 style={{ fontSize: 14, color: '#2d3748', margin: '24px 0 8px' }}>{_t("Παραστατικά οικονομικών")}</h3>
+                <FinanceDocsList clientType="fysiko" clientId={Number(id)} />
+              </div>
+            ) }]),
           ]}/>
         </div>
         <div className="form-actions">

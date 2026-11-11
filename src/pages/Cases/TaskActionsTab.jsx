@@ -3,7 +3,7 @@ import Modal from '../../components/Modal';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import CalendarExportButton from '../../components/CalendarExportButton';
 import { actions, people } from '../../api';
-import { fmtDate, toDateInput } from '../../utils/format';
+import { fmtDate, toDateInput, fmtCurrency } from '../../utils/format';
 import { eventFromTaskAction } from '../../utils/calendar';
 
 import DateInput from '../../components/DateInput';
@@ -14,7 +14,25 @@ import { _t } from '../../i18n';
  * Multi-dikigoros via energeies_dikigoroi junction → dikigoroi_grafeiou
  * Send/receive: `dikigoroi_ids: [3, 7]` (array of dikigoroi_grafeiou.aa)
  * Read: `dikigoroi: [{id, onoma, eponymo, fullname}, ...]`
+ *
+ * ΜΕΤΑΦΟΡΑ ΣΤΑ ΟΙΚΟΝΟΜΙΚΑ (Μαύρος 09/11): η ενέργεια μπορεί να γίνει αμοιβή —
+ * ωριαία απασχόληση (ώρες × χρέωση πελάτη) ή, αλλιώς, πάγια αμοιβή με ποσό.
+ * Send: `amoivi: { typos: 'ores'|'pagia'|'', ores, amount, dikigoros_id, date }`
+ * (μόνο όταν άλλαξε). Read: `amoivi: { typos, ores, amount, settled_at, diorthothike }`.
  */
+function AmoiviBadge({ a }) {
+  if (!a) return <span style={{ color: '#a0aec0' }}>—</span>;
+  const text = a.typos === 'ores'
+    ? _t("{0} ώρ.", [String(a.ores).replace('.', ',')]) + (a.amount != null ? ` · ${fmtCurrency(a.amount)}` : '')
+    : _t("Πάγια") + (a.amount != null ? ` · ${fmtCurrency(a.amount)}` : '');
+  const note = a.settled_at ? _t("σε λογαριασμό") : (a.diorthothike ? _t("διορθώθηκε") : '');
+  return (
+    <span className="badge" style={{ background: '#ebf8ff', color: '#2a4365', whiteSpace: 'nowrap' }}
+          title={note || undefined}>
+      {text}{note ? ' ✓' : ''}
+    </span>
+  );
+}
 function TaskActionsTab({ caseId, rows, onChange }) {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -43,6 +61,7 @@ function TaskActionsTab({ caseId, rows, onChange }) {
             <th style={{ width: 110 }}>{_t("Προθεσμία")}</th>
             <th>{_t("Περιγραφή")}</th>
             <th style={{ width: 220 }}>{_t("Δικηγόροι")}</th>
+            <th style={{ width: 150 }}>{_t("Αμοιβή")}</th>
             <th style={{ width: 110 }}>{_t("Κατάσταση")}</th>
             <th style={{ width: 1 }}></th>
           </tr></thead>
@@ -70,6 +89,7 @@ function TaskActionsTab({ caseId, rows, onChange }) {
                       </div>
                     )}
                   </td>
+                  <td><AmoiviBadge a={r.amoivi} /></td>
                   <td>
                     <span className={`badge ${r.ekkremis ? 'badge-open' : 'badge-closed'}`}>
                       {r.ekkremis ? _t("Εκκρεμής") : _t("Ολοκληρώθηκε")}
@@ -124,6 +144,19 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
     dikigoroi_ids:      initialIds,
     ekkremis:           initial?.ekkremis !== false,
   });
+  // Μεταφορά στα Οικονομικά
+  const a0 = initial?.amoivi || null;
+  const [am, setAm] = useState({
+    on:           !!a0,
+    typos:        a0?.typos || 'ores',
+    ores:         a0?.ores != null ? String(a0.ores).replace('.', ',') : '',
+    amount:       a0?.typos === 'pagia' && a0?.amount != null ? String(a0.amount).replace('.', ',') : '',
+    dikigoros_id: a0?.dikigoros_id || '',
+    date:         a0?.date || '',
+  });
+  const [amDirty, setAmDirty] = useState(false);
+  const amLocked = !!a0 && (!!a0.settled_at || !!a0.diorthothike);
+  const setA = (k, v) => { setAm(x => ({ ...x, [k]: v })); setAmDirty(true); };
   const [lawyers, setLawyers] = useState([]);
   const [saving, setSaving] = useState(false);
   // Τα κείμενα που έχει ήδη γράψει το γραφείο
@@ -184,6 +217,11 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
     setSaving(true);
     setError('');
     if (!form.perigrafi_energias) { setError(_t("Η περιγραφή είναι υποχρεωτική.")); setSaving(false); return; }
+    if (am.on && amDirty && !amLocked) {
+      const n = (v) => Number(String(v || '').replace(',', '.'));
+      if (am.typos === 'ores' && !(n(am.ores) > 0)) { setError(_t("Συμπληρώστε τις ώρες απασχόλησης.")); setSaving(false); return; }
+      if (am.typos === 'pagia' && !(n(am.amount) > 0)) { setError(_t("Συμπληρώστε το ποσό της πάγιας αμοιβής.")); setSaving(false); return; }
+    }
     try {
       const payload = {
         ypothesi_id:        Number(caseId),
@@ -192,6 +230,18 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
         dikigoroi_ids:      form.dikigoroi_ids.map(Number).filter(Boolean),
         ekkremis:           !!form.ekkremis,
       };
+      // Η αμοιβή στέλνεται μόνο αν άλλαξε — έτσι η επεξεργασία της
+      // περιγραφής δεν αγγίζει αμοιβή που διόρθωσαν τα Οικονομικά.
+      if (amDirty && !amLocked) {
+        payload.amoivi = am.on ? {
+          typos: am.typos,
+          ores: am.typos === 'ores' ? String(am.ores).replace(',', '.') : null,
+          amount: am.typos === 'pagia' ? String(am.amount).replace(',', '.') : null,
+          dikigoros_id: am.dikigoros_id ? Number(am.dikigoros_id)
+            : (form.dikigoroi_ids[0] ? Number(form.dikigoroi_ids[0]) : null),
+          date: am.date || form.date_dead_line || null,
+        } : { typos: '' };
+      }
       if (initial?.aa || initial?.id) await actions.task.update(initial.aa || initial.id, payload);
       else await actions.task.create(payload);
       onSaved();
@@ -206,6 +256,7 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
     <Modal
       title={initial ? _t("Επεξεργασία λοιπής ενέργειας") : _t("Νέα λοιπή ενέργεια")}
       onClose={onClose}
+      size="lg"
       actions={<>
         <button type="button" className="btn btn-secondary" onClick={onClose}>{_t("Ακύρωση")}</button>
         <button type="button" className="btn" disabled={saving} onClick={save}>{saving ? _t("Αποθήκευση...") : _t("Αποθήκευση")}</button>
@@ -320,6 +371,71 @@ function TaskActionModal({ caseId, initial, onClose, onSaved }) {
             })
           )}
         </div>
+      </div>
+
+      {/* Μεταφορά στα Οικονομικά → Αμοιβές (Μαύρος 09/11) */}
+      <div style={{ border: '1px solid #e2e8f0', borderRadius: 6, padding: 12, background: '#f7fafc' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: amLocked ? 'default' : 'pointer', margin: 0, fontWeight: 600 }}>
+          <input type="checkbox" checked={am.on} disabled={amLocked}
+                 onChange={e => setA('on', e.target.checked)} style={{ margin: 0 }} />
+          <span>{_t("Μεταφορά στα Οικονομικά (αμοιβές)")}</span>
+        </label>
+        {amLocked && (
+          <div style={{ fontSize: 12.5, color: '#744210', marginTop: 8 }}>
+            {a0.settled_at
+              ? _t("Η αμοιβή έχει μπει σε εκδοθέντα λογαριασμό και δεν αλλάζει.")
+              : _t("Η αμοιβή διορθώθηκε από τα Οικονομικά· αλλάζει μόνο από εκεί.")}
+          </div>
+        )}
+        {am.on && (
+          <div style={{ marginTop: 10 }}>
+            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 10 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0, cursor: 'pointer' }}>
+                <input type="radio" name="amoivi-typos" checked={am.typos === 'ores'} disabled={amLocked}
+                       onChange={() => setA('typos', 'ores')} style={{ margin: 0 }} />
+                {_t("Ωριαία απασχόληση")}
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6, margin: 0, cursor: 'pointer' }}>
+                <input type="radio" name="amoivi-typos" checked={am.typos === 'pagia'} disabled={amLocked}
+                       onChange={() => setA('typos', 'pagia')} style={{ margin: 0 }} />
+                {_t("Πάγια αμοιβή")}
+              </label>
+            </div>
+            <div className="form-grid-3">
+              {am.typos === 'ores' ? (
+                <div className="form-group">
+                  <label>{_t("Ώρες απασχόλησης *")}</label>
+                  <input type="text" inputMode="decimal" value={am.ores} disabled={amLocked}
+                         placeholder={_t("π.χ. 1,5")} onChange={e => setA('ores', e.target.value)} />
+                </div>
+              ) : (
+                <div className="form-group">
+                  <label>{_t("Ποσό (€) *")}</label>
+                  <input type="text" inputMode="decimal" value={am.amount} disabled={amLocked}
+                         onChange={e => setA('amount', e.target.value)} />
+                </div>
+              )}
+              <div className="form-group">
+                <label>{_t("Δικηγόρος")}</label>
+                <select value={am.dikigoros_id} disabled={amLocked} onChange={e => setA('dikigoros_id', e.target.value)}>
+                  <option value="">{_t("— πρώτος χειριστής —")}</option>
+                  {lawyers.map(u => (
+                    <option key={u.aa} value={u.aa}>{`${u.eponymo || ''} ${u.onoma || ''}`.trim()}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>{_t("Ημερομηνία")}</label>
+                <DateInput value={am.date} disabled={amLocked} onChange={e => setA('date', e.target.value)} />
+              </div>
+            </div>
+            {am.typos === 'ores' && (
+              <div style={{ fontSize: 12.5, color: '#718096' }}>
+                {_t("Το ποσό υπολογίζεται από τη χρέωση ανά ώρα του πελάτη. Όποιος έχει πρόσβαση στα Οικονομικά μπορεί να το διορθώσει.")}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </Modal>
   );

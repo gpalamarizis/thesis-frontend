@@ -30,6 +30,8 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
   const [dikigorosId, setDikigorosId] = useState('');
   const [onomasiaId, setOnomasiaId] = useState('');
   const [antidikosId, setAntidikosId] = useState('');
+  // Εκκρεμείς ενέργειες χωρίς ακόμα δικάσιμο (Μαύρος 09/11)
+  const [xorisDikasimo, setXorisDikasimo] = useState(false);
   const [lawyers, setLawyers] = useState([]);
   const [caseTypes, setCaseTypes] = useState([]);
   const [opponents, setOpponents] = useState([]);
@@ -38,8 +40,11 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
   // v4: κοινό query string για την προβολή και για το Word export
   const buildParams = () => {
     const params = new URLSearchParams();
-    if (fromDate)    params.set('from', fromDate);
-    if (toDate)      params.set('to', toDate);
+    if (xorisDikasimo) params.set('xoris_dikasimo', '1');
+    else {
+      if (fromDate)  params.set('from', fromDate);
+      if (toDate)    params.set('to', toDate);
+    }
     if (dikigorosId) params.set('dikigoros_id', dikigorosId);
     if (onomasiaId)  params.set('onomasia_id', onomasiaId);
     if (antidikosId) params.set('antidikos_id', antidikosId);
@@ -78,7 +83,7 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
     const t = setTimeout(load, 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line
-  }, [fromDate, toDate, dikigorosId, onomasiaId, antidikosId]);
+  }, [fromDate, toDate, dikigorosId, onomasiaId, antidikosId, xorisDikasimo]);
 
   useEffect(() => {
     const unwrap = v => Array.isArray(v) ? v : (v?.data || []);
@@ -88,6 +93,7 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
   }, []);
 
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString(LOCALE, { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+  const fmtDay = (d) => d ? new Date(d).toLocaleDateString(LOCALE, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
 
   const setPreset = (days) => {
     setFromDate(todayISO());
@@ -108,16 +114,20 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
         }}>
           <div>
             <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Από")}</label>
-            <DateInput value={fromDate}
+            <DateInput value={fromDate} disabled={xorisDikasimo}
               onChange={e => setFromDate(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }} />
           </div>
           <div>
             <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Έως")}</label>
-            <DateInput value={toDate}
+            <DateInput value={toDate} disabled={xorisDikasimo}
               onChange={e => setToDate(e.target.value)}
               style={{ padding: '5px 8px', border: '1px solid #cbd5e0', borderRadius: 4 }} />
           </div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, margin: 0, alignSelf: 'flex-end', paddingBottom: 6, cursor: 'pointer' }}>
+            <input type="checkbox" checked={xorisDikasimo} onChange={e => setXorisDikasimo(e.target.checked)} style={{ margin: 0 }} />
+            {_t("Χωρίς ορισμένη δικάσιμο")}
+          </label>
           <div>
             <label style={{ fontSize: 12, color: '#4a5568', display: 'block', marginBottom: 2 }}>{_t("Δικηγόρος")}</label>
             <select
@@ -193,7 +203,7 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
         {loading ? (
           <div className="empty-state">{_t("Φόρτωση...")}</div>
         ) : items.length === 0 ? (
-          <div className="empty-state">{_t("Δεν βρέθηκαν δικάσιμοι στο διάστημα.")}</div>
+          <div className="empty-state">{xorisDikasimo ? _t("Δεν υπάρχουν εκκρεμείς ενέργειες χωρίς δικάσιμο.") : _t("Δεν βρέθηκαν δικάσιμοι στο διάστημα.")}</div>
         ) : (
           <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 4 }}>
             <table className="table" style={{ fontSize: 13 }}>
@@ -218,7 +228,15 @@ function ReportHearings({ user, onLogout, onOpenCaseSearch }) {
                       onClick={r.ypothesi_id ? () => navigate(`/cases/${r.ypothesi_id}?tab=court`) : undefined}
                       style={r.ypothesi_id ? { cursor: 'pointer' } : undefined}
                       title={r.ypothesi_id ? _t("Άνοιγμα υπόθεσης") : undefined}>
-                    <td style={{ fontWeight: 500 }}>{fmtDate(r.date)}</td>
+                    <td style={{ fontWeight: 500 }}>
+                      {r.date ? fmtDate(r.date) : (
+                        <span style={{ fontWeight: 400, color: '#4a5568' }}>
+                          {_t("Χωρίς δικάσιμο")}
+                          {r.date_katathesis && <div style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{_t("Κατ.")} {fmtDay(r.date_katathesis)}</div>}
+                          {r.date_koinopoiisis && <div style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{_t("Κοιν.")} {fmtDay(r.date_koinopoiisis)}</div>}
+                        </span>
+                      )}
+                    </td>
                     <td>{r.dikastirio_name || '—'}</td>
                     <td>{r.tmima_name || '—'}</td>
                     <td>{r.pinakio || '—'}</td>

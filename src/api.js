@@ -654,6 +654,10 @@ export const team = {
 
 export const documents = {
   listByCase: (caseId) => api.get(`/api/documents?ypothesi_id=${caseId}`),
+  // Οικονομικός φάκελος (09/11): παραστατικά οικονομικών — μόνο με δικαίωμα οικονομικών
+  listFinanceByCase: (caseId) => api.get(`/api/documents?ypothesi_id=${caseId}&oikonomika=1`),
+  financeFolder: (clientType, clientId) =>
+    api.get(`/api/documents/oikonomikos-fakelos?clientType=${encodeURIComponent(clientType)}&clientId=${encodeURIComponent(clientId)}`),
   upload:     (caseId, file, description = '', metadata = {}, onProgress = null) => {
     const fd = new FormData();
     fd.append('file', file);

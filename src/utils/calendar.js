@@ -142,6 +142,8 @@ export function outlookCalendarUrl(rawEvent) {
  * Helper: build event object from a court action (δικάσιμος).
  */
 export function eventFromCourtAction(action) {
+  // Χωρίς δικάσιμο δεν υπάρχει γεγονός (new Date(null) θα έδινε 1970)
+  if (!action || !action.date) return null;
   const start = new Date(action.date);
   if (isNaN(start.getTime())) return null;
   // Δικάσιμοι are typically morning — default 09:00 - 12:00 local

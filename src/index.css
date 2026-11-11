@@ -1130,3 +1130,8 @@ body {
    Τα κελιά με πολλές γραμμές (ένα Α.Μ.Α. ανά γραμμή) στοιχίζονται πάνω. */
 .tax-table .table th { padding: 10px 8px; font-size: 12px; letter-spacing: 0.3px; }
 .tax-table .table td { padding: 10px 8px; font-size: 13px; vertical-align: top; }
+
+/* Πίνακες με πολλές στήλες μέσα σε κάρτα (δικαστικές ενέργειες υπόθεσης):
+   οι επικεφαλίδες σπάνε σε δύο γραμμές ώστε ο πίνακας και τα κουμπιά να
+   χωρούν στο πλάτος της κάρτας στα 1280px. */
+.table.table-wrap-head th { white-space: normal; vertical-align: bottom; }

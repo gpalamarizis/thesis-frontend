@@ -581,7 +581,7 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
       {rows.length === 0 ? (
         <div className="empty-state">{_t("Δεν υπάρχουν δικαστικές ενέργειες.")}</div>
       ) : (
-        <table className="table">
+        <table className="table table-wrap-head">
           <thead><tr>
             <th style={{width:110}}>{_t("Ημ/νία δικασίμου")}</th>
             <th style={{width:110}}>{_t("Ημ. Απόφασης")}</th>
@@ -595,7 +595,14 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
           <tbody>
             {rows.map(r => (
               <tr key={r.aa || r.id}>
-                <td>{fmtDate(r.date)}</td>
+                {/* Δικάσιμος — ή «Χωρίς δικάσιμο» — και από κάτω η κατάθεση /
+                    κοινοποίηση δικογράφου, χωρίς επιπλέον στήλη (ο πίνακας
+                    γεμίζει ήδη το πλάτος της κάρτας). */}
+                <td style={{ whiteSpace: 'nowrap' }}>
+                  {r.date ? fmtDate(r.date) : <span style={{ color: '#a0aec0' }}>{_t("Χωρίς δικάσιμο")}</span>}
+                  {r.date_katathesis && <div style={{ fontSize: 12, color: '#4a5568' }}>{_t("Κατ.")} {fmtDate(r.date_katathesis)}</div>}
+                  {r.date_koinopoiisis && <div style={{ fontSize: 12, color: '#4a5568' }}>{_t("Κοιν.")} {fmtDate(r.date_koinopoiisis)}</div>}
+                </td>
                 <td>{r.date_apofasis ? fmtDate(r.date_apofasis) : '—'}</td>
                 <td>{r.dikastirio_name || courts.find(c => (c.aa||c.id) === r.dikastirio_id)?.name || '—'}</td>
                 <td>{[r.tmima_name, r.city_name].filter(Boolean).join(' / ') || '—'}</td>
@@ -606,9 +613,8 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
                     {r.ekkremis !== false ? _t("Εκκρεμής") : _t("Έκλεισε")}
                   </span>
                 </td>
-                <td style={{ whiteSpace: 'nowrap' }}>
-                  <CalendarExportButton event={eventFromCourtAction(r)} filename={`dikasimos-${r.aa}.ics`} />
-                  {' '}
+                <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                  {r.date && <><CalendarExportButton event={eventFromCourtAction(r)} filename={`dikasimos-${r.aa}.ics`} />{' '}</>}
                   <button className="btn btn-sm btn-secondary" onClick={() => openEdit(r)}>{_t("Επεξ.")}</button>
                   {' '}
                   <button className="btn btn-sm btn-danger" onClick={() => setConfirmDel(r)}>×</button>
@@ -644,6 +650,8 @@ function CourtActionsTab({ caseId, rows, courts, onChange }) {
 function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
   const [form, setForm] = useState({
     date:                   toDateInput(initial?.date) || '',
+    date_katathesis:        toDateInput(initial?.date_katathesis) || '',
+    date_koinopoiisis:      toDateInput(initial?.date_koinopoiisis) || '',
     date_apofasis:          toDateInput(initial?.date_apofasis) || '',
     ekkremis:               initial?.ekkremis !== false,
     dikastirio_id:          initial?.dikastirio_id || '',
@@ -717,11 +725,19 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
   const save = async () => {
     setSaving(true);
     setError('');
-    if (!form.date) { setError(_t("Η ημερομηνία είναι υποχρεωτική.")); setSaving(false); return; }
+    // Η δικάσιμος δεν είναι πια υποχρεωτική (Μαύρος 09/11): σε κάποια
+    // δικαστήρια δεν είναι εξαρχής γνωστή. Χρειάζεται όμως ΜΙΑ ημερομηνία,
+    // ώστε η ενέργεια να μη χάνεται χωρίς σημείο αναφοράς.
+    if (!form.date && !form.date_katathesis && !form.date_koinopoiisis) {
+      setError(_t("Συμπληρώστε δικάσιμο ή ημερομηνία κατάθεσης / κοινοποίησης δικογράφου."));
+      setSaving(false); return;
+    }
     try {
       const payload = {
         ypothesi_id:            Number(caseId),
-        date:                   form.date,
+        date:                   form.date || null,
+        date_katathesis:        form.date_katathesis || null,
+        date_koinopoiisis:      form.date_koinopoiisis || null,
         date_apofasis:          form.date_apofasis || null,
         ekkremis:               !!form.ekkremis,
         dikastirio_id:          form.dikastirio_id ? Number(form.dikastirio_id) : null,
@@ -757,11 +773,24 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
     >
       {error && <div className="error">{error}</div>}
       {/* ΑΦΑΙΡΕΘΗΚΕ: «Τίτλος / Ονομασία» (παρατήρηση Μαύρου #5). */}
-      <div className="form-grid-2">
+      <div className="form-grid-3">
         <div className="form-group">
-          <label>{_t("Ημερομηνία δικασίμου *")}</label>
+          <label>{_t("Ημερομηνία δικασίμου")}</label>
           <DateInput value={form.date} onChange={c('date')} />
+          <div style={{ fontSize: 12, color: '#718096', marginTop: 4 }}>{_t("Κενή, αν δεν έχει οριστεί ακόμα")}</div>
         </div>
+        <div className="form-group">
+          <label>{_t("Ημ. κατάθεσης δικογράφου")}</label>
+          <DateInput value={form.date_katathesis} onChange={c('date_katathesis')} />
+          <div style={{ fontSize: 12, color: '#718096', marginTop: 4 }}>{_t("Όταν είμαστε ενάγοντες / αιτούντες")}</div>
+        </div>
+        <div className="form-group">
+          <label>{_t("Ημ. κοινοποίησης δικογράφου")}</label>
+          <DateInput value={form.date_koinopoiisis} onChange={c('date_koinopoiisis')} />
+          <div style={{ fontSize: 12, color: '#718096', marginTop: 4 }}>{_t("Όταν είμαστε εναγόμενοι / καθ' ου")}</div>
+        </div>
+      </div>
+      <div className="form-grid-3">
         <div className="form-group">
           <label>{_t("Δικαστήριο")}</label>
           <select value={form.dikastirio_id} onChange={c('dikastirio_id')}>
@@ -769,8 +798,6 @@ function CourtActionModal({ caseId, courts, initial, onClose, onSaved }) {
             {courts.map(co => <option key={co.aa || co.id} value={co.aa || co.id}>{co.name || co.onomasia}</option>)}
           </select>
         </div>
-      </div>
-      <div className="form-grid-2">
         <div className="form-group">
           <label>{_t("Τμήμα δικαστηρίου")}</label>
           <select value={form.tmima_id} onChange={c('tmima_id')}>

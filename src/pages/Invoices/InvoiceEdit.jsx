@@ -173,6 +173,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
             quantity: Number(l.quantity),
             unit_price: Number(l.unit_price),
             vat_rate: Number(l.vat_rate),
+            eidos_grammis: l.eidos_grammis || null,   // έξοδο ή αμοιβή — περνά αυτούσιο
           })),
         });
       })
@@ -234,6 +235,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
           unit_price: Number(l.unit_price),
           vat_rate: Number(l.vat_rate),
           line_order: idx,
+          eidos_grammis: l.eidos_grammis || null,
         })),
       };
       if (isNew) {
@@ -259,6 +261,7 @@ function InvoiceEdit({ user, onLogout, onOpenCaseSearch }) {
             quantity: Number(l.quantity),
             unit_price: Number(l.unit_price),
             vat_rate: Number(l.vat_rate),
+            eidos_grammis: l.eidos_grammis || null,   // έξοδο ή αμοιβή — περνά αυτούσιο
           })),
         }}));
       }

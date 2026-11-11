@@ -34,7 +34,6 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
   const [externals, setExternals] = useState([]);
   const [pagiaDefs, setPagiaDefs] = useState([]);
   const [related, setRelated] = useState([]);
-  const [grammatiaDefs, setGrammatiaDefs] = useState([]);
   const [bankDefs, setBankDefs] = useState([]);
 
   useEffect(() => {
@@ -51,9 +50,6 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     // επιμελητής. Φορτώνονται και τα δύο.
     people.related.list()
       .then(d => setRelated(Array.isArray(d) ? d : (d?.data || [])))
-      .catch(() => {});
-    lists.get('grammatia_katigories')
-      .then(d => setGrammatiaDefs(Array.isArray(d) ? d : (d?.data || [])))
       .catch(() => {});
     lists.get('pagia_exoda')
       .then(d => setPagiaDefs(Array.isArray(d) ? d : (d?.data || [])))
@@ -111,17 +107,14 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
   // ΠΡΟΚΑΤΑΒΟΛΕΣ — χρήματα που έχει ήδη λάβει το γραφείο.
   // Ο αποστολέας είναι ελεύθερο κείμενο: συχνά πληρώνει τρίτος που δεν
   // υπάρχει στο μητρώο.
-  // ΓΡΑΜΜΑΤΙΑ ΔΙΚΗΓΟΡΙΚΩΝ ΣΥΛΛΟΓΩΝ — χωριστά από τις πάγιες αμοιβές.
-  // Οι κατηγορίες συντηρούνται στην Επεξεργασία λιστών, γιατί αλλάζουν
-  // ανά σύλλογο και ανά έτος.
+  // ΓΡΑΜΜΑΤΙΑ ΔΙΚΗΓΟΡΙΚΩΝ ΣΥΛΛΟΓΩΝ (Μαύρος 09/11): χωρίς κατηγορία, με
+  // «Πληρώνει» όπως τα έξοδα. Στον λογαριασμό πάνε στα «ΕΞΟΔΑ ΜΕ ΦΠΑ».
   const grammatiaFields = [
     { key: 'date',                   label: _t("Ημερομηνία"), type: 'date', required: true },
-    { key: 'grammatio_katigoria_id', label: _t("Κατηγορία"),  type: 'select',
-      options: grammatiaDefs.map(g => ({ value: g.aa, label: g.name })),
-      emptyHint: _t("Πρόσθεσε κατηγορίες στην Επεξεργασία λιστών → Κατηγορίες γραμματίων") },
     { key: 'arithmos',               label: _t("Αριθμός γραμματίου"), type: 'text' },
     { key: 'dikigoros_id',           label: _t("Δικηγόρος"),  type: 'select', options: lawyerOptions },
     { key: 'amount',                 label: _t("Ποσό (€)"),   type: 'number', required: true, step: '0.01' },
+    plironeiField,
     { key: 'perigrafi',              label: _t("Σημειώσεις"), type: 'textarea' },
     xorisFpaField,
     { ...parastatikoField, label: _t("Γραμμάτιο (αρχείο)") },
@@ -649,6 +642,7 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
             ) : f.type === 'person' ? (
               <FilerPicker
                 label={f.label}
+                hideLabel
                 dikigorosId={(form[f.key] || {}).dikigoros}
                 sxetikoId={(form[f.key] || {}).sxetiko}
                 onChange={({ dilosi_dikigoros_id, dilosi_sxetiko_id }) =>

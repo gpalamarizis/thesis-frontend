@@ -59,9 +59,9 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
     && !excluded.has(`${r.src}:${r.aa}`));
   const sum = (rows) => inSel(rows).reduce((a, r) => a + (Number(r.amount) || 0), 0);
 
-  // Τα γραμμάτια είναι πάγια αμοιβή (26/10)
-  const amoives = sum(data.hours) + sum(data.fees) + sum(data.grammatia);
-  const exoda = sum(data.expenses);
+  // Τα γραμμάτια είναι έξοδο με ΦΠΑ (Μαύρος 09/11)
+  const amoives = sum(data.hours) + sum(data.fees);
+  const exoda = sum(data.expenses) + sum(data.grammatia);
   const prok = sum(data.advances);
   const ypoloipo = amoives + exoda - prok;
 
@@ -194,10 +194,23 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
                   <td>
                     <input type="checkbox" checked={sel.has(id)} onChange={() => toggle(id)} />
                   </td>
+                  {/* Αριθμός πρωτοκόλλου, είδος και περιγραφή — ώστε να
+                      φαίνεται τι αφορά κάθε υπόθεση (Μαύρος 10/11) */}
                   <td>
-                    <Link to={`/cases/${id}?tab=finance`}>
-                      {String(id) === String(currentCaseId) ? _t("Τρέχουσα υπόθεση") : _t("Υπόθεση #{0}", [id])}
+                    <Link to={`/cases/${id}?tab=finance`} style={{ fontWeight: 600 }}>
+                      {(data.caseInfo && data.caseInfo[id] && data.caseInfo[id].proto) || _t("Υπόθεση #{0}", [id])}
                     </Link>
+                    {String(id) === String(currentCaseId) && (
+                      <span style={{ marginLeft: 6, fontSize: 12, color: '#4a5568' }}>{_t("(τρέχουσα)")}</span>
+                    )}
+                    {data.caseInfo && data.caseInfo[id] && data.caseInfo[id].ekkremis === false && (
+                      <span style={{ marginLeft: 6, fontSize: 12, color: '#a0aec0' }}>{_t("(κλειστή)")}</span>
+                    )}
+                    {data.caseInfo && data.caseInfo[id] && (data.caseInfo[id].eidos || data.caseInfo[id].perilipsi) && (
+                      <div style={{ fontSize: 12.5, color: '#718096', marginTop: 2 }}>
+                        {[data.caseInfo[id].eidos, data.caseInfo[id].perilipsi].filter(Boolean).join(' · ')}
+                      </div>
+                    )}
                   </td>
                   <td style={{ color: '#4a5568', fontSize: 13 }}>
                     {(caseClients[id] || []).length ? caseClients[id].join(', ') : '—'}
