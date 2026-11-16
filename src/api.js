@@ -573,6 +573,10 @@ export const reports = {
     return api.post(`/api/reports/accounts/${aa}/file`, fd);
   },
   revertAccountFile: (aa) => api.delete(`/api/reports/accounts/${aa}/file`),
+  // Εξόφληση λογαριασμού (Μαύρος 11/11): πληρωμές και χειροκίνητη σήμανση
+  accountExoflisi: (aa) => api.get(`/api/reports/accounts/${aa}/exoflisi`),
+  accountPliromi: (aa, body) => api.post(`/api/reports/accounts/${aa}/pliromi`, body),
+  setAccountExoflisi: (aa, body) => api.put(`/api/reports/accounts/${aa}/exoflisi`, body),
   // Πελατεία ανά υπηκοότητα και ανάλυση τιμολόγησης (από αναλυτικούς λογαριασμούς)
   clientsByNationalityUrl: (p = {}) => '/api/reports/clients-by-nationality?'
     + new URLSearchParams(Object.entries(p).filter(([, v]) => v)).toString(),

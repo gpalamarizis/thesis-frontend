@@ -122,9 +122,15 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     { key: 'arithmos',               label: _t("Αριθμός γραμματίου"), type: 'text' },
     { key: 'dikigoros_id',           label: _t("Δικηγόρος"),  type: 'select', options: lawyerOptions },
     { key: 'amount',                 label: _t("Ποσό (€)"),   type: 'number', required: true, step: '0.01' },
-    // Για την εκκαθάριση (11/11). Με το χέρι μέχρι να οριστούν τα ποσοστά.
-    { key: 'efka',                   label: _t("ΕΦΚΑ (€)"),   type: 'number', step: '0.01', hideInList: true },
-    { key: 'foros',                  label: _t("Φόρος (€)"),  type: 'number', step: '0.01', hideInList: true },
+    // Κρατήσεις γραμματίου (Μαύρος 11/11): ΕΦΚΑ 20% και φόρος 15% επί της
+    // ονομαστικής αξίας, άρθρ. 29 ν.4596/2019 πάντα 0,40 € — αυτόματα, με
+    // δυνατότητα διόρθωσης. Μόνο οι κρατήσεις ΔΣΑ γράφονται με το χέρι.
+    { key: 'efka',                   label: _t("ΕΦΚΑ 20% (€)"),   type: 'number', step: '0.01', hideInList: true,
+      autoFactor: 0.20, hint: _t("αυτόματα") },
+    { key: 'foros',                  label: _t("Φόρος 15% (€)"),  type: 'number', step: '0.01', hideInList: true,
+      autoFactor: 0.15, hint: _t("αυτόματα") },
+    { key: 'kratisi_29',             label: _t("Κράτηση άρθρ. 29 ν.4596/2019 (€)"), type: 'number', step: '0.01',
+      hideInList: true, defaultValue: '0.40' },
     { key: 'kratiseis_dsa',          label: _t("Κρατήσεις ΔΣΑ (€)"), type: 'number', step: '0.01', hideInList: true },
     { ...plironeiField, hint: _t("κενό = η εταιρεία") },
     { key: 'perigrafi',              label: _t("Σημειώσεις"), type: 'textarea' },
@@ -565,7 +571,16 @@ function FinanceEntryModal({ caseId, resource, fields, initial, onClose, onSaved
 
   const handleAmountChange = (v) => {
     setAmountAutoCalc(false); // once user edits amount manually, stop auto-calc
-    setForm(f => ({ ...f, amount: v }));
+    setForm(f => {
+      const next = { ...f, amount: v };
+      // Ποσά που προκύπτουν από το ποσό (ΕΦΚΑ / φόρος γραμματίου)
+      const a = Number(String(v).replace(',', '.'));
+      for (const x of fields) {
+        if (!x.autoFactor) continue;
+        next[x.key] = Number.isFinite(a) && v !== '' ? (Math.round(a * x.autoFactor * 100) / 100).toFixed(2) : '';
+      }
+      return next;
+    });
   };
 
   const save = async () => {

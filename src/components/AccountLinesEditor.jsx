@@ -30,8 +30,14 @@ const GREEK = /[Ͱ-Ͽἀ-῿]/;
 const norm = (s) => String(s || '').trim().replace(/\s+/g, ' ');
 const keyOf = (r) => `${r.src}:${r.aa}`;
 
+// Ίδια διόρθωση με το έντυπο (billingText.fixGrammatio): «γραμμάτιο», όχι
+// «γραμμάτειο», και χωρίς διπλή λέξη όταν η κατηγορία αρχίζει με αυτήν.
 function grammatioBase(g) {
-  return _t("Γραμμάτιο{0}{1}", [g.katigoria ? ` ${g.katigoria}` : '', g.arithmos ? ` Νο ${g.arithmos}` : '']);
+  const kat = String(g.katigoria || '')
+    .replace(/ΓΡΑΜΜΑΤΕΙ(ΟΥ|Ο)/g, 'ΓΡΑΜΜΑΤΙ$1')
+    .replace(/([Γγ])ραμμάτει(ο|α)/g, '$1ραμμάτι$2')
+    .trim().replace(/^(γραμμ[αά]τι[οα]|ΓΡΑΜΜΑΤΙ[ΟΑ])\s*/i, '');
+  return _t("Γραμμάτιο{0}{1}", [kat ? ` ${kat}` : '', g.arithmos ? ` Νο ${g.arithmos}` : '']);
 }
 
 function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, onChanged }) {

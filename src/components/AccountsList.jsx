@@ -15,6 +15,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reports, invoices, downloadFile } from '../api';
 import ConfirmDialog from './ConfirmDialog';
+import AccountExoflisiModal from './AccountExoflisiModal';
 import { _t } from '../i18n';
 
 const money = (n) => (n == null ? '—' : (Number(n) || 0).toLocaleString('el-GR',
@@ -32,6 +33,7 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
   const [tick, setTick] = useState(0);
   const [msg, setMsg] = useState('');
   const [confirmRevert, setConfirmRevert] = useState(null);
+  const [exoflisiFor, setExoflisiFor] = useState(null);
   const fileRef = useRef(null);
   const uploadFor = useRef(null);
   const navigate = useNavigate();
@@ -117,6 +119,10 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
         />
       )}
       {msg && <div className="success-message" style={{ marginBottom: 10, color: '#2f855a' }}>{msg}</div>}
+      {exoflisiFor && (
+        <AccountExoflisiModal account={exoflisiFor} onClose={() => setExoflisiFor(null)}
+                              onChanged={() => setTick(t => t + 1)} />
+      )}
       {rows.length === 0 ? (
         <div className="empty-state">{emptyMessage || _t("Δεν υπάρχουν εκδοθέντες λογαριασμοί.")}</div>
       ) : (
@@ -124,14 +130,14 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
           <table className="table">
             <thead>
               <tr>
-                <th style={{ ...NUM, width: 90 }}>{_t("Αρ. λογ.")}</th>
-                <th style={{ ...NUM, width: 90 }}>{_t("Αρ. πελάτη")}</th>
+                <th style={{ ...NUM, width: 64 }}>{_t("Αρ. λογ.")}</th>
+                <th style={{ ...NUM, width: 64 }} title={_t("Αρ. πελάτη")}>{_t("Πελ.")}</th>
                 <th style={{ width: 100 }}>{_t("Έκδοση")}</th>
                 {showClient && <th style={{ minWidth: 150 }}>{_t("Πελάτης")}</th>}
                 <th style={{ width: 120 }}>{_t("Αρ. φακέλου")}</th>
-                <th style={{ width: 150 }}>{_t("Περίοδος")}</th>
-                <th style={{ ...NUM, width: 110 }}>{_t("Αμοιβές")}</th>
-                <th style={{ ...NUM, width: 100 }}>{_t("Έξοδα")}</th>
+                <th style={{ width: 105 }}>{_t("Περίοδος")}</th>
+                <th style={{ ...NUM, width: 90 }}>{_t("Σύνολο")}</th>
+                <th style={{ width: 100 }}>{_t("Εξόφληση")}</th>
                 <th style={{ width: 1 }}></th>
               </tr>
             </thead>
@@ -156,8 +162,26 @@ function AccountsList({ filter = {}, showClient = true, reloadKey = 0, onLoaded,
                   <td style={{ whiteSpace: 'nowrap' }}>
                     {(r.period_from || r.period_to) ? `${dmy(r.period_from) || '…'} – ${dmy(r.period_to) || '…'}` : '—'}
                   </td>
-                  <td style={NUM}>{money(r.amoives)}</td>
-                  <td style={NUM}>{money(r.exoda)}</td>
+                  {/* Σύνολο του εντύπου· αμοιβές / έξοδα στο tooltip */}
+                  <td style={NUM} title={_t("Αμοιβές {0} · Έξοδα {1}", [money(r.amoives), money(r.exoda)])}>
+                    {r.exoflisi ? money(r.exoflisi.synolo) : '—'}
+                  </td>
+                  {/* Εξόφληση (Μαύρος 11/11): πατώντας ανοίγει πληρωμές / νέα πληρωμή */}
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    {!r.exoflisi ? <span style={{ color: '#a0aec0' }}>—</span> : (
+                      <a href="#" onClick={e => { e.preventDefault(); setExoflisiFor(r); }}
+                         style={{ textDecoration: 'none', display: 'block' }}>
+                        {r.exoflisi.exoflithike ? (
+                          <span style={{ color: '#2f855a', fontWeight: 600 }}>✓{r.exoflisi.imerominia ? ` ${dmy(r.exoflisi.imerominia)}` : ''}</span>
+                        ) : (
+                          <span style={{ color: '#c53030', fontWeight: 600 }}>{_t("Υπόλ.")} {money(r.exoflisi.ypoloipo)}</span>
+                        )}
+                        <div style={{ fontSize: 11.5, marginTop: 2 }}>
+                          {r.exoflisi.exoflithike ? _t("εξοφλήθηκε") : _t("+ Πληρωμή")}
+                        </div>
+                      </a>
+                    )}
+                  </td>
                   <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                     <button type="button" className="btn btn-sm btn-secondary"
                             disabled={busy === r.aa} onClick={() => download(r)}

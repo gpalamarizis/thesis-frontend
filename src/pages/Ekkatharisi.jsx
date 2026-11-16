@@ -12,6 +12,8 @@ import { fmtDate, fmtCurrency } from '../utils/format';
 import { _t } from '../i18n';
 
 const NUM = { textAlign: 'right', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' };
+// Φίλτρα: ίδιο ύψος σε select και input, για στοίχιση στην ίδια γραμμή
+const CTRL = { height: 40, boxSizing: 'border-box', margin: 0 };
 const money = (n) => (n == null || n === 0 ? '' : fmtCurrency(n));
 // Στις στήλες προσώπων χωρίς «€», για να χωρούν πολλοί εταίροι
 const num = (n) => (n == null || n === 0 ? '' : Number(n).toLocaleString('el-GR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
@@ -116,14 +118,14 @@ function AccountsTab() {
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 14 }}>
         <div className="form-group" style={{ margin: 0 }}>
           <label>{_t("Έτος έκδοσης")}</label>
-          <select value={year} onChange={e => setYear(e.target.value)}>
+          <select style={CTRL} value={year} onChange={e => setYear(e.target.value)}>
             <option value="">{_t("Όλα")}</option>
             {[0, 1, 2, 3, 4].map(i => <option key={i} value={thisYear - i}>{thisYear - i}</option>)}
           </select>
         </div>
         <div className="form-group" style={{ margin: 0 }}>
           <label>{_t("Εκκαθάριση")}</label>
-          <select value={status} onChange={e => setStatus(e.target.value)}>
+          <select style={CTRL} value={status} onChange={e => setStatus(e.target.value)}>
             <option value="">{_t("Όλες")}</option>
             <option value="none">{_t("Χωρίς εκκαθάριση")}</option>
             <option value="draft">{_t("Πρόχειρες")}</option>
@@ -132,7 +134,7 @@ function AccountsTab() {
         </div>
         <div className="form-group" style={{ margin: 0, flex: '1 1 220px' }}>
           <label>{_t("Αναζήτηση")}</label>
-          <input type="text" value={q} onChange={e => setQ(e.target.value)} placeholder={_t("Πελάτης, αρ. υπόθεσης ή αρ. λογαριασμού")} />
+          <input type="text" style={CTRL} value={q} onChange={e => setQ(e.target.value)} placeholder={_t("Πελάτης, αρ. υπόθεσης ή αρ. λογαριασμού")} />
         </div>
       </div>
       {error && <div className="error">{error}</div>}
@@ -147,7 +149,7 @@ function AccountsTab() {
               <th style={NUM}>{_t("Αμοιβές")}</th>
               <th style={NUM}>{_t("Έξοδα")}</th>
               <th style={NUM}>{_t("Πληρώθηκαν")}</th>
-              <th style={{ width: 110 }}>{_t("Τελ. πληρωμή")}</th>
+              <th style={{ width: 120 }}>{_t("Εξόφληση")}</th>
               <th style={{ width: 120 }}>{_t("Εκκαθάριση")}</th>
             </tr></thead>
             <tbody>
@@ -159,7 +161,9 @@ function AccountsTab() {
                   <td style={NUM}>{money(r.amoives)}</td>
                   <td style={NUM}>{money(r.exoda)}</td>
                   <td style={NUM}>{r.plirotheisa ? fmtCurrency(r.plirotheisa) : <span style={{ color: '#a0aec0' }}>—</span>}</td>
-                  <td>{r.teleftaia ? fmtDate(r.teleftaia) : ''}</td>
+                  <td style={{ whiteSpace: 'nowrap' }}>{!r.exoflisi ? '' : r.exoflisi.exoflithike
+                    ? <span style={{ color: '#2f855a' }}>✓ {r.exoflisi.imerominia ? fmtDate(r.exoflisi.imerominia) : ''}</span>
+                    : <span style={{ color: '#c53030' }}>{_t("Υπόλ.")} {fmtCurrency(r.exoflisi.ypoloipo)}</span>}</td>
                   <td>{r.status ? <span className={STATUS[r.status].cls}>{STATUS[r.status].label}</span>
                     : <span style={{ color: '#a0aec0', fontSize: 13 }}>{_t("—")}</span>}</td>
                 </tr>
@@ -237,8 +241,10 @@ function AccountDetail({ aa, onBack }) {
         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
           <button type="button" className="btn btn-sm btn-secondary" disabled={busy} onClick={() => act(() => ekk.xlsx(aa))}>⬇ Excel</button>
           {draft ? (
-            <button type="button" className="btn btn-sm" disabled={busy || !res.ok || !v.payments.length}
-                    title={!v.payments.length ? _t("Δεν υπάρχει πληρωμή") : !res.ok ? _t("Μοιράστε πρώτα όλη τη δουλειά") : ''}
+            <button type="button" className="btn btn-sm" disabled={busy || !res.ok || !v.payments.length || !(v.exoflisi && v.exoflisi.exoflithike)}
+                    title={!v.payments.length ? _t("Δεν υπάρχει πληρωμή")
+                      : !(v.exoflisi && v.exoflisi.exoflithike) ? _t("Ο λογαριασμός δεν έχει εξοφληθεί")
+                      : !res.ok ? _t("Μοιράστε πρώτα όλη τη δουλειά") : ''}
                     onClick={() => act(() => ekk.finalize(aa))}>✔ {_t("Οριστικοποίηση")}</button>
           ) : (
             <button type="button" className="btn btn-sm btn-secondary" disabled={busy}
@@ -251,7 +257,11 @@ function AccountDetail({ aa, onBack }) {
         <span>{_t("Έκδοση:")} <strong>{fmtDate(acc.issued)}</strong></span>
         <span>{_t("Υποθέσεις:")} <strong>{acc.cases.map(c => c.proto).join(', ') || '—'}</strong></span>
         <span>{_t("Τιμολόγια:")} <strong>{acc.invoices || '—'}</strong></span>
-        <span>{v.status === 'final' ? _t("Ημερομηνία εκκαθάρισης:") : _t("Τελευταία πληρωμή:")} <strong>{v.imerominia ? fmtDate(v.imerominia) : '—'}</strong></span>
+        <span>{v.status === 'final' ? _t("Ημερομηνία εκκαθάρισης:") : _t("Εξόφληση:")}{' '}
+          <strong style={v.status !== 'final' && v.exoflisi && !v.exoflisi.exoflithike ? { color: '#c53030' } : undefined}>
+            {v.imerominia ? fmtDate(v.imerominia)
+              : v.exoflisi ? _t("ανοιχτός — υπόλοιπο {0}", [fmtCurrency(v.exoflisi.ypoloipo)]) : '—'}
+          </strong></span>
         {v.status === 'final' && v.finalized_by && <span>{_t("Οριστικοποίησε:")} <strong>{v.finalized_by}</strong></span>}
       </div>
 
@@ -263,7 +273,12 @@ function AccountDetail({ aa, onBack }) {
       )}
       {!v.payments.length && (
         <div className="error" style={{ background: '#fffaf0', color: '#7b341e', borderColor: '#fbd38d' }}>
-          {_t("Δεν έχει καταχωριστεί πληρωμή για αυτόν τον λογαριασμό. Καταχωρίστε την στα Οικονομικά της υπόθεσης → Πληρωμές, με «Εξοφλεί τον λογαριασμό».")}
+          {_t("Δεν έχει καταχωριστεί πληρωμή για αυτόν τον λογαριασμό. Καταχωρίστε την στο Τιμολόγηση → Λογαριασμοί → Εξόφληση, ή στα Οικονομικά της υπόθεσης → Πληρωμές με «Εξοφλεί τον λογαριασμό».")}
+        </div>
+      )}
+      {v.status !== 'final' && v.payments.length > 0 && v.exoflisi && !v.exoflisi.exoflithike && (
+        <div className="error" style={{ background: '#fffaf0', color: '#7b341e', borderColor: '#fbd38d' }}>
+          {_t("Ο λογαριασμός δεν έχει εξοφληθεί ακόμα (υπόλοιπο {0}). Η εκκαθάριση μπορεί να προετοιμαστεί, αλλά οριστικοποιείται μετά την εξόφληση.", [fmtCurrency(v.exoflisi.ypoloipo)])}
         </div>
       )}
 
@@ -380,28 +395,28 @@ function ReportTab() {
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 14 }}>
         <div className="form-group" style={{ margin: 0 }}>
           <label>{_t("Από έτος")}</label>
-          <select value={apo} onChange={e => { const v = Number(e.target.value); setApo(v); if (eos < v) setEos(v); }}>
+          <select style={CTRL} value={apo} onChange={e => { const v = Number(e.target.value); setApo(v); if (eos < v) setEos(v); }}>
             {years.map(x => <option key={x} value={x}>{x}</option>)}
           </select>
         </div>
         <div className="form-group" style={{ margin: 0 }}>
           <label>{_t("Έως έτος")}</label>
-          <select value={eos} onChange={e => setEos(Number(e.target.value))}>
+          <select style={CTRL} value={eos} onChange={e => setEos(Number(e.target.value))}>
             {years.filter(x => x >= apo).map(x => <option key={x} value={x}>{x}</option>)}
           </select>
         </div>
         <div className="form-group" style={{ margin: 0 }}>
           <label>{_t("Βάση")}</label>
           <div style={{ display: 'flex', gap: 4 }}>
-            <button type="button" className={`btn btn-sm ${basis === 'eispraxi' ? '' : 'btn-secondary'}`} onClick={() => setBasis('eispraxi')}>{_t("Επί εισπραχθέντων")}</button>
-            <button type="button" className={`btn btn-sm ${basis === 'timologisi' ? '' : 'btn-secondary'}`} onClick={() => setBasis('timologisi')}>{_t("Επί τιμολογηθέντων")}</button>
+            <button type="button" className={`btn btn-sm ${basis === 'eispraxi' ? '' : 'btn-secondary'}`} style={CTRL} onClick={() => setBasis('eispraxi')}>{_t("Επί εισπραχθέντων")}</button>
+            <button type="button" className={`btn btn-sm ${basis === 'timologisi' ? '' : 'btn-secondary'}`} style={CTRL} onClick={() => setBasis('timologisi')}>{_t("Επί τιμολογηθέντων")}</button>
           </div>
         </div>
-        <button type="button" className="btn btn-sm btn-secondary" style={{ marginLeft: 'auto' }} disabled={busy || loading} onClick={doXlsx}>⬇ Excel</button>
+        <button type="button" className="btn btn-sm btn-secondary" style={{ ...CTRL, marginLeft: 'auto' }} disabled={busy || loading} onClick={doXlsx}>⬇ Excel</button>
       </div>
       <p style={{ fontSize: 12, color: '#718096', marginTop: 0 }}>
         {basis === 'eispraxi'
-          ? _t("Οριστικές εκκαθαρίσεις με ημερομηνία (τελευταία πληρωμή) μέσα στην περίοδο — τα πραγματικά ποσά.")
+          ? _t("Οριστικές εκκαθαρίσεις με ημερομηνία εξόφλησης του λογαριασμού μέσα στην περίοδο — τα πραγματικά ποσά.")
           : _t("Όλοι οι λογαριασμοί που εκδόθηκαν μέσα στην περίοδο, ως αν είχαν εισπραχθεί πλήρως: εισφορά 10% και δουλειά 35% επί της καθαρής τιμολογηθείσας αμοιβής, με την ίδια κατανομή.")}
       </p>
       {error && <div className="error">{error}</div>}
