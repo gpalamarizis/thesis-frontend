@@ -59,8 +59,10 @@ function ClientAccountPanel({ clientType, clientId, currentCaseId, onIssued }) {
     && !excluded.has(`${r.src}:${r.aa}`));
   const sum = (rows) => inSel(rows).reduce((a, r) => a + (Number(r.amount) || 0), 0);
 
+  // Αμοιβές μετά την έκπτωση (Μαύρος 16/11)
+  const disc = (rows) => inSel(rows).reduce((a, r) => a + Math.round((Number(r.amount) || 0) * (Number(r.ekptosi) || 0)) / 100, 0);
   // Τα γραμμάτια είναι έξοδο με ΦΠΑ (Μαύρος 09/11)
-  const amoives = sum(data.hours) + sum(data.fees);
+  const amoives = sum(data.hours) + sum(data.fees) - disc(data.hours) - disc(data.fees);
   const exoda = sum(data.expenses) + sum(data.grammatia);
   const prok = sum(data.advances);
   const ypoloipo = amoives + exoda - prok;

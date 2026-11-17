@@ -26,6 +26,8 @@ const RESOURCE = {
 };
 // Εγγραφές που δέχονται απαλλαγή ΦΠΑ: αμοιβές και γραμμάτια (έξοδο με ΦΠΑ)
 const FEE = new Set(['finance_ores', 'finance_amoives_dikigoron', 'finance_grammatia']);
+// Εγγραφές που δέχονται έκπτωση: μόνο οι αμοιβές (Μαύρος 16/11)
+const DISC = new Set(['finance_ores', 'finance_amoives_dikigoron']);
 const GREEK = /[Ͱ-Ͽἀ-῿]/;
 const norm = (s) => String(s || '').trim().replace(/\s+/g, ' ');
 const keyOf = (r) => `${r.src}:${r.aa}`;
@@ -147,12 +149,13 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
               <th>{_t("Περιγραφή")}</th>
               {showTr && <th>{_t("Μετάφραση (")}{lang.toUpperCase()})</th>}
               <th style={{ width: 120, textAlign: 'right' }}>{_t("Ποσό")}</th>
+              <th style={{ width: 74, textAlign: 'right' }} title={_t("Έκπτωση %")}>{_t("Έκπτ. %")}</th>
               <th style={{ width: 80, textAlign: 'center' }}>{_t("Χωρίς ΦΠΑ")}</th>
             </tr>
           </thead>
           {sections.map(sec => (
             <tbody key={sec.title}>
-              <tr><td colSpan={showTr ? 6 : 5} style={{ background: '#f7fafc', fontStyle: 'italic', color: '#4a5568' }}>{sec.title}</td></tr>
+              <tr><td colSpan={showTr ? 7 : 6} style={{ background: '#f7fafc', fontStyle: 'italic', color: '#4a5568' }}>{sec.title}</td></tr>
               {sec.rows.map(r => {
                 const k = keyOf(r);
                 const off = excluded.has(k);
@@ -185,6 +188,15 @@ function AccountLinesEditor({ data, selectedCases, lang, excluded, setExcluded, 
                              onChange={e => setVal(r, 'amount', e.target.value)}
                              onBlur={e => { if (Number(e.target.value) !== Number(r.amount)) saveField(r, 'amount', e.target.value === '' ? null : Number(e.target.value)); }}
                              style={{ width: '100%', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }} />
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      {DISC.has(r.src) ? (
+                        <input type="number" step="0.01" min="0" max="100" value={val(r, 'ekptosi', r.ekptosi ? r.ekptosi : '')}
+                               disabled={off || busy === k}
+                               onChange={e => setVal(r, 'ekptosi', e.target.value)}
+                               onBlur={e => { if (Number(e.target.value || 0) !== Number(r.ekptosi || 0)) saveField(r, 'ekptosi', e.target.value === '' ? null : Number(e.target.value)); }}
+                               style={{ width: '100%', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }} />
+                      ) : ''}
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       {FEE.has(r.src) ? (

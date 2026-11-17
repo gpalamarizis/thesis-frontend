@@ -93,6 +93,10 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
   // και στο τιμολόγιο ΦΠΑ 0 και η σημείωση του Άρθρου 14 παρ. 2α Ν. 2859/2000
   const xorisFpaField = { key: 'xoris_fpa', label: _t("Χωρίς ΦΠΑ — ενδοκοινοτική συναλλαγή"), type: 'checkbox',
     listLabel: _t("ΦΠΑ") };
+  // Έκπτωση % (Μαύρος 16/11): στον λογαριασμό μία γραμμή «Έκπτωση» μετά τις
+  // αμοιβές· ο ΦΠΑ υπολογίζεται στο ποσό μετά την έκπτωση.
+  const ekptosiField = { key: 'ekptosi', label: _t("Έκπτωση (%)"), type: 'number', step: '0.01',
+    listLabel: _t("Έκπτ."), hint: _t("προαιρετικά — ο ΦΠΑ υπολογίζεται μετά την έκπτωση") };
   const oresFields = [
     { key: 'date',         label: _t("Ημερομηνία"),    type: 'date',   required: true },
     { key: 'dikigoros_id', label: _t("Δικηγόρος"),     type: 'select', options: lawyerOptions },
@@ -104,6 +108,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
       hint: clientRate ? _t("Χρέωση πελάτη: {0} €/ώρα", [clientRate]) : undefined },
     { key: 'amount',       label: _t("Ποσό (€)"),      type: 'number', step: '0.01', computed: true },
     { key: 'perigrafi',    label: _t("Περιγραφή"),     type: 'textarea' },
+    ekptosiField,
     xorisFpaField,
   ];
 
@@ -180,6 +185,7 @@ function FinanceTab({ caseId, clientType, clientId, clientRate }) {
     { key: 'dikigoros_id', label: _t("Δικηγόρος"),  type: 'select', options: lawyerOptions },
     { key: 'amount',       label: _t("Ποσό (€)"),   type: 'number', required: true, step: '0.01' },
     { key: 'perigrafi',    label: _t("Περιγραφή"),  type: 'textarea' },
+    ekptosiField,
     xorisFpaField,
   ];
 
@@ -368,6 +374,7 @@ function FinanceResource({ caseId, resource, fields, onCountChange, reloadKey = 
       const opt = (f.options || []).find(o => String(o.value) === `${col}:${r[col]}`);
       return opt ? opt.label : `#${r[col]}`;
     }
+    if (f.key === 'ekptosi') return Number(v) ? `${String(Number(v)).replace('.', ',')}%` : '';
     if (f.key === 'tropos') return v === 'metrita' ? _t("Μετρητά") : (r.trapeza || _t("Τράπεζα"));
     if (f.key === 'eispraxe_dikigoros_id') return v ? (r.eispraxe_name || `#${v}`) : _t("Εταιρεία");
     if (f.type === 'select' && Array.isArray(f.options)) {
